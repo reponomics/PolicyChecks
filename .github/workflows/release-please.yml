@@ -1,0 +1,57 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create release PR or GitHub release
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: .github/release-please-config.json
+          manifest-file: .github/.release-please-manifest.json
+
+      - name: Promote Cloudflare deploy branch
+        if: ${{ steps.release.outputs.release_created }}
+        shell: bash
+        env:
+          DEPLOY_BRANCH: cloudflare-production
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${RELEASE_SHA}" ]]; then
+            echo "Release Please did not return a release SHA." >&2
+            exit 1
+          fi
+
+          deploy_ref="refs/heads/${DEPLOY_BRANCH}"
+
+          git cat-file -e "${RELEASE_SHA}^{commit}" 2>/dev/null || git fetch --depth=1 origin "${RELEASE_SHA}"
+
+          if git ls-remote --exit-code --heads origin "${DEPLOY_BRANCH}" >/dev/null 2>&1; then
+            expected="$(git ls-remote origin "${deploy_ref}" | awk '{print $1}')"
+            git push --force-with-lease="${deploy_ref}:${expected}" origin "${RELEASE_SHA}:${deploy_ref}"
+          else
+            git push origin "${RELEASE_SHA}:${deploy_ref}"
+          fi

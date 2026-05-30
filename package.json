@@ -1,0 +1,59 @@
+{
+  "name": "policychecks",
+  "version": "0.1.0",
+  "description": "A badge service that is able to report on a repository's settings, providing a convenient way for maintainers to demonstrate publicly that best practices are enforced as policies at the repo configuration level",
+  "private": true,
+  "type": "module",
+  "main": "dist/app.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx src/app.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/app.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc -p tsconfig.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run typecheck && npm test",
+    "check-updates": "if [ \"$CI\" = \"true\" ]; then echo 'Skipping dependency update notifier in CI.'; else npx npm-check-updates --enginesNode; fi",
+    "check-updates:update": "npx npm-check-updates --enginesNode -u",
+    "deploy:policychecks": "wrangler deploy -c wrangler.policychecks.jsonc",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "security",
+    "repository-administration",
+    "repository-settings",
+    "badge",
+    "supply-chain",
+    "proof-of-settings"
+  ],
+  "author": {
+    "name": "Really Him",
+    "email": "policychecks@reponomics.org"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/auth-app": "^8.2.0",
+    "@octokit/request": "^10.0.10",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.1",
+    "@types/supertest": "^7.2.0",
+    "@vitest/coverage-v8": "^4.1.8",
+    "husky": "^9.1.7",
+    "prettier": "^3.8.3",
+    "supertest": "^7.2.2",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8",
+    "wrangler": "^4.96.0"
+  }
+}

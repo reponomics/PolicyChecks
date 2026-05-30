@@ -1,0 +1,58 @@
+import { describe, expect, it } from "vitest";
+
+import { renderBadgeSvg } from "../src/badges/svg.js";
+import { toShieldsJson } from "../src/badges/shields-json.js";
+import { shaPinningRequiredClaim } from "../src/claims/sha-pinning-required.js";
+import type { ClaimResult } from "../src/claims/types.js";
+
+describe("badge renderers", () => {
+  it("renders Shields-compatible JSON", () => {
+    expect(toShieldsJson(shaPinningRequiredClaim, result("pass"))).toEqual({
+      schemaVersion: 1,
+      label: "SHA-pinned actions",
+      message: "required",
+      color: "brightgreen"
+    });
+
+    expect(toShieldsJson(shaPinningRequiredClaim, result("unknown"))).toMatchObject({
+      message: "unknown",
+      color: "lightgrey"
+    });
+  });
+
+  it("escapes SVG label and message text", () => {
+    const definition = {
+      ...shaPinningRequiredClaim,
+      label: "SHA <actions>",
+      failMessage: "not & required"
+    };
+    const svg = renderBadgeSvg(definition, {
+      ...result("fail"),
+      details: {
+        ignored: "<script>"
+      }
+    });
+
+    expect(svg).toContain("SHA &lt;actions&gt;");
+    expect(svg).toContain("not &amp; required");
+    expect(svg).not.toContain("<script>");
+  });
+});
+
+function result(status: ClaimResult["status"]): ClaimResult {
+  return {
+    claim: shaPinningRequiredClaim.id,
+    owner: "OWNER",
+    repo: "REPO",
+    repository: {
+      owner: "OWNER",
+      repo: "REPO",
+      full_name: "OWNER/REPO"
+    },
+    status,
+    value: status === "unknown" ? null : status === "pass",
+    source: shaPinningRequiredClaim.source,
+    checked_at: "2026-05-30T00:00:00.000Z",
+    details: {}
+  };
+}
