@@ -29,7 +29,14 @@ describe("code security configuration claims", () => {
     const result = await evaluateWithMock(
       secretScanningEnabledClaim,
       mockGitHub({
-        getCodeSecurityConfiguration: async () => attachedConfiguration
+        getRepository: async () => ({
+          id: 1,
+          security_and_analysis: {
+            secret_scanning: {
+              status: "enabled"
+            }
+          }
+        })
       })
     );
 
@@ -37,14 +44,10 @@ describe("code security configuration claims", () => {
       status: "pass",
       value: true,
       details: {
-        status: "attached",
-        configuration: {
-          id: 1325,
-          target_type: "organization",
-          name: "recommended settings",
-          enforcement: "enforced",
-          updated_at: "2026-06-01T00:00:00Z",
-          secret_scanning: "enabled"
+        security_and_analysis: {
+          secret_scanning: {
+            status: "enabled"
+          }
         }
       }
     });
@@ -54,10 +57,12 @@ describe("code security configuration claims", () => {
     const result = await evaluateWithMock(
       secretScanningEnabledClaim,
       mockGitHub({
-        getCodeSecurityConfiguration: async () => ({
-          status: "attached",
-          configuration: {
-            secret_scanning: "disabled"
+        getRepository: async () => ({
+          id: 1,
+          security_and_analysis: {
+            secret_scanning: {
+              status: "disabled"
+            }
           }
         })
       })
@@ -67,10 +72,33 @@ describe("code security configuration claims", () => {
       status: "fail",
       value: false,
       details: {
-        status: "attached",
-        configuration: {
-          secret_scanning: "disabled"
+        security_and_analysis: {
+          secret_scanning: {
+            status: "disabled"
+          }
         }
+      }
+    });
+  });
+
+  it("returns unknown when repository security analysis does not include secret scanning", async () => {
+    const result = await evaluateWithMock(
+      secretScanningEnabledClaim,
+      mockGitHub({
+        getRepository: async () => ({
+          id: 1,
+          security_and_analysis: {}
+        })
+      })
+    );
+
+    expect(result.status).toBe("unknown");
+    expect(result.error).toMatchObject({
+      kind: "unexpected_response"
+    });
+    expect(result.details).toEqual({
+      security_and_analysis: {
+        secret_scanning: null
       }
     });
   });
@@ -104,7 +132,7 @@ describe("code security configuration claims", () => {
     const result = await evaluateWithMock(
       dependabotAlertsEnabledClaim,
       mockGitHub({
-        getCodeSecurityConfiguration: async () => attachedConfiguration
+        getVulnerabilityAlertsStatus: async () => "enabled"
       })
     );
 
@@ -112,10 +140,7 @@ describe("code security configuration claims", () => {
       status: "pass",
       value: true,
       details: {
-        status: "attached",
-        configuration: {
-          dependabot_alerts: "enabled"
-        }
+        vulnerability_alerts: "enabled"
       }
     });
   });
@@ -124,12 +149,12 @@ describe("code security configuration claims", () => {
     const result = await evaluateWithMock(
       dependabotAlertsEnabledClaim,
       mockGitHub({
-        getCodeSecurityConfiguration: async () => ({
-          status: "attached",
-          configuration: {
-            dependabot_alerts: "disabled"
-          }
-        })
+        getVulnerabilityAlertsStatus: async () => {
+          throw new GitHubApiError("Not Found", {
+            status: 404,
+            kind: "not_found"
+          });
+        }
       })
     );
 
@@ -137,10 +162,7 @@ describe("code security configuration claims", () => {
       status: "fail",
       value: false,
       details: {
-        status: "attached",
-        configuration: {
-          dependabot_alerts: "disabled"
-        }
+        vulnerability_alerts: "disabled"
       }
     });
   });
@@ -165,14 +187,39 @@ describe("code security configuration claims", () => {
     });
   });
 
+  it("fails when the attached configuration does not enable the dependency graph", async () => {
+    const result = await evaluateWithMock(
+      dependencyGraphEnabledClaim,
+      mockGitHub({
+        getCodeSecurityConfiguration: async () => ({
+          status: "attached",
+          configuration: {
+            dependency_graph: "disabled"
+          }
+        })
+      })
+    );
+
+    expect(result).toMatchObject({
+      status: "fail",
+      value: false,
+      details: {
+        status: "attached",
+        configuration: {
+          dependency_graph: "disabled"
+        }
+      }
+    });
+  });
+
   it("returns unknown when the repository is not attached to a configuration", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningPushProtectionEnabledClaim,
       mockGitHub({
         getCodeSecurityConfiguration: async () => ({
           status: "detached",
           configuration: {
-            secret_scanning: "enabled"
+            secret_scanning_push_protection: "enabled"
           }
         })
       })
@@ -189,7 +236,7 @@ describe("code security configuration claims", () => {
 
   it("returns null configuration details when a non-attached response has no object configuration", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningPushProtectionEnabledClaim,
       mockGitHub({
         getCodeSecurityConfiguration: async () => ({
           status: "detached",
@@ -207,7 +254,7 @@ describe("code security configuration claims", () => {
 
   it("returns unknown when the code security response is not an object", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningPushProtectionEnabledClaim,
       mockGitHub({
         getCodeSecurityConfiguration: async () => "unexpected"
       })
@@ -222,7 +269,7 @@ describe("code security configuration claims", () => {
 
   it("returns unknown when the attached configuration is missing", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningPushProtectionEnabledClaim,
       mockGitHub({
         getCodeSecurityConfiguration: async () => ({
           status: "attached"
@@ -242,7 +289,7 @@ describe("code security configuration claims", () => {
 
   it("returns unknown when the configured field is not a string", async () => {
     const result = await evaluateWithMock(
-      dependencyGraphEnabledClaim,
+      secretScanningPushProtectionEnabledClaim,
       mockGitHub({
         getCodeSecurityConfiguration: async () => ({
           status: "attached",
@@ -252,7 +299,7 @@ describe("code security configuration claims", () => {
             name: false,
             enforcement: null,
             updated_at: {},
-            dependency_graph: true
+            secret_scanning_push_protection: true
           }
         })
       })
@@ -270,14 +317,14 @@ describe("code security configuration claims", () => {
         name: null,
         enforcement: null,
         updated_at: null,
-        dependency_graph: null
+        secret_scanning_push_protection: null
       }
     });
   });
 
   it("returns unknown when GitHub returns no content", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningPushProtectionEnabledClaim,
       mockGitHub({
         getCodeSecurityConfiguration: async () => ({
           status: "no_content"
@@ -300,7 +347,7 @@ describe("code security configuration claims", () => {
     const result = await evaluateWithMock(
       secretScanningEnabledClaim,
       mockGitHub({
-        getCodeSecurityConfiguration: async () => {
+        getRepository: async () => {
           throw new GitHubApiError("Forbidden", {
             status: 403,
             kind: "forbidden"

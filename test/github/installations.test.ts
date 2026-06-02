@@ -27,6 +27,7 @@ function fakeGitHub(
     getImmutableReleases: vi.fn(),
     getActionsPermissions: vi.fn(),
     getCodeSecurityConfiguration: vi.fn(),
+    getVulnerabilityAlertsStatus: vi.fn(),
     getBranchRules: vi.fn()
   };
 }

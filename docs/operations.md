@@ -26,7 +26,7 @@ Webhook handling must not call GitHub. This is covered by tests in `test/webhook
 
 Production GitHub REST usage is restricted by `test/github/api-usage-policy.test.ts`. The allowed request surface is intentionally small and does not include repository enumeration, search, GraphQL, pagination helpers, or mutating repository routes.
 
-Expected cold-cache request cost for one repository is bounded: installation lookup and installation-token creation, repository metadata when needed, immutable releases, Actions permissions, and one code-security-configuration request shared by the three code-security claims. Warm-cache badge/proof requests should make zero GitHub API calls.
+Expected cold-cache request cost for one repository is bounded: installation lookup and installation-token creation, repository metadata when needed, immutable releases, Actions permissions, vulnerability-alerts status, and one code-security-configuration request shared by configuration-backed code security claims. Warm-cache badge/proof requests should make zero GitHub API calls.
 
 ## Rate-Limit Logs
 

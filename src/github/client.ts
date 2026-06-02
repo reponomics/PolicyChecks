@@ -5,6 +5,15 @@ import { toGitHubApiError } from "./errors.js";
 export interface GitHubRepository {
   id: number;
   default_branch?: string | null;
+  security_and_analysis?: GitHubRepositorySecurityAndAnalysis;
+}
+
+export interface GitHubRepositorySecurityAndAnalysis {
+  secret_scanning?: GitHubRepositoryFeatureStatus;
+}
+
+export interface GitHubRepositoryFeatureStatus {
+  status?: string;
 }
 
 export interface GitHubClient {
@@ -12,6 +21,7 @@ export interface GitHubClient {
   getImmutableReleases(owner: string, repo: string): Promise<unknown>;
   getActionsPermissions(owner: string, repo: string): Promise<unknown>;
   getCodeSecurityConfiguration(owner: string, repo: string): Promise<unknown>;
+  getVulnerabilityAlertsStatus(owner: string, repo: string): Promise<"enabled">;
   getBranchRules(owner: string, repo: string, branch: string): Promise<unknown>;
 }
 
@@ -53,6 +63,19 @@ export class GitHubRestClient implements GitHubClient {
       const status = (response as { status?: number }).status;
 
       return status === 204 ? { status: "no_content" } : response.data;
+    } catch (error) {
+      throw toGitHubApiError(error);
+    }
+  }
+
+  async getVulnerabilityAlertsStatus(owner: string, repo: string): Promise<"enabled"> {
+    try {
+      await this.githubRequest("GET /repos/{owner}/{repo}/vulnerability-alerts", {
+        owner,
+        repo
+      });
+
+      return "enabled";
     } catch (error) {
       throw toGitHubApiError(error);
     }

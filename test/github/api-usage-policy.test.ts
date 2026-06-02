@@ -18,7 +18,8 @@ const allowedRoutes = new Set([
   "GET /repos/{owner}/{repo}/code-security-configuration",
   "GET /repos/{owner}/{repo}/immutable-releases",
   "GET /repos/{owner}/{repo}/installation",
-  "GET /repos/{owner}/{repo}/rules/branches/{branch}"
+  "GET /repos/{owner}/{repo}/rules/branches/{branch}",
+  "GET /repos/{owner}/{repo}/vulnerability-alerts"
 ]);
 
 describe("GitHub API usage policy", () => {

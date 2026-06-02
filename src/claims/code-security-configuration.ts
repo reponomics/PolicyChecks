@@ -1,4 +1,4 @@
-import { publicMessage, toPublicClaimError } from "../github/errors.js";
+import { GitHubApiError, publicMessage, toPublicClaimError } from "../github/errors.js";
 import { isRecord, makeClaimResult, makeUnknownResult, resultInput } from "./result.js";
 import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
 
@@ -14,13 +14,38 @@ interface CodeSecurityClaimOptions {
   field: CodeSecurityField;
 }
 
-const endpoint = "GET /repos/{owner}/{repo}/code-security-configuration";
+const codeSecurityConfigurationEndpoint = "GET /repos/{owner}/{repo}/code-security-configuration";
 
-export const secretScanningEnabledClaim = codeSecurityConfigurationClaim({
+export const secretScanningEnabledClaim: ClaimDefinition = {
   id: "secret-scanning-enabled",
   label: "secret scanning",
-  field: "secret_scanning"
-});
+  passMessage: "enabled",
+  failMessage: "disabled",
+  unknownMessage: "unknown",
+  source: {
+    provider: "github",
+    api: "REST",
+    endpoint: "GET /repos/{owner}/{repo}",
+    fields: ["security_and_analysis.secret_scanning.status"]
+  },
+  async evaluate(input: ClaimEvaluationInput) {
+    try {
+      const repository = await input.github.getRepository(input.owner, input.repo);
+      return evaluateRepositorySecurityFeature(
+        secretScanningEnabledClaim,
+        input,
+        repository.security_and_analysis,
+        "secret_scanning"
+      );
+    } catch (error) {
+      return makeUnknownResult(
+        secretScanningEnabledClaim,
+        resultInput(input),
+        toPublicClaimError(error)
+      );
+    }
+  }
+};
 
 export const secretScanningPushProtectionEnabledClaim = codeSecurityConfigurationClaim({
   id: "secret-scanning-push-protection-enabled",
@@ -28,11 +53,40 @@ export const secretScanningPushProtectionEnabledClaim = codeSecurityConfiguratio
   field: "secret_scanning_push_protection"
 });
 
-export const dependabotAlertsEnabledClaim = codeSecurityConfigurationClaim({
+export const dependabotAlertsEnabledClaim: ClaimDefinition = {
   id: "dependabot-alerts-enabled",
   label: "Dependabot alerts",
-  field: "dependabot_alerts"
-});
+  passMessage: "enabled",
+  failMessage: "disabled",
+  unknownMessage: "unknown",
+  source: {
+    provider: "github",
+    api: "REST",
+    endpoint: "GET /repos/{owner}/{repo}/vulnerability-alerts",
+    fields: ["HTTP 204", "HTTP 404"]
+  },
+  async evaluate(input: ClaimEvaluationInput) {
+    try {
+      const status = await input.github.getVulnerabilityAlertsStatus(input.owner, input.repo);
+
+      return makeClaimResult(dependabotAlertsEnabledClaim, resultInput(input), "pass", true, {
+        vulnerability_alerts: status
+      });
+    } catch (error) {
+      if (isEndpointDisabled(error)) {
+        return makeClaimResult(dependabotAlertsEnabledClaim, resultInput(input), "fail", false, {
+          vulnerability_alerts: "disabled"
+        });
+      }
+
+      return makeUnknownResult(
+        dependabotAlertsEnabledClaim,
+        resultInput(input),
+        toPublicClaimError(error)
+      );
+    }
+  }
+};
 
 export const dependencyGraphEnabledClaim = codeSecurityConfigurationClaim({
   id: "dependency-graph-enabled",
@@ -50,7 +104,7 @@ function codeSecurityConfigurationClaim(options: CodeSecurityClaimOptions): Clai
     source: {
       provider: "github",
       api: "REST",
-      endpoint,
+      endpoint: codeSecurityConfigurationEndpoint,
       fields: ["status", `configuration.${options.field}`, "configuration.enforcement"]
     },
     async evaluate(input: ClaimEvaluationInput) {
@@ -64,6 +118,43 @@ function codeSecurityConfigurationClaim(options: CodeSecurityClaimOptions): Clai
   };
 
   return definition;
+}
+
+function evaluateRepositorySecurityFeature(
+  definition: ClaimDefinition,
+  input: ClaimEvaluationInput,
+  securityAndAnalysis: unknown,
+  field: "secret_scanning"
+) {
+  if (!isRecord(securityAndAnalysis)) {
+    return unexpected(definition, input, {
+      security_and_analysis: null
+    });
+  }
+
+  const feature = securityAndAnalysis[field];
+
+  if (!isRecord(feature) || typeof feature.status !== "string") {
+    return unexpected(definition, input, {
+      security_and_analysis: {
+        [field]: null
+      }
+    });
+  }
+
+  const enabled = feature.status === "enabled";
+
+  return makeClaimResult(definition, resultInput(input), enabled ? "pass" : "fail", enabled, {
+    security_and_analysis: {
+      [field]: {
+        status: feature.status
+      }
+    }
+  });
+}
+
+function isEndpointDisabled(error: unknown) {
+  return error instanceof GitHubApiError && error.status === 404;
 }
 
 function evaluateCodeSecurityConfiguration(

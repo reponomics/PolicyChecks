@@ -29,6 +29,8 @@ The tables below use these GitHub documentation references as their audit trail:
 | `immutable-releases-doc` | [Check if immutable releases are enabled for a repository](https://docs.github.com/en/rest/repos/repos#check-if-immutable-releases-are-enabled-for-a-repository) |
 | `actions-permissions-doc` | [Get GitHub Actions permissions for a repository](https://docs.github.com/en/rest/actions/permissions#get-github-actions-permissions-for-a-repository) |
 | `branch-rules-doc` | [Get rules for a branch](https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch) |
+| `repository-doc` | [Get a repository](https://docs.github.com/en/rest/repos/repos#get-a-repository) |
+| `vulnerability-alerts-doc` | [Check if vulnerability alerts are enabled for a repository](https://docs.github.com/en/rest/repos/repos#check-if-vulnerability-alerts-are-enabled-for-a-repository) |
 | `code-security-config-doc` | [Get the code security configuration associated with a repository](https://docs.github.com/en/rest/code-security/configurations#get-the-code-security-configuration-associated-with-a-repository) |
 
 ## Global Error Mapping
@@ -79,43 +81,37 @@ GET /repos/{owner}/{repo}/actions/permissions
 
 ## `secret-scanning-enabled`
 
-Claim: the repository's attached code security configuration enables secret scanning.
+Claim: the repository's security and analysis settings enable secret scanning.
 
 GitHub endpoint:
 
 ```http
-GET /repos/{owner}/{repo}/code-security-configuration
+GET /repos/{owner}/{repo}
 ```
 
 | GitHub response or value | PolicyChecks status | Proof details | Documentation basis | Judgment |
 | --- | --- | --- | --- | --- |
-| `200 OK` with `status: attached` and `configuration.secret_scanning: enabled` | `pass` | `status`, selected `configuration` metadata, `secret_scanning` | `code-security-config-doc` documents `200 OK` and example fields including `status`, `configuration`, and `secret_scanning`. | Direct evidence that secret scanning is enabled by the attached configuration. |
-| `200 OK` with `status: attached` and `configuration.secret_scanning` as a string other than `enabled` | `fail` | `status`, selected `configuration` metadata, `secret_scanning` | `code-security-config-doc` documents `secret_scanning` as the enablement status field. | Direct evidence from an attached configuration that this field is not enabled. |
-| `204 No Content` | `unknown` | `status: no_content`, `configuration: null` | `code-security-config-doc` lists `204 No Content` but does not define it as disabled. | Not safe to assert disabled from no content. |
-| `200 OK` with missing or non-`attached` `status` | `unknown` | `status`, selected configuration metadata when present | `code-security-config-doc` example shows `status: attached`; other status semantics are not yet mapped. | Not enough documented evidence for enabled or disabled. |
-| `200 OK` with attached status but missing/non-string `configuration.secret_scanning` | `unknown` | selected configuration metadata | `code-security-config-doc` documents a string enablement status field; the returned shape does not match. | The service cannot safely interpret the field. |
-| `404 Not Found` | `unknown` | error details | `code-security-config-doc` documents `404` as resource not found, not as disabled. | Not safe to assert disabled from this response. |
+| `200 OK` with `security_and_analysis.secret_scanning.status: enabled` | `pass` | selected `security_and_analysis.secret_scanning` status | `repository-doc` documents repository metadata as the place to check security and analysis feature status. | Direct evidence that secret scanning is enabled. |
+| `200 OK` with `security_and_analysis.secret_scanning.status` as a string other than `enabled` | `fail` | selected `security_and_analysis.secret_scanning` status | `repository-doc` documents the feature status as an enablement field. | Direct evidence that secret scanning is not enabled. |
+| `200 OK` with missing or non-string `security_and_analysis.secret_scanning.status` | `unknown` | error details | `repository-doc` documents security and analysis feature status, but the returned shape does not match. | The service cannot safely interpret the response. |
+| `404 Not Found` | `unknown` | error details | Repository access is resolved before claim evaluation; a repository metadata `404` is an access or repository identity problem, not a setting value. | Not safe to assert disabled from this response. |
 
 ## `dependabot-alerts-enabled`
 
-Claim: the repository's attached code security configuration enables Dependabot alerts.
+Claim: repository Dependabot vulnerability alerts are enabled.
 
 GitHub endpoint:
 
 ```http
-GET /repos/{owner}/{repo}/code-security-configuration
+GET /repos/{owner}/{repo}/vulnerability-alerts
 ```
-
-This claim uses the same endpoint and top-level response rules as `secret-scanning-enabled`, but reads `configuration.dependabot_alerts`.
 
 | GitHub response or value | PolicyChecks status | Proof details | Documentation basis | Judgment |
 | --- | --- | --- | --- | --- |
-| `200 OK` with `status: attached` and `configuration.dependabot_alerts: enabled` | `pass` | `status`, selected `configuration` metadata, `dependabot_alerts` | `code-security-config-doc` documents `dependabot_alerts` as an enablement status field with `enabled`, `disabled`, or `not_set`. | Direct evidence that Dependabot alerts are enabled by the attached configuration. |
-| `200 OK` with `status: attached` and `configuration.dependabot_alerts` as a string other than `enabled` | `fail` | `status`, selected `configuration` metadata, `dependabot_alerts` | `code-security-config-doc` documents `dependabot_alerts` as the enablement status field. | Direct evidence from an attached configuration that this field is not enabled. |
-| `204 No Content` | `unknown` | `status: no_content`, `configuration: null` | `code-security-config-doc` lists `204 No Content` but does not define it as disabled. | Not safe to assert disabled from no content. |
-| `200 OK` with missing or non-`attached` `status` | `unknown` | `status`, selected configuration metadata when present | `code-security-config-doc` example shows `status: attached`; other status semantics are not yet mapped. | Not enough documented evidence for enabled or disabled. |
-| `200 OK` with attached status but missing/non-string `configuration.dependabot_alerts` | `unknown` | selected configuration metadata | `code-security-config-doc` documents a string enablement status field; the returned shape does not match. | The service cannot safely interpret the field. |
-| `404 Not Found` | `unknown` | error details | `code-security-config-doc` documents `404` as resource not found, not as disabled. | Not safe to assert disabled from this response. |
+| `204 No Content` | `pass` | `vulnerability_alerts: enabled` | `vulnerability-alerts-doc` documents `204` as the response when the repository is enabled with vulnerability alerts. | Direct evidence that Dependabot alerts are enabled. |
+| `404 Not Found` after repository installation/access has already been verified | `fail` | `vulnerability_alerts: disabled` | `vulnerability-alerts-doc` documents `404` as not enabled for this specific endpoint. | Safe disabled assertion only after repository access has already been verified. |
+| `404 Not Found` before repository access is verified | `unknown` | error details | The endpoint-level `404` must be disambiguated from missing repository, missing installation, or missing permission. | Could mean no access rather than disabled. |
+| `401`, `403`, rate limit, or other request failure | `unknown` | error details | Endpoint docs list authorization failures separately from setting values. | Not safe to infer disabled from failed access. |
 
 ## `dependency-graph-enabled`
 
@@ -127,16 +123,16 @@ GitHub endpoint:
 GET /repos/{owner}/{repo}/code-security-configuration
 ```
 
-This claim uses the same endpoint and top-level response rules as `secret-scanning-enabled`, but reads `configuration.dependency_graph`.
-
 | GitHub response or value | PolicyChecks status | Proof details | Documentation basis | Judgment |
 | --- | --- | --- | --- | --- |
-| `200 OK` with `status: attached` and `configuration.dependency_graph: enabled` | `pass` | `status`, selected `configuration` metadata, `dependency_graph` | `code-security-config-doc` documents `dependency_graph` as an enablement status field with `enabled`, `disabled`, or `not_set`. | Direct evidence that the dependency graph is enabled by the attached configuration. |
-| `200 OK` with `status: attached` and `configuration.dependency_graph` as a string other than `enabled` | `fail` | `status`, selected `configuration` metadata, `dependency_graph` | `code-security-config-doc` documents `dependency_graph` as the enablement status field. | Direct evidence from an attached configuration that this field is not enabled. |
-| `204 No Content` | `unknown` | `status: no_content`, `configuration: null` | `code-security-config-doc` lists `204 No Content` but does not define it as disabled. | Not safe to assert disabled from no content. |
+| `200 OK` with `status: attached` and `configuration.dependency_graph: enabled` | `pass` | `status`, selected `configuration` metadata, `dependency_graph` | `code-security-config-doc` documents `dependency_graph` as the enablement status field for Dependency Graph. | Direct evidence that the attached configuration enables dependency graph. |
+| `200 OK` with `status: attached` and `configuration.dependency_graph` as a string other than `enabled` | `fail` | `status`, selected `configuration` metadata, `dependency_graph` | `code-security-config-doc` documents `dependency_graph` as an enablement status field with `enabled`, `disabled`, or `not_set`. | Direct evidence from the attached configuration that this configured policy is not enabled. |
+| `204 No Content` | `unknown` | `status: no_content`, `configuration: null` | `code-security-config-doc` lists `204 No Content` but does not define it as disabled. | The repository may satisfy the underlying condition some other way; PolicyChecks only knows no attached configuration was returned. |
 | `200 OK` with missing or non-`attached` `status` | `unknown` | `status`, selected configuration metadata when present | `code-security-config-doc` example shows `status: attached`; other status semantics are not yet mapped. | Not enough documented evidence for enabled or disabled. |
 | `200 OK` with attached status but missing/non-string `configuration.dependency_graph` | `unknown` | selected configuration metadata | `code-security-config-doc` documents a string enablement status field; the returned shape does not match. | The service cannot safely interpret the field. |
 | `404 Not Found` | `unknown` | error details | `code-security-config-doc` documents `404` as resource not found, not as disabled. | Not safe to assert disabled from this response. |
+
+Caveat: this claim does not check automatic dependency submission. GitHub exposes that as `configuration.dependency_graph_autosubmit_action`, a separate field from `configuration.dependency_graph`.
 
 ## Adding A New Claim
 

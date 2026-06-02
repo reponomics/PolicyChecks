@@ -133,6 +133,7 @@ function memoizeGitHubClient(github: GitHubClient): GitHubClient {
   const immutableReleases = new Map<string, Promise<unknown>>();
   const actionsPermissions = new Map<string, Promise<unknown>>();
   const codeSecurityConfigurations = new Map<string, Promise<unknown>>();
+  const vulnerabilityAlerts = new Map<string, Promise<"enabled">>();
   const branchRules = new Map<string, Promise<unknown>>();
 
   return {
@@ -154,6 +155,11 @@ function memoizeGitHubClient(github: GitHubClient): GitHubClient {
     getCodeSecurityConfiguration(owner: string, repo: string) {
       return memoize(codeSecurityConfigurations, repositoryKey(owner, repo), () =>
         github.getCodeSecurityConfiguration(owner, repo)
+      );
+    },
+    getVulnerabilityAlertsStatus(owner: string, repo: string) {
+      return memoize(vulnerabilityAlerts, repositoryKey(owner, repo), () =>
+        github.getVulnerabilityAlertsStatus(owner, repo)
       );
     },
     getBranchRules(owner: string, repo: string, branch: string) {

@@ -71,6 +71,17 @@ describe("GitHubRestClient", () => {
     });
   });
 
+  it("getVulnerabilityAlertsStatus treats a successful status response as enabled", async () => {
+    const request = vi.fn(async () => ({ data: undefined, status: 204 }));
+    const client = new GitHubRestClient(request as unknown as GitHubRequest);
+
+    await expect(client.getVulnerabilityAlertsStatus("OWNER", "REPO")).resolves.toBe("enabled");
+    expect(request).toHaveBeenCalledWith("GET /repos/{owner}/{repo}/vulnerability-alerts", {
+      owner: "OWNER",
+      repo: "REPO"
+    });
+  });
+
   it("getBranchRules requests the branch rules route with pagination", async () => {
     const { client, request } = clientReturning([]);
 
