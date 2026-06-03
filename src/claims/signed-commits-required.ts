@@ -1,12 +1,18 @@
 import { publicMessage, toPublicClaimError } from "../github/errors.js";
-import { isRecord, makeClaimResult, makeUnknownResult, resultInput } from "./result.js";
+import {
+  activeBranchRulesEvidence,
+  isRecord,
+  makeClaimResult,
+  makeUnknownResult,
+  resultInput
+} from "./result.js";
 import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
 
 export const signedCommitsRequiredClaim: ClaimDefinition = {
   id: "signed-commits-required",
   label: "signed commits",
-  passMessage: "required",
-  failMessage: "not required",
+  passMessage: "enforced",
+  failMessage: "not enforced",
   unknownMessage: "unknown",
   source: {
     provider: "github",
@@ -14,6 +20,7 @@ export const signedCommitsRequiredClaim: ClaimDefinition = {
     endpoint: "GET /repos/{owner}/{repo}/rules/branches/{branch}",
     fields: ["type"]
   },
+  evidence: activeBranchRulesEvidence,
   async evaluate(input: ClaimEvaluationInput) {
     try {
       const repository = await input.github.getRepository(input.owner, input.repo);
@@ -29,7 +36,8 @@ export const signedCommitsRequiredClaim: ClaimDefinition = {
           },
           {
             branch: null,
-            matching_rule_types: []
+            matching_rule_types: [],
+            bypass_visibility: "unavailable"
           }
         );
       }
@@ -46,7 +54,8 @@ export const signedCommitsRequiredClaim: ClaimDefinition = {
           },
           {
             branch,
-            matching_rule_types: []
+            matching_rule_types: [],
+            bypass_visibility: "unavailable"
           }
         );
       }
@@ -64,7 +73,8 @@ export const signedCommitsRequiredClaim: ClaimDefinition = {
         required,
         {
           branch,
-          matching_rule_types: matchingRuleTypes
+          matching_rule_types: matchingRuleTypes,
+          bypass_visibility: "unavailable"
         }
       );
     } catch (error) {

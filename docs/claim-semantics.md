@@ -2,8 +2,8 @@
 
 PolicyChecks uses a cautious three-state result model:
 
-- `pass`: GitHub returned a documented response that directly supports the claim.
-- `fail`: GitHub returned a documented response that directly contradicts the claim.
+- `pass`: GitHub returned a documented response showing that the policy posture is enforced.
+- `fail`: GitHub returned a documented response showing that the policy posture is not enforced.
 - `unknown`: GitHub access, rate limits, response shape, endpoint semantics, or continuity caveats prevent a confident `pass` or `fail`.
 
 `unknown` is not a failure assertion. It means PolicyChecks did not have enough reliable evidence to make the claim either way.
@@ -19,6 +19,8 @@ Every proof response includes the requested repository identity:
   }
 }
 ```
+
+Every proof response also includes an `evidence` object. `evidence.source` identifies the GitHub policy surface, `evidence.scope` identifies whether the evidence is repository-, organization-, or enterprise-scoped, and `evidence.enforcement` is included when GitHub reports central enforcement status. The evidence model is defined in [`docs/ADR/0001-policy-evidence-model.md`](ADR/0001-policy-evidence-model.md).
 
 ## Documentation References
 
@@ -147,7 +149,7 @@ Before adding a new public badge, document:
 
 ## Unsupported Claim Semantics
 
-Some repository settings require additional context before PolicyChecks can assign an unqualified `pass` or `fail` result. Ruleset-derived checks are the main example: GitHub can report that a rule applies to a branch, but bypass actors and exemption paths affect whether that rule is enforceable in practice. PolicyChecks does not publish ruleset-enforcement claims unless the proof can also account for those bypass conditions.
+Some repository settings require additional context before PolicyChecks can assign an unqualified `pass` or `fail` result. Ruleset-derived checks are the main example: GitHub can report that a rule applies to a branch, but configured bypass actors, administrator policy changes, and continuity history are separate concerns. PolicyChecks reports observed current policy state; it does not claim historical continuity or impossibility of administrator override unless a proof explicitly adds that evidence.
 
 #### `signed-commits-required`
 
@@ -164,13 +166,13 @@ GET /repos/{owner}/{repo}/rules/branches/{branch}
 
 | GitHub response or value | PolicyChecks status | Proof details | Documentation basis | Judgment |
 | --- | --- | --- | --- | --- |
-| Repository metadata includes a default branch, and branch rules response is an array containing `type: required_signatures` | `pass` | `branch`, `matching_rule_types` | `branch-rules-doc` documents that the endpoint returns all active rules applying to the branch. | Direct evidence that an active signed-commit rule applies to the default branch. |
-| Repository metadata includes a default branch, and branch rules response is an array without `type: required_signatures` | `fail` | `branch`, `matching_rule_types` | `branch-rules-doc` documents that all active applicable rules are returned and `evaluate`/`disabled` rulesets are excluded. | Safe to say no active applicable signed-commit rule was returned for the default branch. |
-| Repository metadata has no usable default branch | `unknown` | `branch: null`, `matching_rule_types: []` | Repository metadata did not provide the branch needed to call `branch-rules-doc` endpoint. | The service does not know which branch to evaluate. |
+| Repository metadata includes a default branch, and branch rules response is an array containing `type: required_signatures` | `pass` | `branch`, `matching_rule_types`, `bypass_visibility: unavailable` | `branch-rules-doc` documents that the endpoint returns all active rules applying to the branch. | Direct evidence that an active signed-commit rule applies to the default branch. |
+| Repository metadata includes a default branch, and branch rules response is an array without `type: required_signatures` | `fail` | `branch`, `matching_rule_types`, `bypass_visibility: unavailable` | `branch-rules-doc` documents that all active applicable rules are returned and `evaluate`/`disabled` rulesets are excluded. | Safe to say no active applicable signed-commit rule was returned for the default branch. |
+| Repository metadata has no usable default branch | `unknown` | `branch: null`, `matching_rule_types: []`, `bypass_visibility: unavailable` | Repository metadata did not provide the branch needed to call `branch-rules-doc` endpoint. | The service does not know which branch to evaluate. |
 | Branch rules response is not an array | `unknown` | error details | `branch-rules-doc` documents an array response. | The service cannot safely interpret the response. |
 | Any `404` from repository metadata or branch rules | `unknown` | error details | `branch-rules-doc` does not document `404` as a disabled/not-required setting value. | Not safe to assert disabled from this response. |
 
-Caveat: this claim is ruleset-derived. It says GitHub returned an active applicable `required_signatures` rule for the default branch. It does not yet prove that no bypass actors or exemption paths exist.
+Caveat: this claim is ruleset-derived. It says GitHub returned an active applicable `required_signatures` rule for the default branch. It does not prove historical continuity, impossibility of administrator override, or absence of configured bypass actors.
 
 #### `secret-scanning-push-protection-enabled`
 

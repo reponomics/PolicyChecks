@@ -511,6 +511,7 @@ describe("webhook routes", () => {
         status: "pass",
         value: true,
         source: shaPinningRequiredClaim.source,
+        evidence: shaPinningRequiredClaim.evidence ?? { scope: "unknown", source: "unavailable" },
         checked_at: "2026-06-01T00:00:00.000Z",
         details: { sha_pinning_required: true }
       },

@@ -27,9 +27,14 @@ describe("signed commits claim", () => {
     expect(result).toMatchObject({
       status: "pass",
       value: true,
+      evidence: {
+        scope: "unknown",
+        source: "active_branch_rules"
+      },
       details: {
         branch: "main",
-        matching_rule_types: ["pull_request", "required_signatures"]
+        matching_rule_types: ["pull_request", "required_signatures"],
+        bypass_visibility: "unavailable"
       }
     });
   });
@@ -55,7 +60,8 @@ describe("signed commits claim", () => {
       value: false,
       details: {
         branch: "main",
-        matching_rule_types: ["pull_request"]
+        matching_rule_types: ["pull_request"],
+        bypass_visibility: "unavailable"
       }
     });
   });

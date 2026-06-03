@@ -61,8 +61,8 @@ describe("badge routes", () => {
 
     expect(response.body).toEqual({
       schemaVersion: 1,
-      label: "SHA-pinned actions",
-      message: "required",
+      label: "SHA pinning",
+      message: "enforced",
       color: "brightgreen"
     });
   });
@@ -194,6 +194,7 @@ function resultFor(
     status,
     value: status === "unknown" ? null : status === "pass",
     source: definition.source,
+    evidence: definition.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: "2026-05-30T00:00:00.000Z",
     details: {}
   };

@@ -1,12 +1,18 @@
 import { GitHubApiError, publicMessage, toPublicClaimError } from "../github/errors.js";
-import { isRecord, makeClaimResult, makeUnknownResult, resultInput } from "./result.js";
+import {
+  isRecord,
+  makeClaimResult,
+  makeUnknownResult,
+  repositorySettingEvidence,
+  resultInput
+} from "./result.js";
 import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
 
 export const immutableReleasesClaim: ClaimDefinition = {
   id: "immutable-releases",
   label: "immutable releases",
-  passMessage: "enabled",
-  failMessage: "disabled",
+  passMessage: "enforced",
+  failMessage: "not enforced",
   unknownMessage: "unknown",
   source: {
     provider: "github",
@@ -14,6 +20,7 @@ export const immutableReleasesClaim: ClaimDefinition = {
     endpoint: "GET /repos/{owner}/{repo}/immutable-releases",
     fields: ["enabled", "enforced_by_owner"]
   },
+  evidence: repositorySettingEvidence,
   async evaluate(input: ClaimEvaluationInput) {
     try {
       const data = await input.github.getImmutableReleases(input.owner, input.repo);

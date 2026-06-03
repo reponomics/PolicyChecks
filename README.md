@@ -1,16 +1,16 @@
 # PolicyChecks
 
-[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/proof.json) [![SHA-pinned actions](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/proof.json) [![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/proof.json) [![Dependabot alerts](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependabot-alerts-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependabot-alerts-enabled/proof.json) [![Dependency graph](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependency-graph-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependency-graph-enabled/proof.json)
+[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/proof.json) [![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/proof.json) [![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/proof.json) [![Dependabot alerts](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependabot-alerts-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependabot-alerts-enabled/proof.json) [![Dependency graph](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependency-graph-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependency-graph-enabled/proof.json)
 
 PolicyChecks is a GitHub App-backed badge service and validation endpoint for repository settings that ordinary public badge services cannot verify. It exposes badge SVG, Shields-compatible JSON, and proof JSON endpoints for repository administration and security checks. This gives maintainers a convenient way to show that a project not only follows best practices, but that these practices are enforced policies at the repository settings level. This fills a modest gap in the badge ecosystem between excellent services like shields.io (which does not have the permissions to report on these facts) and OSSF Scorecard (which does take into account many of these same conditions, but does not expose individual setting-level endpoints).
 
-| Check | Claim ID | Passing result | Other results |
-| --- | --- | --- | --- |
-| Immutable releases | `immutable-releases` | `enabled` | `disabled` or `unknown` |
-| Full SHA-pinned GitHub Actions | `sha-pinning-required` | `required` | `not required` or `unknown` |
-| Secret scanning | `secret-scanning-enabled` | `enabled` | `disabled` or `unknown` |
-| Dependabot alerts | `dependabot-alerts-enabled` | `enabled` | `disabled` or `unknown` |
-| Dependency graph | `dependency-graph-enabled` | `enabled` | `disabled` or `unknown` |
+| Check              | Claim ID                    | Passing result | Other results               |
+| ------------------ | --------------------------- | -------------- | --------------------------- |
+| Immutable releases | `immutable-releases`        | `enforced`     | `not enforced` or `unknown` |
+| SHA pinning        | `sha-pinning-required`      | `enforced`     | `not enforced` or `unknown` |
+| Secret scanning    | `secret-scanning-enabled`   | `enforced`     | `not enforced` or `unknown` |
+| Dependabot alerts  | `dependabot-alerts-enabled` | `enforced`     | `not enforced` or `unknown` |
+| Dependency graph   | `dependency-graph-enabled`  | `enforced`     | `not enforced` or `unknown` |
 
 ## Endpoints
 
@@ -28,7 +28,7 @@ Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge 
 ```markdown
 [![Immutable releases](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases/proof.json)
 
-[![SHA-pinned actions](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/proof.json)
+[![SHA pinning](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/proof.json)
 
 [![Secret scanning](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled/proof.json)
 

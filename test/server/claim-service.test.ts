@@ -39,6 +39,7 @@ function passResult(owner: string, repo: string): ClaimResult {
     status: "pass",
     value: true,
     source: definition.source,
+    evidence: definition.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: "2026-05-30T00:00:00.000Z",
     details: {}
   };

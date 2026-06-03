@@ -1,6 +1,12 @@
 import { GitHubApiError, publicMessage, toPublicClaimError } from "../github/errors.js";
-import { isRecord, makeClaimResult, makeUnknownResult, resultInput } from "./result.js";
-import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
+import {
+  isRecord,
+  makeClaimResult,
+  makeUnknownResult,
+  repositorySettingEvidence,
+  resultInput
+} from "./result.js";
+import type { ClaimDefinition, ClaimEvaluationInput, ClaimEvidence } from "./types.js";
 
 type CodeSecurityField =
   | "secret_scanning"
@@ -19,8 +25,8 @@ const codeSecurityConfigurationEndpoint = "GET /repos/{owner}/{repo}/code-securi
 export const secretScanningEnabledClaim: ClaimDefinition = {
   id: "secret-scanning-enabled",
   label: "secret scanning",
-  passMessage: "enabled",
-  failMessage: "disabled",
+  passMessage: "enforced",
+  failMessage: "not enforced",
   unknownMessage: "unknown",
   source: {
     provider: "github",
@@ -28,6 +34,7 @@ export const secretScanningEnabledClaim: ClaimDefinition = {
     endpoint: "GET /repos/{owner}/{repo}",
     fields: ["security_and_analysis.secret_scanning.status"]
   },
+  evidence: repositorySettingEvidence,
   async evaluate(input: ClaimEvaluationInput) {
     try {
       const repository = await input.github.getRepository(input.owner, input.repo);
@@ -56,8 +63,8 @@ export const secretScanningPushProtectionEnabledClaim = codeSecurityConfiguratio
 export const dependabotAlertsEnabledClaim: ClaimDefinition = {
   id: "dependabot-alerts-enabled",
   label: "Dependabot alerts",
-  passMessage: "enabled",
-  failMessage: "disabled",
+  passMessage: "enforced",
+  failMessage: "not enforced",
   unknownMessage: "unknown",
   source: {
     provider: "github",
@@ -65,6 +72,7 @@ export const dependabotAlertsEnabledClaim: ClaimDefinition = {
     endpoint: "GET /repos/{owner}/{repo}/vulnerability-alerts",
     fields: ["HTTP 204", "HTTP 404"]
   },
+  evidence: repositorySettingEvidence,
   async evaluate(input: ClaimEvaluationInput) {
     try {
       const status = await input.github.getVulnerabilityAlertsStatus(input.owner, input.repo);
@@ -98,14 +106,18 @@ function codeSecurityConfigurationClaim(options: CodeSecurityClaimOptions): Clai
   const definition: ClaimDefinition = {
     id: options.id,
     label: options.label,
-    passMessage: "enabled",
-    failMessage: "disabled",
+    passMessage: "enforced",
+    failMessage: "not enforced",
     unknownMessage: "unknown",
     source: {
       provider: "github",
       api: "REST",
       endpoint: codeSecurityConfigurationEndpoint,
       fields: ["status", `configuration.${options.field}`, "configuration.enforcement"]
+    },
+    evidence: {
+      scope: "unknown",
+      source: "attached_code_security_configuration"
     },
     async evaluate(input: ClaimEvaluationInput) {
       try {
@@ -218,10 +230,18 @@ function evaluateCodeSecurityConfiguration(
 
   const enabled = value === "enabled";
 
-  return makeClaimResult(definition, resultInput(input), enabled ? "pass" : "fail", enabled, {
-    status,
-    configuration: configurationDetails(configuration, field)
-  });
+  return makeClaimResult(
+    definition,
+    resultInput(input),
+    enabled ? "pass" : "fail",
+    enabled,
+    {
+      status,
+      configuration: configurationDetails(configuration, field)
+    },
+    undefined,
+    codeSecurityConfigurationEvidence(configuration)
+  );
 }
 
 function unexpected(
@@ -253,4 +273,23 @@ function configurationDetails(configuration: unknown, field: CodeSecurityField) 
     updated_at: typeof configuration.updated_at === "string" ? configuration.updated_at : null,
     [field]: typeof configuration[field] === "string" ? configuration[field] : null
   };
+}
+
+function codeSecurityConfigurationEvidence(configuration: Record<string, unknown>): ClaimEvidence {
+  const enforcement =
+    typeof configuration.enforcement === "string" ? configuration.enforcement : undefined;
+
+  return {
+    scope: codeSecurityConfigurationScope(configuration.target_type),
+    source: "attached_code_security_configuration",
+    ...(enforcement !== undefined ? { enforcement } : {})
+  };
+}
+
+function codeSecurityConfigurationScope(value: unknown): ClaimEvidence["scope"] {
+  if (value === "organization" || value === "enterprise") {
+    return value;
+  }
+
+  return "unknown";
 }
