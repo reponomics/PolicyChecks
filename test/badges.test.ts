@@ -9,8 +9,8 @@ describe("badge renderers", () => {
   it("renders Shields-compatible JSON", () => {
     expect(toShieldsJson(shaPinningRequiredClaim, result("pass"))).toEqual({
       schemaVersion: 1,
-      label: "SHA-pinned actions",
-      message: "required",
+      label: "SHA pinning",
+      message: "enabled",
       color: "brightgreen"
     });
 
@@ -24,7 +24,7 @@ describe("badge renderers", () => {
     const definition = {
       ...shaPinningRequiredClaim,
       label: "SHA <actions>",
-      failMessage: "not & required"
+      failMessage: "not & enforced"
     };
     const svg = renderBadgeSvg(definition, {
       ...result("fail"),
@@ -34,7 +34,7 @@ describe("badge renderers", () => {
     });
 
     expect(svg).toContain("SHA &lt;actions&gt;");
-    expect(svg).toContain("not &amp; required");
+    expect(svg).toContain("not &amp; enforced");
     expect(svg).not.toContain("<script>");
   });
 });
@@ -52,6 +52,7 @@ function result(status: ClaimResult["status"]): ClaimResult {
     status,
     value: status === "unknown" ? null : status === "pass",
     source: shaPinningRequiredClaim.source,
+    evidence: shaPinningRequiredClaim.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: "2026-05-30T00:00:00.000Z",
     details: {}
   };

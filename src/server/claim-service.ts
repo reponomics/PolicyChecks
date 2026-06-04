@@ -132,8 +132,6 @@ function memoizeGitHubClient(github: GitHubClient): GitHubClient {
   const repositories = new Map<string, Promise<GitHubRepository>>();
   const immutableReleases = new Map<string, Promise<unknown>>();
   const actionsPermissions = new Map<string, Promise<unknown>>();
-  const codeSecurityConfigurations = new Map<string, Promise<unknown>>();
-  const branchRules = new Map<string, Promise<unknown>>();
 
   return {
     getRepository(owner: string, repo: string) {
@@ -149,16 +147,6 @@ function memoizeGitHubClient(github: GitHubClient): GitHubClient {
     getActionsPermissions(owner: string, repo: string) {
       return memoize(actionsPermissions, repositoryKey(owner, repo), () =>
         github.getActionsPermissions(owner, repo)
-      );
-    },
-    getCodeSecurityConfiguration(owner: string, repo: string) {
-      return memoize(codeSecurityConfigurations, repositoryKey(owner, repo), () =>
-        github.getCodeSecurityConfiguration(owner, repo)
-      );
-    },
-    getBranchRules(owner: string, repo: string, branch: string) {
-      return memoize(branchRules, `${repositoryKey(owner, repo)}:${branch}`, () =>
-        github.getBranchRules(owner, repo, branch)
       );
     }
   };

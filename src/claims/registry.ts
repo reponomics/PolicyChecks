@@ -1,9 +1,8 @@
-import {
-  dependabotAlertsEnabledClaim,
-  dependencyGraphEnabledClaim,
-  secretScanningEnabledClaim
-} from "./code-security-configuration.js";
 import { immutableReleasesClaim } from "./immutable-releases.js";
+import {
+  secretPushProtectionEnabledClaim,
+  secretScanningEnabledClaim
+} from "./secret-protection.js";
 import { shaPinningRequiredClaim } from "./sha-pinning-required.js";
 import type { ClaimDefinition } from "./types.js";
 
@@ -11,8 +10,7 @@ const definitions = [
   immutableReleasesClaim,
   shaPinningRequiredClaim,
   secretScanningEnabledClaim,
-  dependabotAlertsEnabledClaim,
-  dependencyGraphEnabledClaim
+  secretPushProtectionEnabledClaim
 ] satisfies ClaimDefinition[];
 
 export const claimDefinitions: readonly ClaimDefinition[] = definitions;

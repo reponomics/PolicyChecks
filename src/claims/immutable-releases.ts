@@ -1,5 +1,11 @@
 import { GitHubApiError, publicMessage, toPublicClaimError } from "../github/errors.js";
-import { isRecord, makeClaimResult, makeUnknownResult, resultInput } from "./result.js";
+import {
+  isRecord,
+  makeClaimResult,
+  makeUnknownResult,
+  repositorySettingEvidence,
+  resultInput
+} from "./result.js";
 import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
 
 export const immutableReleasesClaim: ClaimDefinition = {
@@ -14,22 +20,31 @@ export const immutableReleasesClaim: ClaimDefinition = {
     endpoint: "GET /repos/{owner}/{repo}/immutable-releases",
     fields: ["enabled", "enforced_by_owner"]
   },
+  evidence: repositorySettingEvidence,
   async evaluate(input: ClaimEvaluationInput) {
     try {
       const data = await input.github.getImmutableReleases(input.owner, input.repo);
 
-      if (!isRecord(data) || data.enabled !== true) {
+      if (!isRecord(data) || typeof data.enabled !== "boolean") {
         return makeUnknownResult(immutableReleasesClaim, resultInput(input), {
           kind: "unexpected_response",
           message: publicMessage("unexpected_response")
         });
       }
 
-      return makeClaimResult(immutableReleasesClaim, resultInput(input), "pass", true, {
-        enabled: true,
-        enforced_by_owner:
-          typeof data.enforced_by_owner === "boolean" ? data.enforced_by_owner : null
-      });
+      const enabled = data.enabled;
+
+      return makeClaimResult(
+        immutableReleasesClaim,
+        resultInput(input),
+        enabled ? "pass" : "fail",
+        enabled,
+        {
+          enabled,
+          enforced_by_owner:
+            typeof data.enforced_by_owner === "boolean" ? data.enforced_by_owner : null
+        }
+      );
     } catch (error) {
       if (
         error instanceof GitHubApiError &&
@@ -37,7 +52,8 @@ export const immutableReleasesClaim: ClaimDefinition = {
         input.repositoryAccess === "verified"
       ) {
         return makeClaimResult(immutableReleasesClaim, resultInput(input), "fail", false, {
-          enabled: false
+          enabled: false,
+          enforced_by_owner: null
         });
       }
 

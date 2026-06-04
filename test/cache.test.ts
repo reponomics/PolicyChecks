@@ -72,6 +72,7 @@ function makeResult(checkedAt: string): ClaimResult {
     status: "pass",
     value: true,
     source: shaPinningRequiredClaim.source,
+    evidence: shaPinningRequiredClaim.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: checkedAt,
     details: {
       sha_pinning_required: true

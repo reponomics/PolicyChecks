@@ -39,6 +39,7 @@ function passResult(owner: string, repo: string): ClaimResult {
     status: "pass",
     value: true,
     source: definition.source,
+    evidence: definition.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: "2026-05-30T00:00:00.000Z",
     details: {}
   };
@@ -235,13 +236,10 @@ describe("ClaimService.evaluate", () => {
     const getRepository = vi.fn(async () => ({ id: 1, default_branch: "main" }));
     const getImmutableReleases = vi.fn(async () => ({ enabled: true }));
     const getActionsPermissions = vi.fn(async () => ({ sha_pinning_required: true }));
-    const getBranchRules = vi.fn(async () => [{ type: "required_signatures" }]);
     const github = {
       getRepository,
       getImmutableReleases,
-      getActionsPermissions,
-      getCodeSecurityConfiguration: vi.fn(),
-      getBranchRules
+      getActionsPermissions
     } as unknown as GitHubClient;
     const resolver = makeResolver({
       status: "ok",
@@ -263,7 +261,6 @@ describe("ClaimService.evaluate", () => {
         await memoizedGitHub.getRepository(owner, repo);
         await memoizedGitHub.getImmutableReleases(owner, repo);
         await memoizedGitHub.getActionsPermissions(owner, repo);
-        await memoizedGitHub.getBranchRules(owner, repo, "main");
         return {
           ...passResult(owner, repo),
           claim: "first-github-claim"
@@ -277,7 +274,6 @@ describe("ClaimService.evaluate", () => {
         await memoizedGitHub.getRepository(owner, repo);
         await memoizedGitHub.getImmutableReleases(owner, repo);
         await memoizedGitHub.getActionsPermissions(owner, repo);
-        await memoizedGitHub.getBranchRules(owner, repo, "main");
         return {
           ...passResult(owner, repo),
           claim: "second-github-claim"
@@ -298,67 +294,6 @@ describe("ClaimService.evaluate", () => {
     expect(getRepository).toHaveBeenCalledOnce();
     expect(getImmutableReleases).toHaveBeenCalledOnce();
     expect(getActionsPermissions).toHaveBeenCalledOnce();
-    expect(getBranchRules).toHaveBeenCalledOnce();
-    expect(getBranchRules).toHaveBeenCalledWith("owner", "repo", "main");
-  });
-
-  it("shares GitHub endpoint responses while evaluating many claims", async () => {
-    const codeSecurityConfiguration = vi.fn(async () => ({
-      status: "attached",
-      configuration: { secret_scanning: "enabled" }
-    }));
-    const github = {
-      getCodeSecurityConfiguration: codeSecurityConfiguration
-    } as unknown as GitHubClient;
-    const resolver = makeResolver({
-      status: "ok",
-      github,
-      repository: {
-        owner: "owner",
-        repo: "repo",
-        repositoryId: 1,
-        installationId: 2,
-        defaultBranch: "main",
-        createdAt: "",
-        updatedAt: ""
-      }
-    });
-    const firstDefinition: ClaimDefinition = {
-      ...definition,
-      id: "first-shared-claim",
-      evaluate: vi.fn(async ({ owner, repo, github: memoizedGitHub }) => {
-        await memoizedGitHub.getCodeSecurityConfiguration(owner, repo);
-        return {
-          ...passResult(owner, repo),
-          claim: "first-shared-claim"
-        };
-      })
-    };
-    const secondSharedDefinition: ClaimDefinition = {
-      ...definition,
-      id: "second-shared-claim",
-      evaluate: vi.fn(async ({ owner, repo, github: memoizedGitHub }) => {
-        await memoizedGitHub.getCodeSecurityConfiguration(owner, repo);
-        return {
-          ...passResult(owner, repo),
-          claim: "second-shared-claim"
-        };
-      })
-    };
-    const service = makeService(resolver);
-
-    const results = await service.evaluateMany(
-      [firstDefinition, secondSharedDefinition],
-      "owner",
-      "repo"
-    );
-
-    expect(results.map((result) => result.claim)).toEqual([
-      "first-shared-claim",
-      "second-shared-claim"
-    ]);
-    expect(codeSecurityConfiguration).toHaveBeenCalledOnce();
-    expect(codeSecurityConfiguration).toHaveBeenCalledWith("owner", "repo");
   });
 });
 

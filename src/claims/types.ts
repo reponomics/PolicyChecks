@@ -22,6 +22,20 @@ export interface ClaimSource {
   fields: string[];
 }
 
+export type ClaimEvidenceScope = "repository" | "organization" | "enterprise" | "unknown";
+
+export type ClaimEvidenceSource =
+  | "repository_setting"
+  | "active_branch_rules"
+  | "attached_code_security_configuration"
+  | "unavailable";
+
+export interface ClaimEvidence {
+  scope: ClaimEvidenceScope;
+  source: ClaimEvidenceSource;
+  enforcement?: string;
+}
+
 export interface ClaimRepositoryIdentity {
   owner: string;
   repo: string;
@@ -36,6 +50,7 @@ export interface ClaimResult {
   status: ClaimStatus;
   value: boolean | null;
   source: ClaimSource;
+  evidence: ClaimEvidence;
   checked_at: string;
   details: Record<string, unknown>;
   error?: ClaimError;
@@ -58,5 +73,6 @@ export interface ClaimDefinition {
   failMessage: string;
   unknownMessage: string;
   source: ClaimSource;
+  evidence?: ClaimEvidence;
   evaluate(input: ClaimEvaluationInput): Promise<ClaimResult>;
 }

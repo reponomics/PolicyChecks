@@ -46,43 +46,6 @@ describe("GitHubRestClient", () => {
     });
   });
 
-  it("getCodeSecurityConfiguration requests the code security configuration route", async () => {
-    const { client, request } = clientReturning({
-      status: "attached",
-      configuration: { secret_scanning: "enabled" }
-    });
-
-    await expect(client.getCodeSecurityConfiguration("OWNER", "REPO")).resolves.toEqual({
-      status: "attached",
-      configuration: { secret_scanning: "enabled" }
-    });
-    expect(request).toHaveBeenCalledWith("GET /repos/{owner}/{repo}/code-security-configuration", {
-      owner: "OWNER",
-      repo: "REPO"
-    });
-  });
-
-  it("getCodeSecurityConfiguration preserves a 204 no-content response", async () => {
-    const request = vi.fn(async () => ({ data: undefined, status: 204 }));
-    const client = new GitHubRestClient(request as unknown as GitHubRequest);
-
-    await expect(client.getCodeSecurityConfiguration("OWNER", "REPO")).resolves.toEqual({
-      status: "no_content"
-    });
-  });
-
-  it("getBranchRules requests the branch rules route with pagination", async () => {
-    const { client, request } = clientReturning([]);
-
-    await expect(client.getBranchRules("OWNER", "REPO", "main")).resolves.toEqual([]);
-    expect(request).toHaveBeenCalledWith("GET /repos/{owner}/{repo}/rules/branches/{branch}", {
-      owner: "OWNER",
-      repo: "REPO",
-      branch: "main",
-      per_page: 100
-    });
-  });
-
   it("translates request failures into a GitHubApiError", async () => {
     const request = vi.fn(async () => {
       throw { status: 404, message: "nope" };

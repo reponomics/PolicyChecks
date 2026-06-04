@@ -1,12 +1,18 @@
 import { publicMessage, toPublicClaimError } from "../github/errors.js";
-import { isRecord, makeClaimResult, makeUnknownResult, resultInput } from "./result.js";
+import {
+  isRecord,
+  makeClaimResult,
+  makeUnknownResult,
+  repositorySettingEvidence,
+  resultInput
+} from "./result.js";
 import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
 
 export const shaPinningRequiredClaim: ClaimDefinition = {
   id: "sha-pinning-required",
-  label: "SHA-pinned actions",
-  passMessage: "required",
-  failMessage: "not required",
+  label: "SHA pinning",
+  passMessage: "enabled",
+  failMessage: "disabled",
   unknownMessage: "unknown",
   source: {
     provider: "github",
@@ -14,6 +20,7 @@ export const shaPinningRequiredClaim: ClaimDefinition = {
     endpoint: "GET /repos/{owner}/{repo}/actions/permissions",
     fields: ["sha_pinning_required"]
   },
+  evidence: repositorySettingEvidence,
   async evaluate(input: ClaimEvaluationInput) {
     try {
       const data = await input.github.getActionsPermissions(input.owner, input.repo);
