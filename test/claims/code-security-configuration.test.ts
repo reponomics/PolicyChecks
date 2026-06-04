@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   dependabotAlertsEnabledClaim,
-  dependencyGraphEnabledClaim,
   secretScanningEnabledClaim,
   secretScanningPushProtectionEnabledClaim
 } from "../../src/claims/code-security-configuration.js";
@@ -18,7 +17,6 @@ const attachedConfiguration = {
     enforcement: "enforced",
     updated_at: "2026-06-01T00:00:00Z",
     dependabot_alerts: "enabled",
-    dependency_graph: "enabled",
     secret_scanning: "enabled",
     secret_scanning_push_protection: "disabled"
   }
@@ -167,47 +165,25 @@ describe("code security configuration claims", () => {
     });
   });
 
-  it("passes when the dependency graph is enabled", async () => {
+  it("returns unknown when a Dependabot alerts 404 is ambiguous", async () => {
     const result = await evaluateWithMock(
-      dependencyGraphEnabledClaim,
+      dependabotAlertsEnabledClaim,
       mockGitHub({
-        getCodeSecurityConfiguration: async () => attachedConfiguration
-      })
+        getVulnerabilityAlertsStatus: async () => {
+          throw new GitHubApiError("Not Found", {
+            status: 404,
+            kind: "not_found"
+          });
+        }
+      }),
+      "unknown"
     );
 
     expect(result).toMatchObject({
-      status: "pass",
-      value: true,
-      details: {
-        status: "attached",
-        configuration: {
-          dependency_graph: "enabled"
-        }
-      }
-    });
-  });
-
-  it("fails when the attached configuration does not enable the dependency graph", async () => {
-    const result = await evaluateWithMock(
-      dependencyGraphEnabledClaim,
-      mockGitHub({
-        getCodeSecurityConfiguration: async () => ({
-          status: "attached",
-          configuration: {
-            dependency_graph: "disabled"
-          }
-        })
-      })
-    );
-
-    expect(result).toMatchObject({
-      status: "fail",
-      value: false,
-      details: {
-        status: "attached",
-        configuration: {
-          dependency_graph: "disabled"
-        }
+      status: "unknown",
+      value: null,
+      error: {
+        kind: "not_found"
       }
     });
   });

@@ -81,7 +81,7 @@ export const dependabotAlertsEnabledClaim: ClaimDefinition = {
         vulnerability_alerts: status
       });
     } catch (error) {
-      if (isEndpointDisabled(error)) {
+      if (isEndpointDisabled(error, input.repositoryAccess)) {
         return makeClaimResult(dependabotAlertsEnabledClaim, resultInput(input), "fail", false, {
           vulnerability_alerts: "disabled"
         });
@@ -95,12 +95,6 @@ export const dependabotAlertsEnabledClaim: ClaimDefinition = {
     }
   }
 };
-
-export const dependencyGraphEnabledClaim = codeSecurityConfigurationClaim({
-  id: "dependency-graph-enabled",
-  label: "dependency graph",
-  field: "dependency_graph"
-});
 
 function codeSecurityConfigurationClaim(options: CodeSecurityClaimOptions): ClaimDefinition {
   const definition: ClaimDefinition = {
@@ -165,8 +159,11 @@ function evaluateRepositorySecurityFeature(
   });
 }
 
-function isEndpointDisabled(error: unknown) {
-  return error instanceof GitHubApiError && error.status === 404;
+function isEndpointDisabled(
+  error: unknown,
+  repositoryAccess: ClaimEvaluationInput["repositoryAccess"]
+) {
+  return error instanceof GitHubApiError && error.status === 404 && repositoryAccess === "verified";
 }
 
 function evaluateCodeSecurityConfiguration(

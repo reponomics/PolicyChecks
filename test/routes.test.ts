@@ -41,10 +41,9 @@ describe("badge routes", () => {
     expect(response.body.owner).toBe("OWNER");
     expect(response.body.repo).toBe("REPO");
     expect(Array.isArray(response.body.claims)).toBe(true);
-    expect(response.body.claims).toHaveLength(5);
+    expect(response.body.claims).toHaveLength(4);
     expect(response.body.claims.map((claim: { claim: string }) => claim.claim).sort()).toEqual([
       "dependabot-alerts-enabled",
-      "dependency-graph-enabled",
       "immutable-releases",
       "secret-scanning-enabled",
       "sha-pinning-required"
@@ -110,6 +109,8 @@ describe("badge routes", () => {
       error: "unsupported_claim",
       claim: "not-a-claim"
     });
+
+    await request(app).get("/github/OWNER/REPO/dependency-graph-enabled.json").expect(404);
   });
 
   it("falls back to individual evaluation when evaluateMany is unavailable", async () => {
@@ -127,13 +128,12 @@ describe("badge routes", () => {
 
     const response = await request(app).get("/github/OWNER/REPO/info.json").expect(200);
 
-    expect(response.body.claims).toHaveLength(5);
+    expect(response.body.claims).toHaveLength(4);
     expect(calls).toEqual([
       "immutable-releases",
       "sha-pinning-required",
       "secret-scanning-enabled",
-      "dependabot-alerts-enabled",
-      "dependency-graph-enabled"
+      "dependabot-alerts-enabled"
     ]);
   });
 

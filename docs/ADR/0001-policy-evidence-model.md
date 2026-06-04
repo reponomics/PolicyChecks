@@ -10,20 +10,27 @@ PolicyChecks badge labels are intentionally short. They name the security postur
 
 Some GitHub settings can be reported directly at repository scope. Other settings may be governed by organization or enterprise policy, such as an attached code security configuration. If badge names try to encode every evidence source, they become too qualified to be useful. If proof responses hide the evidence source, users cannot tell why a badge passed, failed, or returned `unknown`.
 
-PolicyChecks also needs to avoid fuzzy claims. It should report GitHub settings and policy surfaces, not infer posture from repository files, generated artifacts, or indirect feature availability.
+PolicyChecks also needs to avoid fuzzy claims. It should report current GitHub settings and policy surfaces, not infer posture from repository files, generated artifacts, indirect feature availability, or historical behavior.
 
 ## Decision
 
 Badge labels remain user-facing and concise:
 
-- `dependency graph`
 - `secret scanning`
 - `Dependabot alerts`
 - `SHA pinning`
 
-Badge result messages use policy language: `enforced`, `not enforced`, or `unknown`. GitHub-native values such as `enabled`, `disabled`, `required`, or `not_set` belong in proof details, not in public badge messages.
+Badge result messages use policy language: `enforced`, `not enforced`, or `unknown`. In PolicyChecks, `enforced` means GitHub currently reports an administrative setting, repository policy, active rule, or attached configuration that requires or enables the claimed posture. GitHub-native values such as `enabled`, `disabled`, `required`, or `not_set` belong in proof details, not in public badge messages.
+
+PolicyChecks does not claim historical continuity. It does not assert that a setting has always been enabled, that an administrator could not change it, or that no future actor with sufficient authority could temporarily disable and restore it. It is a current-state view into repository and organization policy surfaces.
+
+This distinction is the reason the product exists. A maintainer may enable a GitHub administrative setting such as full SHA pinning for Actions, which improves the repository's security posture and can help external scoring systems. Without PolicyChecks, showing that setting publicly often requires a redundant workflow that checks the same condition GitHub already enforces.
 
 Proof JSON carries the qualification. Each proof result records the GitHub evidence source, the scope where the evidence was observed, and whether GitHub reported central enforcement.
+
+The proof endpoint is the trust boundary, not the badge image. A public badge can always be copied, linked incorrectly, or misrepresented, as with any README badge. PolicyChecks does not try to make badge pixels authoritative. It makes the underlying proof response inspectable, specific about the GitHub API evidence, and narrow enough that a maintainer who misrepresents it is making a visible false claim.
+
+Claims stronger than current observed policy state require a different evidence model. To say that a setting was continuously enforced, that no privileged actor temporarily disabled it, or that no bypass path existed over time, PolicyChecks would need audit-log history or another durable continuity record. Those are audit-grade claims, not badge-level current-state claims.
 
 For personal repositories, checks are evaluated at repository scope.
 
@@ -72,7 +79,7 @@ For attached code security configurations, `enforcement` is copied from GitHub's
 - README stays a summary; technical semantics live in ADRs and claim documentation.
 - Badge names do not need org/repo qualifiers.
 - Proof JSON must make the evidence source explicit.
-- Claims based on generated artifacts, repository file inspection, or indirect feature availability are out of scope unless a later ADR changes this rule.
+- Claims based on generated artifacts, repository file inspection, indirect feature availability, or historical continuity are out of scope unless a later ADR changes this rule.
 - Organization governance checks may require broader permissions than repository-only checks.
 
 ## Claim Design Rules

@@ -1,8 +1,8 @@
 # PolicyChecks
 
-[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/proof.json) [![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/proof.json) [![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/proof.json) [![Dependabot alerts](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependabot-alerts-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependabot-alerts-enabled/proof.json) [![Dependency graph](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependency-graph-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependency-graph-enabled/proof.json)
+[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/proof.json) [![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/proof.json) [![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/proof.json) [![Dependabot alerts](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependabot-alerts-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/dependabot-alerts-enabled/proof.json)
 
-PolicyChecks is a GitHub App-backed badge service and validation endpoint for repository settings that ordinary public badge services cannot verify. It exposes badge SVG, Shields-compatible JSON, and proof JSON endpoints for repository administration and security checks. This gives maintainers a convenient way to show that a project not only follows best practices, but that these practices are enforced policies at the repository settings level. This fills a modest gap in the badge ecosystem between excellent services like shields.io (which does not have the permissions to report on these facts) and OSSF Scorecard (which does take into account many of these same conditions, but does not expose individual setting-level endpoints).
+PolicyChecks is a GitHub App-backed badge service and validation endpoint for repository settings that ordinary public badge services cannot verify. It exposes badge SVG, Shields-compatible JSON, and proof JSON endpoints for repository administration and security checks. This gives maintainers a convenient way to show that a project not only follows best practices, but that these practices are currently enforced by repository or organization policy settings. This fills a modest gap in the badge ecosystem between excellent services like shields.io (which does not have the permissions to report on these facts) and OSSF Scorecard (which does take into account many of these same conditions, but does not expose individual setting-level endpoints).
 
 | Check              | Claim ID                    | Passing result | Other results               |
 | ------------------ | --------------------------- | -------------- | --------------------------- |
@@ -10,7 +10,8 @@ PolicyChecks is a GitHub App-backed badge service and validation endpoint for re
 | SHA pinning        | `sha-pinning-required`      | `enforced`     | `not enforced` or `unknown` |
 | Secret scanning    | `secret-scanning-enabled`   | `enforced`     | `not enforced` or `unknown` |
 | Dependabot alerts  | `dependabot-alerts-enabled` | `enforced`     | `not enforced` or `unknown` |
-| Dependency graph   | `dependency-graph-enabled`  | `enforced`     | `not enforced` or `unknown` |
+
+The badges are a current-state window into GitHub administrative settings. They do not claim historical continuity, audit-log coverage, or that an authorized administrator could never change a setting. For example, `sha-pinning-required` reports the repository Actions policy that requires full-length SHA-pinned actions; it avoids making maintainers write a workflow that revalidates a setting GitHub already enforces.
 
 ## Endpoints
 
@@ -33,8 +34,6 @@ Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge 
 [![Secret scanning](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled/proof.json)
 
 [![Dependabot alerts](https://policychecks.reponomics.org/github/OWNER/REPO/dependabot-alerts-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/dependabot-alerts-enabled/proof.json)
-
-[![Dependency graph](https://policychecks.reponomics.org/github/OWNER/REPO/dependency-graph-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/dependency-graph-enabled/proof.json)
 ```
 
 The aggregate endpoint returns all currently supported claims for a repository:
@@ -53,7 +52,7 @@ Detailed per-claim response mappings are documented in [`docs/claim-semantics.md
 
 <!-- prettier-ignore -->
 > [!NOTE]
-> Results are obtained by querying the GitHub API. This is a reliable source - however, results may be cached, temporarily toggled on/off, and as with any badge serivce, the information presented should not be taken as ultimately authoritative, or the basis for any legal claim.
+> PolicyChecks badges are public signals backed by proof JSON, not audit reports. Like any README badge, the image can be copied or misrepresented; the useful check is following the proof link and reviewing the current GitHub API evidence. Stronger claims, such as continuous enforcement or no possible privileged bypass, require audit-log history outside the current PolicyChecks scope.
 
 ## Permissions
 

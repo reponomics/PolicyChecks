@@ -31,6 +31,8 @@ Ruleset-derived claims are split into two product categories:
 1. **Active applicable rule claims.** These can be based on GitHub returning active rules that apply to a repository or branch. They are viable under read-only permissions.
 2. **Configured-bypass claims.** These require visibility into `bypass_actors`, meaning actors explicitly configured as exceptions inside a ruleset. GitHub does not return `bypass_actors` unless the caller has write access to the ruleset. These claims are out of scope unless GitHub later exposes bypass visibility through read-only permissions.
 
+The absence of configured-bypass visibility does not prevent active applicable rule claims. It only prevents stronger claims about the absence of bypass actors. Active rule badges should report the rule GitHub currently says applies, and proof JSON should make any bypass-visibility limitation explicit.
+
 ## Permission Matrix
 
 | Product surface | Representative GitHub endpoint | Permission boundary | Lookup shape | Product judgment |
@@ -61,7 +63,6 @@ If PolicyChecks never accepts write-policy permissions, the useful product surfa
 - Dependabot security updates;
 - secret scanning;
 - secret scanning push protection when represented in an attached code security configuration;
-- dependency graph;
 - dependency graph automatic submission when represented in an attached code security configuration;
 - code scanning default setup;
 - active signed-commit rules for a branch;
@@ -76,19 +77,19 @@ If PolicyChecks never accepts write-policy permissions, the useful product surfa
 
 Most of that surface is available through direct settings or policy endpoints. It does not require reading workflow files, package manifests, release artifacts, or repository contents.
 
-## Bypass And Continuity Boundary
+## Current-State Boundary
 
-Ruleset webhooks can tell PolicyChecks that rulesets changed and that cached results should be invalidated. They do not prove who can bypass a rule.
+PolicyChecks is a current-state service. It reports what GitHub's policy and administration surfaces say at the time of evaluation. Ruleset webhooks can tell PolicyChecks that rulesets changed and that cached results should be invalidated. They do not provide audit-log continuity.
 
 There are three distinct bypass concepts:
 
-1. **Policy authority bypass.** Repository administrators, organization owners, security managers, or other policy owners may be able to change a setting, perform an action, and change the setting back. This is always possible for some actor unless PolicyChecks also proves historical continuity and immutable governance. PolicyChecks does not make continuity claims.
+1. **Policy authority.** Repository administrators, organization owners, security managers, or other policy owners may be able to change a setting, perform an action, and change the setting back. PolicyChecks does not make continuity claims about whether that happened.
 2. **Configured bypass actors.** Rulesets may include explicit `bypass_actors` that exempt selected actors from the rule. GitHub's repository ruleset documentation says `bypass_actors` is only returned when the caller has write access to the ruleset. Organization ruleset detail reads require organization `Administration: Write`.
 3. **Runtime bypass events.** Some features, such as secret scanning push protection, can produce audit or alert events when a user bypasses protection. Those events are operational history, not current policy configuration.
 
 PolicyChecks reports observed current policy state. It does not claim that the policy was continuously enabled over time, that no authorized administrator could disable it, or that no configured bypass actors exist unless the proof explicitly says so.
 
-Therefore PolicyChecks must not publish claims such as "cannot be bypassed," "no bypass actors," or "continuously enforced" under the read-only product boundary.
+Therefore PolicyChecks must not publish claims such as "cannot be bypassed," "no bypass actors," or "continuously enforced" under the read-only product boundary. It may publish current-state claims such as "signed commits are enforced for the default branch" when GitHub returns an active applicable rule and the proof records the rule source and bypass-visibility limitation.
 
 For ruleset-backed claims, proof JSON should expose bypass visibility explicitly:
 
@@ -108,7 +109,8 @@ For ruleset-backed claims, proof JSON should expose bypass visibility explicitly
 - Implicit repository `Metadata: Read` is enough for many future active-rule claims and should not be described as an additional installer-facing permission ask.
 - Organization `Administration: Read` may be needed for a future organization policy tier.
 - Write-policy permissions remain out of scope even if they would reveal configured bypass actors.
-- Claims that depend on absence of configured bypass actors must remain unpublished or return `unknown` until GitHub exposes bypass visibility through read-only access.
+- Dependency graph is not a public badge in the current product. For public repositories, GitHub's feature-availability docs already describe it as enabled by default, which makes it low-signal as a badge. For private and internal repositories, PolicyChecks still needs a direct read-only setting surface before it can report dependency graph confidently without an attached code security configuration.
+- Claims that depend on absence of configured bypass actors must remain unpublished or return `unknown` until GitHub exposes bypass visibility through read-only access. Claims that only report active applicable rules may still pass or fail without configured-bypass visibility when the proof makes that limitation explicit.
 - Claims that depend on historical continuity must remain unpublished unless PolicyChecks adds an audited continuity model.
 
 ## Documentation References

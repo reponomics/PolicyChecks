@@ -2,11 +2,15 @@
 
 PolicyChecks uses a cautious three-state result model:
 
-- `pass`: GitHub returned a documented response showing that the policy posture is enforced.
-- `fail`: GitHub returned a documented response showing that the policy posture is not enforced.
-- `unknown`: GitHub access, rate limits, response shape, endpoint semantics, or continuity caveats prevent a confident `pass` or `fail`.
+- `pass`: GitHub returned a documented response showing that the current policy posture is enforced.
+- `fail`: GitHub returned a documented response showing that the current policy posture is not enforced.
+- `unknown`: GitHub access, rate limits, response shape, or endpoint semantics prevent a confident current-state `pass` or `fail`.
 
 `unknown` is not a failure assertion. It means PolicyChecks did not have enough reliable evidence to make the claim either way.
+
+PolicyChecks is a current-state view into repository and organization policy surfaces. A `pass` result does not claim historical continuity, audit-log coverage, or that an authorized administrator could never change a setting. It means the referenced GitHub administrative setting, repository policy, active rule, or attached configuration currently supports the claim.
+
+The proof JSON is the meaningful artifact behind the badge. Badge images are conventional public signals and can be copied or misrepresented like any other badge. PolicyChecks therefore focuses on making the linked proof response precise and falsifiable, not on making audit-grade claims from badge presentation alone.
 
 Every proof response includes the requested repository identity:
 
@@ -115,27 +119,6 @@ GET /repos/{owner}/{repo}/vulnerability-alerts
 | `404 Not Found` before repository access is verified | `unknown` | error details | The endpoint-level `404` must be disambiguated from missing repository, missing installation, or missing permission. | Could mean no access rather than disabled. |
 | `401`, `403`, rate limit, or other request failure | `unknown` | error details | Endpoint docs list authorization failures separately from setting values. | Not safe to infer disabled from failed access. |
 
-## `dependency-graph-enabled`
-
-Claim: the repository's attached code security configuration enables the dependency graph.
-
-GitHub endpoint:
-
-```http
-GET /repos/{owner}/{repo}/code-security-configuration
-```
-
-| GitHub response or value | PolicyChecks status | Proof details | Documentation basis | Judgment |
-| --- | --- | --- | --- | --- |
-| `200 OK` with `status: attached` and `configuration.dependency_graph: enabled` | `pass` | `status`, selected `configuration` metadata, `dependency_graph` | `code-security-config-doc` documents `dependency_graph` as the enablement status field for Dependency Graph. | Direct evidence that the attached configuration enables dependency graph. |
-| `200 OK` with `status: attached` and `configuration.dependency_graph` as a string other than `enabled` | `fail` | `status`, selected `configuration` metadata, `dependency_graph` | `code-security-config-doc` documents `dependency_graph` as an enablement status field with `enabled`, `disabled`, or `not_set`. | Direct evidence from the attached configuration that this configured policy is not enabled. |
-| `204 No Content` | `unknown` | `status: no_content`, `configuration: null` | `code-security-config-doc` lists `204 No Content` but does not define it as disabled. | The repository may satisfy the underlying condition some other way; PolicyChecks only knows no attached configuration was returned. |
-| `200 OK` with missing or non-`attached` `status` | `unknown` | `status`, selected configuration metadata when present | `code-security-config-doc` example shows `status: attached`; other status semantics are not yet mapped. | Not enough documented evidence for enabled or disabled. |
-| `200 OK` with attached status but missing/non-string `configuration.dependency_graph` | `unknown` | selected configuration metadata | `code-security-config-doc` documents a string enablement status field; the returned shape does not match. | The service cannot safely interpret the field. |
-| `404 Not Found` | `unknown` | error details | `code-security-config-doc` documents `404` as resource not found, not as disabled. | Not safe to assert disabled from this response. |
-
-Caveat: this claim does not check automatic dependency submission. GitHub exposes that as `configuration.dependency_graph_autosubmit_action`, a separate field from `configuration.dependency_graph`.
-
 ## Adding A New Claim
 
 Before adding a new public badge, document:
@@ -147,13 +130,13 @@ Before adding a new public badge, document:
 5. Why any `fail` state is safe to assert.
 6. Known caveats, such as bypass actors, inherited settings, organization policy, or unavailable continuity data.
 
-## Unsupported Claim Semantics
+## Current-State Caveats
 
-Some repository settings require additional context before PolicyChecks can assign an unqualified `pass` or `fail` result. Ruleset-derived checks are the main example: GitHub can report that a rule applies to a branch, but configured bypass actors, administrator policy changes, and continuity history are separate concerns. PolicyChecks reports observed current policy state; it does not claim historical continuity or impossibility of administrator override unless a proof explicitly adds that evidence.
+Some repository settings require qualification before PolicyChecks can assign a clear current-state meaning to `pass` or `fail`. Ruleset-derived checks are the main example: GitHub can report that a rule applies to a branch, while configured bypass actors, administrator policy changes, and continuity history are separate concerns. PolicyChecks may report the active applicable rule as current policy state, but it does not claim historical continuity, impossibility of administrator override, or absence of configured bypass actors unless a proof explicitly adds that evidence.
 
 #### `signed-commits-required`
 
-Status: not published because this claim is ruleset-derived and bypass status is not represented in the proof.
+Status: candidate current-state claim; not in the current public registry.
 
 Claim: active rules for the default branch require signed commits.
 
@@ -172,11 +155,17 @@ GET /repos/{owner}/{repo}/rules/branches/{branch}
 | Branch rules response is not an array | `unknown` | error details | `branch-rules-doc` documents an array response. | The service cannot safely interpret the response. |
 | Any `404` from repository metadata or branch rules | `unknown` | error details | `branch-rules-doc` does not document `404` as a disabled/not-required setting value. | Not safe to assert disabled from this response. |
 
-Caveat: this claim is ruleset-derived. It says GitHub returned an active applicable `required_signatures` rule for the default branch. It does not prove historical continuity, impossibility of administrator override, or absence of configured bypass actors.
+Caveat: this claim is ruleset-derived. It says GitHub returned an active applicable `required_signatures` rule for the default branch. It does not prove historical continuity, impossibility of administrator override, or absence of configured bypass actors. The unavailable bypass visibility is a proof qualification, not a reason the active-rule claim cannot be evaluated.
+
+#### `dependency-graph-enabled`
+
+Status: not published.
+
+Dependency graph is important repository security context, and Dependabot alerts depend on dependency graph data. It is not currently a good public badge. GitHub's feature-availability documentation says dependency graph is enabled by default for public repositories, which makes it low-signal for the main public badge audience. For private and internal repositories, PolicyChecks still needs a direct read-only setting surface before it can report dependency graph confidently without an attached code security configuration.
 
 #### `secret-scanning-push-protection-enabled`
 
-Status: not published because delegated bypass status is not represented in the proof.
+Status: candidate current-state claim; not in the current public registry.
 
 Claim: the repository's attached code security configuration enables secret scanning push protection.
 
@@ -199,4 +188,4 @@ This claim uses the same endpoint and top-level response rules as `secret-scanni
 | `200 OK` with attached status but missing/non-string `configuration.secret_scanning_push_protection` | `unknown` | selected configuration metadata | `code-security-config-doc` documents a string enablement status field; the returned shape does not match. | The service cannot safely interpret the field. |
 | `404 Not Found` | `unknown` | error details | `code-security-config-doc` documents `404` as resource not found, not as disabled. | Not safe to assert disabled from this response. |
 
-Bypass caveat: a `pass` result for this unpublished claim would mean push protection is enabled in the attached configuration. It would not establish whether delegated bypass is enabled or who can use it. PolicyChecks does not expose this claim while delegated bypass status is absent from the proof.
+Bypass caveat: a `pass` result would mean push protection is enabled in the attached configuration. It would not establish whether delegated bypass is enabled, whether delegated bypass has been used, or who can use it unless those fields are added to the proof.
