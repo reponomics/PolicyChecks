@@ -33,7 +33,7 @@ Badge labels stay short:
 Badge result messages use the setting's native vocabulary:
 
 - `immutable-releases`: `enabled`, `disabled`, `unknown`
-- `sha-pinning-required`: `required`, `not required`, `unknown`
+- `sha-pinning-required`: `enabled`, `disabled`, `unknown`
 - `secret-scanning-enabled`: `enabled`, `disabled`, `unknown`
 - `secret-push-protection-enabled`: `enabled`, `disabled`, `unknown`
 

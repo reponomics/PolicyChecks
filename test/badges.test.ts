@@ -10,7 +10,7 @@ describe("badge renderers", () => {
     expect(toShieldsJson(shaPinningRequiredClaim, result("pass"))).toEqual({
       schemaVersion: 1,
       label: "SHA pinning",
-      message: "required",
+      message: "enabled",
       color: "brightgreen"
     });
 

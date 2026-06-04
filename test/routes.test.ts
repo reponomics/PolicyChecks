@@ -61,7 +61,7 @@ describe("badge routes", () => {
     expect(response.body).toEqual({
       schemaVersion: 1,
       label: "SHA pinning",
-      message: "required",
+      message: "enabled",
       color: "brightgreen"
     });
   });

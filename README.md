@@ -9,7 +9,7 @@ The current product surface is intentionally narrow, and is constrained by the g
 | Check | Claim ID | Passing result | Other results |
 | --- | --- | --- | --- |
 | Immutable releases | `immutable-releases` | `enabled` | `disabled` or `unknown` |
-| SHA pinning | `sha-pinning-required` | `required` | `not required` or `unknown` |
+| SHA pinning | `sha-pinning-required` | `enabled` | `disabled` or `unknown` |
 | Secret scanning | `secret-scanning-enabled` | `enabled` | `disabled` or `unknown` |
 | Secret push protection | `secret-push-protection-enabled` | `enabled` | `disabled` or `unknown` |
 
