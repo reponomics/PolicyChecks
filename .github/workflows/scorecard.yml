@@ -13,6 +13,7 @@ on:
     - cron: "37 17 * * 6"
   push:
     branches: ["main"]
+  workflow_dispatch: 
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -73,6 +74,6 @@ jobs:
       # Upload the results to GitHub's code scanning dashboard (optional).
       # Commenting out will disable upload of results to your repo's Code Scanning dashboard
       - name: "Upload to code-scanning"
-        uses: github/codeql-action/upload-sarif@f0489abddd4e5e9dff53ed28a45b1d6f88978a1b # v4.36.2
+        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
         with:
           sarif_file: results.sarif
