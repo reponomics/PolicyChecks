@@ -1,6 +1,6 @@
 {
   "name": "policychecks",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A badge service for reporting selected GitHub repository administration settings from direct API evidence",
   "private": true,
   "type": "module",
@@ -54,6 +54,6 @@
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8",
-    "wrangler": "^4.97.0"
+    "wrangler": "^4.98.0"
   }
 }
