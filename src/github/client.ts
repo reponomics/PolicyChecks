@@ -5,6 +5,18 @@ import { toGitHubApiError } from "./errors.js";
 export interface GitHubRepository {
   id: number;
   default_branch?: string | null;
+  security_and_analysis?: GitHubRepositorySecurityAndAnalysis;
+}
+
+export interface GitHubRepositorySecurityAndAnalysis {
+  secret_scanning?: GitHubRepositoryFeatureStatus;
+  secret_scanning_push_protection?: GitHubRepositoryFeatureStatus;
+  secret_scanning_delegated_bypass?: GitHubRepositoryFeatureStatus | null;
+  secret_scanning_delegated_bypass_options?: unknown;
+}
+
+export interface GitHubRepositoryFeatureStatus {
+  status?: string;
 }
 
 export interface GitHubClient {

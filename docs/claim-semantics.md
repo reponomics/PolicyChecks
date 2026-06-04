@@ -30,6 +30,7 @@ Every proof response also includes an `evidence` object. For the MVP badges, `ev
 
 | Reference | GitHub docs |
 | --- | --- |
+| `repository-doc` | [Get a repository](https://docs.github.com/en/rest/repos/repos#get-a-repository) |
 | `immutable-releases-doc` | [Check if immutable releases are enabled for a repository](https://docs.github.com/en/rest/repos/repos#check-if-immutable-releases-are-enabled-for-a-repository) |
 | `actions-permissions-doc` | [Get GitHub Actions permissions for a repository](https://docs.github.com/en/rest/actions/permissions#get-github-actions-permissions-for-a-repository) |
 
@@ -84,6 +85,44 @@ Observed product behavior: when organization-level SHA pinning applies to a repo
 | `200 OK` with missing or non-boolean `sha_pinning_required` | `unknown` | error details | The service cannot safely interpret the response. |
 | `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
 
+## `secret-scanning-enabled`
+
+Claim: secret scanning is enabled for the repository.
+
+GitHub endpoint:
+
+```http
+GET /repos/{owner}/{repo}
+```
+
+Observed product behavior: the repository metadata endpoint reports the effective secret scanning state. When a repository-level setting is removed, it reports `disabled`; when an organization code security configuration is enforced for the repository, it reports `enabled`. The code security configuration endpoint may show removed or unenforced configuration state and is not the primary source for this badge.
+
+| GitHub response or value | PolicyChecks status | Proof details | Judgment |
+| --- | --- | --- | --- |
+| `200 OK` with `security_and_analysis.secret_scanning.status: enabled` | `pass` | selected `security_and_analysis.secret_scanning` status | Direct evidence that GitHub currently reports secret scanning enabled for this repository. |
+| `200 OK` with `security_and_analysis.secret_scanning.status` as a string other than `enabled` | `fail` | selected `security_and_analysis.secret_scanning` status | Direct evidence that GitHub currently does not report secret scanning enabled for this repository. |
+| `200 OK` with missing or non-string `security_and_analysis.secret_scanning.status` | `unknown` | error details | The service cannot safely interpret the response. |
+| `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
+
+## `secret-push-protection-enabled`
+
+Claim: secret scanning push protection is enabled for the repository.
+
+GitHub endpoint:
+
+```http
+GET /repos/{owner}/{repo}
+```
+
+Observed product behavior: the repository metadata endpoint reports the effective push protection state, including when an enforced organization code security configuration enables it. Delegated bypass fields may appear in the same response. PolicyChecks includes those fields in proof details when present, but they do not change the badge result.
+
+| GitHub response or value | PolicyChecks status | Proof details | Judgment |
+| --- | --- | --- | --- |
+| `200 OK` with `security_and_analysis.secret_scanning_push_protection.status: enabled` | `pass` | selected push protection and delegated bypass fields | Direct evidence that GitHub currently reports secret push protection enabled for this repository. |
+| `200 OK` with `security_and_analysis.secret_scanning_push_protection.status` as a string other than `enabled` | `fail` | selected push protection and delegated bypass fields | Direct evidence that GitHub currently does not report secret push protection enabled for this repository. |
+| `200 OK` with missing or non-string `security_and_analysis.secret_scanning_push_protection.status` | `unknown` | error details | The service cannot safely interpret the response. |
+| `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
+
 ## Adding A New Claim
 
 Before adding a new public badge, document:
@@ -95,4 +134,4 @@ Before adding a new public badge, document:
 5. Why any `fail` state is safe to assert.
 6. Whether repository-scoped responses include inherited organization policy.
 
-Post-MVP candidates include security feature settings, Dependabot settings, code security configurations, and ruleset-derived branch policy badges. They should remain unpublished until their API evidence maps cleanly to an intuitive admin setting without requiring file inspection, contents access, historical audit logs, or unsupported judgment calls.
+Post-MVP candidates include Dependabot settings, dependency graph, code security configuration badges, and ruleset-derived branch policy badges. They should remain unpublished until their API evidence maps cleanly to an intuitive admin setting without requiring file inspection, contents access, historical audit logs, or unsupported judgment calls.

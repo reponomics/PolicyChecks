@@ -7,6 +7,7 @@ const productionSources = [
   "src/github/client.ts",
   "src/github/installations.ts",
   "src/claims/immutable-releases.ts",
+  "src/claims/secret-protection.ts",
   "src/claims/sha-pinning-required.ts"
 ];
 

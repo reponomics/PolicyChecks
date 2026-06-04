@@ -1,8 +1,17 @@
 import { immutableReleasesClaim } from "./immutable-releases.js";
+import {
+  secretPushProtectionEnabledClaim,
+  secretScanningEnabledClaim
+} from "./secret-protection.js";
 import { shaPinningRequiredClaim } from "./sha-pinning-required.js";
 import type { ClaimDefinition } from "./types.js";
 
-const definitions = [immutableReleasesClaim, shaPinningRequiredClaim] satisfies ClaimDefinition[];
+const definitions = [
+  immutableReleasesClaim,
+  shaPinningRequiredClaim,
+  secretScanningEnabledClaim,
+  secretPushProtectionEnabledClaim
+] satisfies ClaimDefinition[];
 
 export const claimDefinitions: readonly ClaimDefinition[] = definitions;
 

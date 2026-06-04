@@ -41,9 +41,11 @@ describe("badge routes", () => {
     expect(response.body.owner).toBe("OWNER");
     expect(response.body.repo).toBe("REPO");
     expect(Array.isArray(response.body.claims)).toBe(true);
-    expect(response.body.claims).toHaveLength(2);
+    expect(response.body.claims).toHaveLength(4);
     expect(response.body.claims.map((claim: { claim: string }) => claim.claim).sort()).toEqual([
       "immutable-releases",
+      "secret-push-protection-enabled",
+      "secret-scanning-enabled",
       "sha-pinning-required"
     ]);
   });
@@ -109,7 +111,6 @@ describe("badge routes", () => {
     });
 
     await request(app).get("/github/OWNER/REPO/dependency-graph-enabled.json").expect(404);
-    await request(app).get("/github/OWNER/REPO/secret-scanning-enabled.json").expect(404);
     await request(app).get("/github/OWNER/REPO/dependabot-alerts-enabled.json").expect(404);
   });
 
@@ -128,8 +129,13 @@ describe("badge routes", () => {
 
     const response = await request(app).get("/github/OWNER/REPO/info.json").expect(200);
 
-    expect(response.body.claims).toHaveLength(2);
-    expect(calls).toEqual(["immutable-releases", "sha-pinning-required"]);
+    expect(response.body.claims).toHaveLength(4);
+    expect(calls).toEqual([
+      "immutable-releases",
+      "sha-pinning-required",
+      "secret-scanning-enabled",
+      "secret-push-protection-enabled"
+    ]);
   });
 
   it("returns the app-level 404 for unmatched routes", async () => {

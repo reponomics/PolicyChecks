@@ -12,12 +12,14 @@ The MVP should therefore favor a small number of obvious, low-ambiguity badges o
 
 ## Decision
 
-The MVP publishes two repository-setting badges:
+The MVP publishes four repository-setting badges:
 
 - `immutable-releases`
 - `sha-pinning-required`
+- `secret-scanning-enabled`
+- `secret-push-protection-enabled`
 
-Both badges are evaluated from repository-scoped GitHub REST endpoints. They support personal or organization-owned repositories, public or private, when the GitHub App is installed on the repository and can read repository administration settings.
+All four badges are evaluated from repository-scoped GitHub REST endpoints. They support personal or organization-owned repositories, public or private, when the GitHub App is installed on the repository and can read repository administration settings.
 
 The badges report effective repository settings. A setting may be configured directly on the repository or inherited from an organization policy if the repository-scoped endpoint returns the effective value for that repository.
 
@@ -25,13 +27,17 @@ Badge labels stay short:
 
 - `immutable releases`
 - `SHA pinning`
+- `secret scanning`
+- `secret push protection`
 
 Badge result messages use the setting's native vocabulary:
 
 - `immutable-releases`: `enabled`, `disabled`, `unknown`
 - `sha-pinning-required`: `required`, `not required`, `unknown`
+- `secret-scanning-enabled`: `enabled`, `disabled`, `unknown`
+- `secret-push-protection-enabled`: `enabled`, `disabled`, `unknown`
 
-This avoids overloading the word "enforced." Proof JSON carries the exact GitHub fields, such as `enabled`, `enforced_by_owner`, and `sha_pinning_required`.
+This avoids overloading the word "enforced." Proof JSON carries the exact GitHub fields, such as `enabled`, `enforced_by_owner`, `sha_pinning_required`, and `security_and_analysis`.
 
 PolicyChecks does not claim historical continuity. It does not assert that a setting has always been enabled, that an administrator could not change it, or that no future actor with sufficient authority could temporarily disable and restore it. It is a current-state view into the repository setting returned by GitHub.
 
@@ -56,11 +62,11 @@ The proof endpoint is the trust boundary, not the badge image. A public badge ca
 ## Consequences
 
 - README stays a summary; technical semantics live in ADRs and claim documentation.
-- MVP badges are limited to the two direct repository-setting checks.
-- Organization `Administration: Read` is not required for the MVP.
+- MVP badges are limited to the four direct repository-setting checks.
+- The MVP does not call organization APIs.
 - Repository `Contents: Read` is not required for the MVP.
 - Claims based on repository file inspection, generated artifacts, indirect feature availability, historical continuity, or unclear defaults are out of scope unless a later ADR changes this rule.
-- Security feature, Dependabot, code security configuration, and ruleset badges are post-MVP candidates.
+- Dependabot, dependency graph, code security configuration, and ruleset badges are post-MVP candidates.
 
 ## Claim Design Rules
 
