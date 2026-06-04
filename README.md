@@ -2,9 +2,9 @@
 
 [![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/proof.json) [![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/proof.json) [![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/proof.json) [![Secret push protection](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled/proof.json)
 
-PolicyChecks is a GitHub App-backed badge service for repository administration settings that ordinary public badge services cannot verify. It exposes badge SVG, Shields-compatible JSON, and proof JSON endpoints for a small set of GitHub settings that map to clear admin UI controls and direct GitHub REST API responses.
+PolicyChecks is a GitHub App-backed badge service and validation endpoint for repository settings that ordinary public badge services cannot verify. It exposes badge SVG, Shields-compatible JSON, and proof JSON endpoints for repository administration and security settings that map to clear admin UI controls and direct GitHub REST API responses. This gives maintainers a convenient way to show that a project not only follows best practices, but that these practices are backed by administrative policies at the repository settings level. This fills a modest gap in the badge ecosystem between excellent services like shields.io (which does not have the permissions to report on these facts) and OSSF Scorecard (which does take into account many of these same conditions, but does not expose individual setting-level endpoints).
 
-The MVP is intentionally narrow: it checks four effective repository settings. A setting may be configured directly on the repository or inherited from an organization policy, as long as the repository-scoped GitHub API reports the effective value for the installed repository.
+The current product surface is intentionally narrow, and is constrained by the goals of minimizing requested permissions, and leveraging clear signals provided by the GitHub API: it checks four effective repository settings. A setting may be configured directly at the repository level, or inherited from an organization policy or security configuration.
 
 | Check | Claim ID | Passing result | Other results |
 | --- | --- | --- | --- |
@@ -13,7 +13,7 @@ The MVP is intentionally narrow: it checks four effective repository settings. A
 | Secret scanning | `secret-scanning-enabled` | `enabled` | `disabled` or `unknown` |
 | Secret push protection | `secret-push-protection-enabled` | `enabled` | `disabled` or `unknown` |
 
-PolicyChecks is a current-state settings badge, not an audit report. It does not claim historical continuity, scan workflow files, inspect repository contents, or prove that a privileged administrator could never change a setting. For example, `sha-pinning-required` reports whether GitHub currently says workflow runs in the repository require actions to be pinned to full-length commit SHAs.
+Unlike OSSF Scorecard, PolicyChecks does not intend to provide any in-depth proof or evaluation regarding a repository's overall stance regarding security or best practices - it simply reports on the current state of an admin setting. It does not claim historical continuity, or prove that a privileged administrator could never change a setting. In that sense, it does not attempt to serve as a security audit - rather, it's more like: Shields.io with minimally elevated (read-only) permissions.
 
 ## Endpoints
 
