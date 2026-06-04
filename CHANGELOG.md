@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/reponomics/PolicyChecks/compare/v0.3.0...v0.3.1) (2026-06-04)
+
+
+### Bug Fixes
+
+* **ci:** fix update CodeQL SARIF upload action version ([c82acc9](https://github.com/reponomics/PolicyChecks/commit/c82acc92d5acca8fab3ca3c378fe990915cc2b10))
+
 ## [0.3.0](https://github.com/reponomics/PolicyChecks/compare/v0.2.0...v0.3.0) (2026-06-04)
 
 ### Features
