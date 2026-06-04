@@ -58,7 +58,7 @@ Detailed per-claim response mappings are documented in [`docs/claim-semantics.md
 
 ## Permissions
 
-The app requires repository `Administration: Read` permissions for each repository that wants to host a badge. The MVP supports personal or organization-owned repositories, public or private, when the GitHub App is installed on the repository. The MVP does not call organization APIs or read repository contents; if GitHub withholds a repository metadata field for the installed app, PolicyChecks reports `unknown`.
+The app requires repository `Administration: Read` permissions for each repository that wants to host a badge. It supports personal or organization-owned repositories, public or private, when the GitHub App is installed on the repository. The MVP does not call organization APIs or read repository contents; if GitHub withholds a repository metadata field for the installed app, PolicyChecks reports `unknown`.
 
 ## Contributing
 
