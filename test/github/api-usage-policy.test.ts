@@ -6,20 +6,15 @@ const productionSources = [
   "src/github/app-auth.ts",
   "src/github/client.ts",
   "src/github/installations.ts",
-  "src/claims/code-security-configuration.ts",
   "src/claims/immutable-releases.ts",
-  "src/claims/sha-pinning-required.ts",
-  "src/claims/signed-commits-required.ts"
+  "src/claims/sha-pinning-required.ts"
 ];
 
 const allowedRoutes = new Set([
   "GET /repos/{owner}/{repo}",
   "GET /repos/{owner}/{repo}/actions/permissions",
-  "GET /repos/{owner}/{repo}/code-security-configuration",
   "GET /repos/{owner}/{repo}/immutable-releases",
-  "GET /repos/{owner}/{repo}/installation",
-  "GET /repos/{owner}/{repo}/rules/branches/{branch}",
-  "GET /repos/{owner}/{repo}/vulnerability-alerts"
+  "GET /repos/{owner}/{repo}/installation"
 ]);
 
 describe("GitHub API usage policy", () => {

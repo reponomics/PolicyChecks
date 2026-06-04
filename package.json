@@ -1,7 +1,7 @@
 {
   "name": "policychecks",
   "version": "0.2.0",
-  "description": "A badge service that is able to report on a repository's settings, providing a convenient way for maintainers to demonstrate publicly that best practices are enforced as policies at the repo configuration level",
+  "description": "A badge service for reporting selected GitHub repository administration settings from direct API evidence",
   "private": false,
   "type": "module",
   "main": "dist/app.js",

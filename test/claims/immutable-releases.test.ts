@@ -27,6 +27,49 @@ describe("immutable releases claim", () => {
     });
   });
 
+  it("fails when GitHub reports immutable releases are disabled", async () => {
+    const result = await evaluateWithMock(
+      immutableReleasesClaim,
+      mockGitHub({
+        getImmutableReleases: async () => ({
+          enabled: false,
+          enforced_by_owner: false
+        })
+      })
+    );
+
+    expect(result).toMatchObject({
+      status: "fail",
+      value: false,
+      details: {
+        enabled: false,
+        enforced_by_owner: false
+      }
+    });
+    expect(result.error).toBeUndefined();
+  });
+
+  it("passes when organization policy enforces immutable releases for the repository", async () => {
+    const result = await evaluateWithMock(
+      immutableReleasesClaim,
+      mockGitHub({
+        getImmutableReleases: async () => ({
+          enabled: true,
+          enforced_by_owner: true
+        })
+      })
+    );
+
+    expect(result).toMatchObject({
+      status: "pass",
+      value: true,
+      details: {
+        enabled: true,
+        enforced_by_owner: true
+      }
+    });
+  });
+
   it("fails on a 404 after repository access has been verified", async () => {
     const result = await evaluateWithMock(
       immutableReleasesClaim,
@@ -44,7 +87,8 @@ describe("immutable releases claim", () => {
       status: "fail",
       value: false,
       details: {
-        enabled: false
+        enabled: false,
+        enforced_by_owner: null
       }
     });
     expect(result.error).toBeUndefined();

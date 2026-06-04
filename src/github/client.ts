@@ -5,24 +5,12 @@ import { toGitHubApiError } from "./errors.js";
 export interface GitHubRepository {
   id: number;
   default_branch?: string | null;
-  security_and_analysis?: GitHubRepositorySecurityAndAnalysis;
-}
-
-export interface GitHubRepositorySecurityAndAnalysis {
-  secret_scanning?: GitHubRepositoryFeatureStatus;
-}
-
-export interface GitHubRepositoryFeatureStatus {
-  status?: string;
 }
 
 export interface GitHubClient {
   getRepository(owner: string, repo: string): Promise<GitHubRepository>;
   getImmutableReleases(owner: string, repo: string): Promise<unknown>;
   getActionsPermissions(owner: string, repo: string): Promise<unknown>;
-  getCodeSecurityConfiguration(owner: string, repo: string): Promise<unknown>;
-  getVulnerabilityAlertsStatus(owner: string, repo: string): Promise<"enabled">;
-  getBranchRules(owner: string, repo: string, branch: string): Promise<unknown>;
 }
 
 export type GitHubRequest = ReturnType<typeof request.defaults>;
@@ -48,45 +36,6 @@ export class GitHubRestClient implements GitHubClient {
     return this.getJson("GET /repos/{owner}/{repo}/actions/permissions", {
       owner,
       repo
-    });
-  }
-
-  async getCodeSecurityConfiguration(owner: string, repo: string): Promise<unknown> {
-    try {
-      const response = await this.githubRequest(
-        "GET /repos/{owner}/{repo}/code-security-configuration",
-        {
-          owner,
-          repo
-        }
-      );
-      const status = (response as { status?: number }).status;
-
-      return status === 204 ? { status: "no_content" } : response.data;
-    } catch (error) {
-      throw toGitHubApiError(error);
-    }
-  }
-
-  async getVulnerabilityAlertsStatus(owner: string, repo: string): Promise<"enabled"> {
-    try {
-      await this.githubRequest("GET /repos/{owner}/{repo}/vulnerability-alerts", {
-        owner,
-        repo
-      });
-
-      return "enabled";
-    } catch (error) {
-      throw toGitHubApiError(error);
-    }
-  }
-
-  async getBranchRules(owner: string, repo: string, branch: string): Promise<unknown> {
-    return this.getJson("GET /repos/{owner}/{repo}/rules/branches/{branch}", {
-      owner,
-      repo,
-      branch,
-      per_page: 100
     });
   }
 

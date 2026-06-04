@@ -41,11 +41,9 @@ describe("badge routes", () => {
     expect(response.body.owner).toBe("OWNER");
     expect(response.body.repo).toBe("REPO");
     expect(Array.isArray(response.body.claims)).toBe(true);
-    expect(response.body.claims).toHaveLength(4);
+    expect(response.body.claims).toHaveLength(2);
     expect(response.body.claims.map((claim: { claim: string }) => claim.claim).sort()).toEqual([
-      "dependabot-alerts-enabled",
       "immutable-releases",
-      "secret-scanning-enabled",
       "sha-pinning-required"
     ]);
   });
@@ -61,7 +59,7 @@ describe("badge routes", () => {
     expect(response.body).toEqual({
       schemaVersion: 1,
       label: "SHA pinning",
-      message: "enforced",
+      message: "required",
       color: "brightgreen"
     });
   });
@@ -70,11 +68,11 @@ describe("badge routes", () => {
     const app = createHttpApp(serviceReturning("fail"));
 
     const response = await request(app)
-      .get("/github/OWNER/REPO/secret-scanning-enabled/proof.json")
+      .get("/github/OWNER/REPO/immutable-releases/proof.json")
       .expect(200);
 
     expect(response.body).toMatchObject({
-      claim: "secret-scanning-enabled",
+      claim: "immutable-releases",
       owner: "OWNER",
       repo: "REPO",
       repository: {
@@ -111,6 +109,8 @@ describe("badge routes", () => {
     });
 
     await request(app).get("/github/OWNER/REPO/dependency-graph-enabled.json").expect(404);
+    await request(app).get("/github/OWNER/REPO/secret-scanning-enabled.json").expect(404);
+    await request(app).get("/github/OWNER/REPO/dependabot-alerts-enabled.json").expect(404);
   });
 
   it("falls back to individual evaluation when evaluateMany is unavailable", async () => {
@@ -128,13 +128,8 @@ describe("badge routes", () => {
 
     const response = await request(app).get("/github/OWNER/REPO/info.json").expect(200);
 
-    expect(response.body.claims).toHaveLength(4);
-    expect(calls).toEqual([
-      "immutable-releases",
-      "sha-pinning-required",
-      "secret-scanning-enabled",
-      "dependabot-alerts-enabled"
-    ]);
+    expect(response.body.claims).toHaveLength(2);
+    expect(calls).toEqual(["immutable-releases", "sha-pinning-required"]);
   });
 
   it("returns the app-level 404 for unmatched routes", async () => {
