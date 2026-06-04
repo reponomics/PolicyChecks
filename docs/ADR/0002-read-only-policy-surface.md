@@ -60,6 +60,7 @@ For secret scanning and secret scanning push protection, empirical validation sh
 
 ## Documentation References
 
+- [Get a repository](https://docs.github.com/en/rest/repos/repos#get-a-repository)
 - [Check if immutable releases are enabled for a repository](https://docs.github.com/en/rest/repos/repos#check-if-immutable-releases-are-enabled-for-a-repository)
 - [Get GitHub Actions permissions for a repository](https://docs.github.com/en/rest/actions/permissions#get-github-actions-permissions-for-a-repository)
 - [Permissions required for GitHub Apps](https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps)

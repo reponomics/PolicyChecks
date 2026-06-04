@@ -24,7 +24,7 @@ Every proof response includes the requested repository identity:
 }
 ```
 
-Every proof response also includes an `evidence` object. For the MVP badges, `evidence.source` is `repository_setting` because both supported claims are evaluated from repository-scoped GitHub REST endpoints.
+Every proof response also includes an `evidence` object. For the MVP badges, `evidence.source` is `repository_setting` because each supported claim is evaluated from a repository-scoped GitHub REST endpoint.
 
 ## Documentation References
 
