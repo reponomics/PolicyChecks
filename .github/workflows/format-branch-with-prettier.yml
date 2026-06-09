@@ -13,14 +13,6 @@ on:
         required: false
         default: "."
         type: string
-      mode:
-        description: "How to apply formatting changes."
-        required: false
-        default: "push"
-        type: choice
-        options:
-          - push
-          - pull-request
       package-manager:
         description: "Package manager."
         required: false
@@ -32,14 +24,14 @@ on:
           - pnpm
           - yarn
       node-version:
-        description: "Node.js version. Use auto to read .nvmrc, .nvrmc, .node-version, .npmrc, or package.json engines.node."
+        description: "Node.js version. Use auto to read .nvmrc, .node-version, .npmrc, or package.json engines.node."
         required: false
         default: "auto"
         type: string
       formatter:
         description: "How to run Prettier."
         required: false
-        default: "auto"
+        default: "prettier"
         type: choice
         options:
           - auto
@@ -55,16 +47,14 @@ on:
         required: false
         default: "style: format with prettier"
         type: string
-      pr-title:
-        description: "Pull request title when mode is pull-request."
+      push-token:
+        description: "Token used to push the formatting commit."
         required: false
-        default: "style: format with prettier"
-        type: string
-      pr-branch-prefix:
-        description: "Branch prefix when mode is pull-request."
-        required: false
-        default: "automation/prettier-format"
-        type: string
+        default: "github-app"
+        type: choice
+        options:
+          - github-token
+          - github-app
 
   workflow_call:
     inputs:
@@ -76,10 +66,6 @@ on:
         required: false
         default: "."
         type: string
-      mode:
-        required: false
-        default: "push"
-        type: string
       package-manager:
         required: false
         default: "auto"
@@ -90,7 +76,7 @@ on:
         type: string
       formatter:
         required: false
-        default: "auto"
+        default: "prettier"
         type: string
       script-name:
         required: false
@@ -100,14 +86,15 @@ on:
         required: false
         default: "style: format with prettier"
         type: string
-      pr-title:
+      push-token:
         required: false
-        default: "style: format with prettier"
+        default: "github-app"
         type: string
-      pr-branch-prefix:
+    secrets:
+      PRETTIER_FORMATTER_APP_CLIENT_ID:
         required: false
-        default: "automation/prettier-format"
-        type: string
+      PRETTIER_FORMATTER_APP_PRIVATE_KEY:
+        required: false
 
 permissions:
   contents: read
@@ -119,14 +106,14 @@ concurrency:
 jobs:
   format:
     name: Format branch
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     permissions:
       contents: read
 
     outputs:
-      changed: ${{ steps.diff.outputs.changed }}
-      mode: ${{ steps.resolve.outputs.mode }}
+      changed: ${{ steps.prettier.outputs.changed }}
       target_branch: ${{ steps.resolve.outputs.target_branch }}
 
     steps:
@@ -135,19 +122,9 @@ jobs:
         shell: bash
         env:
           INPUT_REF: ${{ inputs.ref }}
-          INPUT_MODE: ${{ inputs.mode }}
           GITHUB_REF_NAME_SAFE: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-
-          mode="$INPUT_MODE"
-          case "$mode" in
-            push|pull-request) ;;
-            *)
-              echo "Invalid mode: $mode" >&2
-              exit 1
-              ;;
-          esac
 
           target_branch="$INPUT_REF"
           if [ -z "$target_branch" ]; then
@@ -175,9 +152,13 @@ jobs:
           fi
 
           {
-            echo "mode=$mode"
             echo "target_branch=$target_branch"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout workflow repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
       - name: Checkout target branch
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -185,348 +166,70 @@ jobs:
           ref: ${{ steps.resolve.outputs.target_branch }}
           fetch-depth: 0
           persist-credentials: false
+          path: target-branch
 
-      - name: Detect Node.js version
-        id: node
-        shell: bash
-        env:
-          INPUT_NODE_VERSION: ${{ inputs.node-version }}
-        run: |
-          set -euo pipefail
-
-          node_version="$INPUT_NODE_VERSION"
-
-          if [ "$node_version" = "auto" ] || [ -z "$node_version" ]; then
-            node_version=""
-
-            for version_file in .nvmrc .nvrmc .node-version; do
-              if [ -f "$version_file" ]; then
-                node_version="$(grep -v '^[[:space:]]*$' "$version_file" | grep -v '^[[:space:]]*#' | head -n 1 | tr -d '[:space:]')"
-                if [ -n "$node_version" ]; then
-                  echo "Detected Node.js version from $version_file: $node_version"
-                  break
-                fi
-              fi
-            done
-
-            if [ -z "$node_version" ] && [ -f .npmrc ]; then
-              node_version="$(
-                awk -F= '
-                  /^[[:space:]]*(node-version|node_version|use-node-version)[[:space:]]*=/ {
-                    value=$2
-                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
-                    print value
-                    exit
-                  }
-                ' .npmrc
-              )"
-              if [ -n "$node_version" ]; then
-                echo "Detected Node.js version from .npmrc: $node_version"
-              fi
-            fi
-
-            if [ -z "$node_version" ] && [ -f package.json ]; then
-              node_version="$(
-                python3 - <<'PY'
-          import json
-          import re
-          from pathlib import Path
-
-          try:
-              package = json.loads(Path("package.json").read_text())
-          except Exception:
-              print("")
-              raise SystemExit(0)
-
-          spec = str(package.get("engines", {}).get("node", "")).strip()
-          if not spec:
-              print("")
-              raise SystemExit(0)
-
-          # Prefer a concrete major version when package.json uses a range such as >=24.
-          match = re.search(r'(?<!\d)(\d{2,})(?:\.\d+)?(?:\.\d+)?', spec)
-          print(match.group(1) if match else spec)
-          PY
-              )"
-              if [ -n "$node_version" ]; then
-                echo "Detected Node.js version from package.json engines.node: $node_version"
-              fi
-            fi
-
-            if [ -z "$node_version" ]; then
-              node_version="24"
-              echo "Defaulting Node.js version to $node_version"
-            fi
-          fi
-
-          echo "node_version=$node_version" >> "$GITHUB_OUTPUT"
-
-      - name: Detect package manager
-        id: pm
-        shell: bash
-        env:
-          INPUT_PACKAGE_MANAGER: ${{ inputs.package-manager }}
-        run: |
-          set -euo pipefail
-
-          manager="$INPUT_PACKAGE_MANAGER"
-
-          if [ "$manager" = "auto" ] || [ -z "$manager" ]; then
-            manager="$(
-              python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          try:
-              package = json.loads(Path("package.json").read_text())
-          except Exception:
-              package = {}
-
-          candidates = [
-              str(package.get("packageManager", "")),
-              str(package.get("devEngines", {}).get("packageManager", {}).get("name", "")),
-              str(package.get("devEngines", {}).get("packageManager", "")),
-          ]
-
-          for candidate in candidates:
-              if candidate.startswith("pnpm@") or candidate == "pnpm":
-                  print("pnpm")
-                  raise SystemExit(0)
-              if candidate.startswith("yarn@") or candidate == "yarn":
-                  print("yarn")
-                  raise SystemExit(0)
-              if candidate.startswith("npm@") or candidate == "npm":
-                  print("npm")
-                  raise SystemExit(0)
-
-          if Path("pnpm-lock.yaml").exists():
-              print("pnpm")
-          elif Path("yarn.lock").exists():
-              print("yarn")
-          else:
-              print("npm")
-          PY
-            )"
-          fi
-
-          case "$manager" in
-            npm|pnpm|yarn) ;;
-            *)
-              echo "Unsupported package manager: $manager" >&2
-              exit 1
-              ;;
-          esac
-
-          echo "manager=$manager" >> "$GITHUB_OUTPUT"
-          echo "Detected package manager: $manager"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v.6.4.0
-        with:
-          node-version: ${{ steps.node.outputs.node_version }}
-          package-manager-cache: false
-
-      - name: Enable Corepack
-        if: ${{ steps.pm.outputs.manager == 'pnpm' || steps.pm.outputs.manager == 'yarn' }}
-        run: corepack enable
-
-      - name: Install dependencies
-        shell: bash
-        env:
-          PACKAGE_MANAGER: ${{ steps.pm.outputs.manager }}
-          HUSKY: "0"
-        run: |
-          set -euo pipefail
-
-          case "$PACKAGE_MANAGER" in
-            npm)
-              if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
-                npm ci
-              else
-                npm install
-              fi
-              ;;
-            pnpm)
-              pnpm install --frozen-lockfile
-              ;;
-            yarn)
-              yarn install --immutable || yarn install --frozen-lockfile
-              ;;
-          esac
-
-      - name: Select Prettier command
+      - name: Format with Prettier
         id: prettier
-        shell: bash
-        env:
-          INPUT_FORMATTER: ${{ inputs.formatter }}
-          INPUT_SCRIPT_NAME: ${{ inputs.script-name }}
-          INPUT_PATH: ${{ inputs.path }}
-        run: |
-          set -euo pipefail
-
-          node <<'NODE' >> "$GITHUB_OUTPUT"
-          const fs = require('node:fs');
-
-          const formatter = process.env.INPUT_FORMATTER || 'auto';
-          const requestedScript = process.env.INPUT_SCRIPT_NAME || '';
-          const targetPath = process.env.INPUT_PATH || '.';
-
-          if (!['auto', 'prettier', 'package-script'].includes(formatter)) {
-            console.error(`Invalid formatter: ${formatter}`);
-            process.exit(1);
-          }
-
-          let packageJson = {};
-          try {
-            packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          } catch {}
-
-          const scripts = packageJson.scripts || {};
-
-          function hasPrettierWrite(command) {
-            return /\bprettier\b/.test(command) && /(^|\s)--write(\s|$)/.test(command);
-          }
-
-          function isFormattingOnly(command) {
-            if (!hasPrettierWrite(command)) return false;
-
-            // Treat shell composition as not formatting-only. Extraction from arbitrary
-            // npm scripts is intentionally avoided because shell parsing is too easy to
-            // get wrong in a security-sensitive workflow.
-            if (/[;&|`<>]/.test(command)) return false;
-
-            const withoutPrettier = command.replace(/\bprettier\b/g, '').toLowerCase();
-
-            return !/\b(eslint|lint-staged|tsc|vitest|jest|mocha|ava|node|npm|pnpm|yarn|bash|sh|biome|rome)\b/.test(withoutPrettier);
-          }
-
-          const preferredNames = [
-            'format',
-            'format:fix',
-            'prettier',
-            'prettier:write',
-            'prettier:fix',
-            'fix:format',
-            'lint:format',
-          ];
-
-          const candidates = Object.entries(scripts)
-            .filter(([, command]) => isFormattingOnly(String(command)))
-            .sort(([a], [b]) => {
-              const ai = preferredNames.indexOf(a);
-              const bi = preferredNames.indexOf(b);
-              return (ai === -1 ? Number.MAX_SAFE_INTEGER : ai) - (bi === -1 ? Number.MAX_SAFE_INTEGER : bi) || a.localeCompare(b);
-            });
-
-          if (requestedScript) {
-            const command = scripts[requestedScript];
-            if (!command) {
-              console.error(`package.json script not found: ${requestedScript}`);
-              process.exit(1);
-            }
-            if (!isFormattingOnly(String(command))) {
-              console.error(`Refusing to run script "${requestedScript}" because it is not a single-purpose prettier --write script.`);
-              process.exit(1);
-            }
-
-            console.log('kind=script');
-            console.log(`script_name=${requestedScript}`);
-            process.exit(0);
-          }
-
-          if (formatter === 'package-script') {
-            if (candidates.length === 0) {
-              console.error('No single-purpose prettier --write package.json script was found.');
-              process.exit(1);
-            }
-
-            console.log('kind=script');
-            console.log(`script_name=${candidates[0][0]}`);
-            process.exit(0);
-          }
-
-          if (formatter === 'auto' && targetPath === '.' && candidates.length > 0) {
-            console.log('kind=script');
-            console.log(`script_name=${candidates[0][0]}`);
-            process.exit(0);
-          }
-
-          console.log('kind=direct');
-          console.log('script_name=');
-          NODE
-
-      - name: Run Prettier
-        shell: bash
-        env:
-          PACKAGE_MANAGER: ${{ steps.pm.outputs.manager }}
-          PRETTIER_KIND: ${{ steps.prettier.outputs.kind }}
-          SCRIPT_NAME: ${{ steps.prettier.outputs.script_name }}
-          TARGET_PATH: ${{ inputs.path }}
-        run: |
-          set -euo pipefail
-
-          if [ "$PRETTIER_KIND" = "script" ]; then
-            case "$PACKAGE_MANAGER" in
-              npm) npm run "$SCRIPT_NAME" ;;
-              pnpm) pnpm run "$SCRIPT_NAME" ;;
-              yarn) yarn run "$SCRIPT_NAME" ;;
-            esac
-            exit 0
-          fi
-
-          case "$PACKAGE_MANAGER" in
-            npm)
-              npm exec -- prettier --write --ignore-unknown -- "$TARGET_PATH"
-              ;;
-            pnpm)
-              pnpm exec prettier --write --ignore-unknown -- "$TARGET_PATH"
-              ;;
-            yarn)
-              yarn exec prettier --write --ignore-unknown -- "$TARGET_PATH"
-              ;;
-          esac
-
-      - name: Create patch
-        id: diff
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if git diff --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No Prettier changes."
-            exit 0
-          fi
-
-          git status --short
-          git diff --binary > "$RUNNER_TEMP/prettier.patch"
-          echo "changed=true" >> "$GITHUB_OUTPUT"
+        uses: ./.github/actions/prettier-format
+        with:
+          working-directory: target-branch
+          path: ${{ inputs.path }}
+          package-manager: ${{ inputs.package-manager }}
+          node-version: ${{ inputs.node-version }}
+          formatter: ${{ inputs.formatter }}
+          script-name: ${{ inputs.script-name }}
 
       - name: Upload patch
-        if: ${{ steps.diff.outputs.changed == 'true' }}
+        if: ${{ steps.prettier.outputs.changed == 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: prettier-patch
-          path: ${{ runner.temp }}/prettier.patch
+          path: ${{ steps.prettier.outputs.patch_path }}
           if-no-files-found: error
           retention-days: 1
 
   push:
     name: Push formatting commit
     needs: format
-    if: ${{ needs.format.outputs.changed == 'true' && needs.format.outputs.mode == 'push' }}
-    runs-on: ubuntu-latest
+    if: ${{ needs.format.outputs.changed == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     permissions:
       contents: write
 
     steps:
+      - name: Validate push token input
+        shell: bash
+        env:
+          PUSH_TOKEN: ${{ inputs.push-token }}
+        run: |
+          set -euo pipefail
+
+          case "$PUSH_TOKEN" in
+            github-token|github-app) ;;
+            *)
+              echo "Invalid push-token: $PUSH_TOKEN" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Create GitHub App token
+        id: app-token
+        if: ${{ inputs.push-token == 'github-app' }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.PRETTIER_FORMATTER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PRETTIER_FORMATTER_APP_PRIVATE_KEY }}
+          permission-contents: write
+
       - name: Checkout target branch
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ needs.format.outputs.target_branch }}
           fetch-depth: 0
           persist-credentials: true
+          token: ${{ steps.app-token.outputs.token || github.token }}
 
       - name: Download patch
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -539,6 +242,7 @@ jobs:
         env:
           TARGET_BRANCH: ${{ needs.format.outputs.target_branch }}
           COMMIT_MESSAGE: ${{ inputs.commit-message }}
+          PUSH_TOKEN: ${{ inputs.push-token }}
         run: |
           set -euo pipefail
 
@@ -556,77 +260,16 @@ jobs:
           git commit -m "$COMMIT_MESSAGE"
           git push origin "HEAD:refs/heads/$TARGET_BRANCH"
 
-  pull-request:
-    name: Open formatting pull request
-    needs: format
-    if: ${{ needs.format.outputs.changed == 'true' && needs.format.outputs.mode == 'pull-request' }}
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout target branch
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ needs.format.outputs.target_branch }}
-          fetch-depth: 0
-          persist-credentials: true
-
-      - name: Download patch
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: prettier-patch
-          path: ${{ runner.temp }}
-
-      - name: Commit, push branch, and open PR
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TARGET_BRANCH: ${{ needs.format.outputs.target_branch }}
-          COMMIT_MESSAGE: ${{ inputs.commit-message }}
-          PR_TITLE: ${{ inputs.pr-title }}
-          PR_BRANCH_PREFIX: ${{ inputs.pr-branch-prefix }}
-        run: |
-          set -euo pipefail
-
-          git apply --binary "$RUNNER_TEMP/prettier.patch"
-
-          if git diff --quiet; then
-            echo "Patch applied cleanly but produced no working tree changes."
-            exit 0
-          fi
-
-          safe_base="$(
-            printf '%s' "$TARGET_BRANCH" |
-              tr -c 'A-Za-z0-9._-' '-' |
-              sed -E 's/-+/-/g; s/^-//; s/-$//' |
-              cut -c 1-60
-          )"
-
-          safe_prefix="$(
-            printf '%s' "$PR_BRANCH_PREFIX" |
-              tr -c 'A-Za-z0-9._/-' '-' |
-              sed -E 's/-+/-/g; s#/{2,}#/#g; s#^/##; s#/$##'
-          )"
-
-          if [ -z "$safe_prefix" ]; then
-            safe_prefix="automation/prettier-format"
-          fi
-
-          pr_branch="$safe_prefix/$safe_base-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-
-          git switch -c "$pr_branch"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add -A
-          git commit -m "$COMMIT_MESSAGE"
-          git push origin "HEAD:refs/heads/$pr_branch"
-
-          gh pr create \
-            --base "$TARGET_BRANCH" \
-            --head "$pr_branch" \
-            --title "$PR_TITLE" \
-            --body "Formats the target branch with the repository's Prettier configuration."
+          {
+            echo "### Formatting commit pushed"
+            echo
+            echo "- Branch: \`$TARGET_BRANCH\`"
+            echo "- Token source: \`$PUSH_TOKEN\`"
+            if [ "$PUSH_TOKEN" = "github-token" ]; then
+              echo
+              echo "This push used \`GITHUB_TOKEN\`; GitHub generally does not create new workflow runs from that push."
+            else
+              echo
+              echo "This push used a GitHub App installation token; normal push and pull request checks should be eligible to run."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

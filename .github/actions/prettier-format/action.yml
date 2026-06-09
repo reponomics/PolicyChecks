@@ -1,0 +1,369 @@
+name: Format with Prettier
+description: Detects project tooling, runs Prettier, and emits a patch when files change.
+
+inputs:
+  path:
+    description: File, directory, or quoted glob to format.
+    required: false
+    default: .
+  package-manager:
+    description: Package manager to use.
+    required: false
+    default: auto
+  node-version:
+    description: Node.js version. Use auto to read project metadata.
+    required: false
+    default: auto
+  formatter:
+    description: How to run Prettier.
+    required: false
+    default: prettier
+  script-name:
+    description: Optional package.json script to run when formatter is package-script.
+    required: false
+    default: ""
+  working-directory:
+    description: Directory containing the repository to format.
+    required: false
+    default: .
+
+outputs:
+  changed:
+    description: Whether Prettier changed the working tree.
+    value: ${{ steps.diff.outputs.changed }}
+  patch_path:
+    description: Path to the generated patch when changed is true.
+    value: ${{ steps.diff.outputs.patch_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Detect Node.js version
+      id: node
+      shell: bash
+      env:
+        INPUT_NODE_VERSION: ${{ inputs.node-version }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        cd "$WORKING_DIRECTORY"
+
+        node_version="$INPUT_NODE_VERSION"
+
+        if [ "$node_version" = "auto" ] || [ -z "$node_version" ]; then
+          node_version=""
+
+          for version_file in .nvmrc .node-version; do
+            if [ -f "$version_file" ]; then
+              node_version="$(grep -v '^[[:space:]]*$' "$version_file" | grep -v '^[[:space:]]*#' | head -n 1 | tr -d '[:space:]')"
+              if [ -n "$node_version" ]; then
+                echo "Detected Node.js version from $version_file: $node_version"
+                break
+              fi
+            fi
+          done
+
+          if [ -z "$node_version" ] && [ -f .npmrc ]; then
+            node_version="$(
+              awk -F= '
+                /^[[:space:]]*(node-version|node_version|use-node-version)[[:space:]]*=/ {
+                  value=$2
+                  gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+                  print value
+                  exit
+                }
+              ' .npmrc
+            )"
+            if [ -n "$node_version" ]; then
+              echo "Detected Node.js version from .npmrc: $node_version"
+            fi
+          fi
+
+          if [ -z "$node_version" ] && [ -f package.json ]; then
+            node_version="$(
+              node <<'NODE'
+        const fs = require('node:fs');
+
+        try {
+          const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const spec = String(packageJson.engines?.node || '').trim();
+          const match = spec.match(/(?<!\d)(\d{2,})(?:\.\d+)?(?:\.\d+)?/);
+          console.log(match ? match[1] : spec);
+        } catch {
+          console.log('');
+        }
+        NODE
+            )"
+            if [ -n "$node_version" ]; then
+              echo "Detected Node.js version from package.json engines.node: $node_version"
+            fi
+          fi
+
+          if [ -z "$node_version" ]; then
+            node_version="24"
+            echo "Defaulting Node.js version to $node_version"
+          fi
+        fi
+
+        echo "node_version=$node_version" >> "$GITHUB_OUTPUT"
+
+    - name: Set up Node.js
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      with:
+        node-version: ${{ steps.node.outputs.node_version }}
+        package-manager-cache: false
+
+    - name: Select Prettier command
+      id: prettier
+      shell: bash
+      env:
+        INPUT_FORMATTER: ${{ inputs.formatter }}
+        INPUT_SCRIPT_NAME: ${{ inputs.script-name }}
+        INPUT_PATH: ${{ inputs.path }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        cd "$WORKING_DIRECTORY"
+
+        node <<'NODE' >> "$GITHUB_OUTPUT"
+        const fs = require('node:fs');
+
+        const formatter = process.env.INPUT_FORMATTER || 'auto';
+        const requestedScript = process.env.INPUT_SCRIPT_NAME || '';
+        const targetPath = process.env.INPUT_PATH || '.';
+
+        if (!['auto', 'prettier', 'package-script'].includes(formatter)) {
+          console.error(`Invalid formatter: ${formatter}`);
+          process.exit(1);
+        }
+
+        let packageJson = {};
+        try {
+          packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+        } catch {}
+
+        const scripts = packageJson.scripts || {};
+        const prettierSpec =
+          packageJson.devDependencies?.prettier ||
+          packageJson.dependencies?.prettier ||
+          packageJson.optionalDependencies?.prettier ||
+          '';
+        const prettierPackage = prettierSpec ? `prettier@${prettierSpec}` : 'prettier';
+
+        function hasPrettierWrite(command) {
+          return /\bprettier\b/.test(command) && /(^|\s)--write(\s|$)/.test(command);
+        }
+
+        function isFormattingOnly(command) {
+          if (!hasPrettierWrite(command)) return false;
+
+          if (/[;&|`<>]/.test(command)) return false;
+
+          const withoutPrettier = command.replace(/\bprettier\b/g, '').toLowerCase();
+
+          return !/\b(eslint|lint-staged|tsc|vitest|jest|mocha|ava|node|npm|pnpm|yarn|bash|sh|biome|rome)\b/.test(withoutPrettier);
+        }
+
+        const preferredNames = [
+          'format',
+          'format:fix',
+          'prettier',
+          'prettier:write',
+          'prettier:fix',
+          'fix:format',
+          'lint:format'
+        ];
+
+        const candidates = Object.entries(scripts)
+          .filter(([, command]) => isFormattingOnly(String(command)))
+          .sort(([a], [b]) => {
+            const ai = preferredNames.indexOf(a);
+            const bi = preferredNames.indexOf(b);
+            return (ai === -1 ? Number.MAX_SAFE_INTEGER : ai) - (bi === -1 ? Number.MAX_SAFE_INTEGER : bi) || a.localeCompare(b);
+          });
+
+        if (requestedScript) {
+          const command = scripts[requestedScript];
+          if (!command) {
+            console.error(`package.json script not found: ${requestedScript}`);
+            process.exit(1);
+          }
+          if (!isFormattingOnly(String(command))) {
+            console.error(`Refusing to run script "${requestedScript}" because it is not a single-purpose prettier --write script.`);
+            process.exit(1);
+          }
+
+          console.log('kind=script');
+          console.log(`script_name=${requestedScript}`);
+          console.log(`prettier_package=${prettierPackage}`);
+          process.exit(0);
+        }
+
+        if (formatter === 'package-script') {
+          if (candidates.length === 0) {
+            console.error('No single-purpose prettier --write package.json script was found.');
+            process.exit(1);
+          }
+
+          console.log('kind=script');
+          console.log(`script_name=${candidates[0][0]}`);
+          console.log(`prettier_package=${prettierPackage}`);
+          process.exit(0);
+        }
+
+        if (formatter === 'auto' && targetPath === '.' && candidates.length > 0) {
+          console.log('kind=script');
+          console.log(`script_name=${candidates[0][0]}`);
+          console.log(`prettier_package=${prettierPackage}`);
+          process.exit(0);
+        }
+
+        console.log('kind=direct');
+        console.log('script_name=');
+        console.log(`prettier_package=${prettierPackage}`);
+        NODE
+
+    - name: Detect package manager
+      id: pm
+      if: ${{ steps.prettier.outputs.kind == 'script' }}
+      shell: bash
+      env:
+        INPUT_PACKAGE_MANAGER: ${{ inputs.package-manager }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        cd "$WORKING_DIRECTORY"
+
+        manager="$INPUT_PACKAGE_MANAGER"
+
+        if [ "$manager" = "auto" ] || [ -z "$manager" ]; then
+          manager="$(
+            node <<'NODE'
+        const fs = require('node:fs');
+
+        let packageJson = {};
+        try {
+          packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+        } catch {}
+
+        const candidates = [
+          String(packageJson.packageManager || ''),
+          String(packageJson.devEngines?.packageManager?.name || ''),
+          String(packageJson.devEngines?.packageManager || '')
+        ];
+
+        for (const candidate of candidates) {
+          if (candidate.startsWith('pnpm@') || candidate === 'pnpm') {
+            console.log('pnpm');
+            process.exit(0);
+          }
+          if (candidate.startsWith('yarn@') || candidate === 'yarn') {
+            console.log('yarn');
+            process.exit(0);
+          }
+          if (candidate.startsWith('npm@') || candidate === 'npm') {
+            console.log('npm');
+            process.exit(0);
+          }
+        }
+
+        if (fs.existsSync('pnpm-lock.yaml')) {
+          console.log('pnpm');
+        } else if (fs.existsSync('yarn.lock')) {
+          console.log('yarn');
+        } else {
+          console.log('npm');
+        }
+        NODE
+          )"
+        fi
+
+        case "$manager" in
+          npm|pnpm|yarn) ;;
+          *)
+            echo "Unsupported package manager: $manager" >&2
+            exit 1
+            ;;
+        esac
+
+        echo "manager=$manager" >> "$GITHUB_OUTPUT"
+        echo "Detected package manager: $manager"
+
+    - name: Enable Corepack
+      if: ${{ steps.prettier.outputs.kind == 'script' && (steps.pm.outputs.manager == 'pnpm' || steps.pm.outputs.manager == 'yarn') }}
+      shell: bash
+      run: corepack enable
+
+    - name: Install dependencies for package script
+      if: ${{ steps.prettier.outputs.kind == 'script' }}
+      shell: bash
+      env:
+        PACKAGE_MANAGER: ${{ steps.pm.outputs.manager }}
+        HUSKY: "0"
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        cd "$WORKING_DIRECTORY"
+
+        case "$PACKAGE_MANAGER" in
+          npm)
+            if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+            ;;
+          pnpm)
+            pnpm install --frozen-lockfile
+            ;;
+          yarn)
+            yarn install --immutable || yarn install --frozen-lockfile
+            ;;
+        esac
+
+    - name: Run Prettier
+      shell: bash
+      env:
+        PACKAGE_MANAGER: ${{ steps.pm.outputs.manager }}
+        PRETTIER_PACKAGE: ${{ steps.prettier.outputs.prettier_package }}
+        PRETTIER_KIND: ${{ steps.prettier.outputs.kind }}
+        SCRIPT_NAME: ${{ steps.prettier.outputs.script_name }}
+        TARGET_PATH: ${{ inputs.path }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        cd "$WORKING_DIRECTORY"
+
+        if [ "$PRETTIER_KIND" = "script" ]; then
+          case "$PACKAGE_MANAGER" in
+            npm) npm run "$SCRIPT_NAME" ;;
+            pnpm) pnpm run "$SCRIPT_NAME" ;;
+            yarn) yarn run "$SCRIPT_NAME" ;;
+          esac
+          exit 0
+        fi
+
+        npm exec --yes --package "$PRETTIER_PACKAGE" -- prettier --write --ignore-unknown -- "$TARGET_PATH"
+
+    - name: Create patch
+      id: diff
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        cd "$WORKING_DIRECTORY"
+
+        patch_path="$RUNNER_TEMP/prettier.patch"
+
+        if git diff --quiet; then
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+          echo "patch_path=$patch_path" >> "$GITHUB_OUTPUT"
+          echo "No Prettier changes."
+          exit 0
+        fi
+
+        git status --short
+        git diff --binary > "$patch_path"
+        echo "changed=true" >> "$GITHUB_OUTPUT"
+        echo "patch_path=$patch_path" >> "$GITHUB_OUTPUT"
