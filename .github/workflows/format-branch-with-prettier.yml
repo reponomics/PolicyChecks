@@ -47,15 +47,6 @@ on:
         required: false
         default: "style: format with prettier"
         type: string
-      push-token:
-        description: "Token used to push the formatting commit."
-        required: false
-        default: "github-app"
-        type: choice
-        options:
-          - github-token
-          - github-app
-
   workflow_call:
     inputs:
       ref:
@@ -86,15 +77,11 @@ on:
         required: false
         default: "style: format with prettier"
         type: string
-      push-token:
-        required: false
-        default: "github-app"
-        type: string
     secrets:
       PRETTIER_FORMATTER_APP_CLIENT_ID:
-        required: false
+        required: true
       PRETTIER_FORMATTER_APP_PRIVATE_KEY:
-        required: false
+        required: true
 
 permissions:
   contents: read
@@ -196,40 +183,15 @@ jobs:
     timeout-minutes: 10
 
     permissions:
-      contents: write
+      contents: read
 
     steps:
-      - name: Validate push token input
-        shell: bash
-        env:
-          PUSH_TOKEN: ${{ inputs.push-token }}
-        run: |
-          set -euo pipefail
-
-          case "$PUSH_TOKEN" in
-            github-token|github-app) ;;
-            *)
-              echo "Invalid push-token: $PUSH_TOKEN" >&2
-              exit 1
-              ;;
-          esac
-
-      - name: Create GitHub App token
-        id: app-token
-        if: ${{ inputs.push-token == 'github-app' }}
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ secrets.PRETTIER_FORMATTER_APP_CLIENT_ID }}
-          private-key: ${{ secrets.PRETTIER_FORMATTER_APP_PRIVATE_KEY }}
-          permission-contents: write
-
       - name: Checkout target branch
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ needs.format.outputs.target_branch }}
           fetch-depth: 0
-          persist-credentials: true
-          token: ${{ steps.app-token.outputs.token || github.token }}
+          persist-credentials: false
 
       - name: Download patch
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -237,12 +199,12 @@ jobs:
           name: prettier-patch
           path: ${{ runner.temp }}
 
-      - name: Commit and push
+      - name: Commit formatting changes
+        id: commit
         shell: bash
         env:
           TARGET_BRANCH: ${{ needs.format.outputs.target_branch }}
           COMMIT_MESSAGE: ${{ inputs.commit-message }}
-          PUSH_TOKEN: ${{ inputs.push-token }}
         run: |
           set -euo pipefail
 
@@ -258,18 +220,33 @@ jobs:
 
           git add -A
           git commit -m "$COMMIT_MESSAGE"
+
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.PRETTIER_FORMATTER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PRETTIER_FORMATTER_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Push formatting commit
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ needs.format.outputs.target_branch }}
+          PUSH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          git remote set-url origin "https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push origin "HEAD:refs/heads/$TARGET_BRANCH"
 
           {
             echo "### Formatting commit pushed"
             echo
             echo "- Branch: \`$TARGET_BRANCH\`"
-            echo "- Token source: \`$PUSH_TOKEN\`"
-            if [ "$PUSH_TOKEN" = "github-token" ]; then
-              echo
-              echo "This push used \`GITHUB_TOKEN\`; GitHub generally does not create new workflow runs from that push."
-            else
-              echo
-              echo "This push used a GitHub App installation token; normal push and pull request checks should be eligible to run."
-            fi
+            echo "- Commit: \`${{ steps.commit.outputs.sha }}\`"
+            echo
+            echo "This push used a GitHub App installation token; normal push and pull request checks should be eligible to run."
           } >> "$GITHUB_STEP_SUMMARY"
