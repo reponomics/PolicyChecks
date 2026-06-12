@@ -59,6 +59,18 @@ describe("GitHubRestClient", () => {
     });
   });
 
+  it("getCommunityProfile requests the community profile route", async () => {
+    const { client, request } = clientReturning({ health_percentage: 87 });
+
+    await expect(client.getCommunityProfile("OWNER", "REPO")).resolves.toEqual({
+      health_percentage: 87
+    });
+    expect(request).toHaveBeenCalledWith("GET /repos/{owner}/{repo}/community/profile", {
+      owner: "OWNER",
+      repo: "REPO"
+    });
+  });
+
   it("translates request failures into a GitHubApiError", async () => {
     const request = vi.fn(async () => {
       throw { status: 404, message: "nope" };

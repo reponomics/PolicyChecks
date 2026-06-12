@@ -124,6 +124,27 @@ This is DCO-style commit message signoff for GitHub's web interface, not cryptog
 | `200 OK` with missing or non-boolean `web_commit_signoff_required` | `unknown` | error details | The service cannot safely interpret the response. |
 | `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
 
+## `community-health`
+
+Claim: GitHub reports a community profile health score for the repository.
+
+GitHub endpoint:
+
+```http
+GET /repos/{owner}/{repo}/community/profile
+```
+
+The badge message is GitHub's `health_percentage` value formatted as `N/100`. PolicyChecks does not calculate this score; GitHub defines it as the percentage of recommended community health files present. The badge color is a PolicyChecks presentation gradient from red at `0`, through yellow at `50`, to green at `100`.
+
+The response can include both `code_of_conduct` and `code_of_conduct_file`. PolicyChecks treats `code_of_conduct` as detected code-of-conduct metadata and `code_of_conduct_file` as the file-presence signal returned by GitHub.
+
+| GitHub response or value | PolicyChecks status | Proof details | Judgment |
+| --- | --- | --- | --- |
+| `200 OK` with integer `health_percentage` from `0` to `100` | `pass` | `health_percentage`, `score`, `badge_color`, file-presence booleans, detected metadata | Direct evidence that GitHub returned a community profile score. |
+| `200 OK` with missing, non-integer, or out-of-range `health_percentage` | `unknown` | error details | The service cannot safely interpret the response. |
+| `403 Forbidden` | `unknown` | error details | The repository may be private, inaccessible, or outside the app's readable public-resource surface. |
+| `404 Not Found` | `unknown` | error details | Not safe to assert a score from this response. |
+
 ## `secret-push-protection-enabled`
 
 Claim: secret scanning push protection is enabled for the repository.

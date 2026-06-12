@@ -81,6 +81,11 @@ export const activeBranchRulesEvidence: ClaimEvidence = {
   source: "active_branch_rules"
 };
 
+export const communityProfileEvidence: ClaimEvidence = {
+  scope: "repository",
+  source: "community_profile"
+};
+
 export const unavailableEvidence: ClaimEvidence = {
   scope: "unknown",
   source: "unavailable"

@@ -1,3 +1,4 @@
+import { communityHealthClaim } from "./community-health.js";
 import {
   defaultBranchDeletionBlockedClaim,
   defaultBranchForcePushesBlockedClaim,
@@ -19,6 +20,7 @@ const definitions = [
   immutableReleasesClaim,
   shaPinningRequiredClaim,
   webCommitSignoffRequiredClaim,
+  communityHealthClaim,
   secretScanningEnabledClaim,
   secretPushProtectionEnabledClaim,
   defaultBranchForcePushesBlockedClaim,

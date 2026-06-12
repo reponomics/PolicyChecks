@@ -11,6 +11,7 @@ The current product surface is intentionally narrow, and is constrained by the g
 | Immutable releases | `immutable-releases` | `enabled` | `disabled` or `unknown` |
 | SHA pinning | `sha-pinning-required` | `enabled` | `disabled` or `unknown` |
 | Web signoff | `web-commit-signoff-required` | `enabled` | `disabled` or `unknown` |
+| Community health | `community-health` | GitHub score, for example `87/100` | `unknown` |
 | Secret scanning | `secret-scanning-enabled` | `enabled` | `disabled` or `unknown` |
 | Secret push protection | `secret-push-protection-enabled` | `enabled` | `disabled` or `unknown` |
 | Force pushes blocked | `default-branch-force-pushes-blocked` | `enabled` | `disabled` or `unknown` |
@@ -41,6 +42,8 @@ Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge 
 [![SHA pinning](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/proof.json)
 
 [![Web signoff](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required/proof.json)
+
+[![Community health](https://policychecks.reponomics.org/github/OWNER/REPO/community-health.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/community-health/proof.json)
 
 [![Secret scanning](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled/proof.json)
 
@@ -79,7 +82,7 @@ Detailed per-claim response mappings are documented in [`docs/claim-semantics.md
 
 ## Permissions
 
-The app requires repository `Administration: Read` permissions for each repository that wants to host a badge. It supports personal or organization-owned repositories, public or private, when the GitHub App is installed on the repository. PolicyChecks does not call organization APIs or read repository contents; if GitHub withholds a repository metadata field or active branch-rules response for the installed app, PolicyChecks reports `unknown`.
+The app requires repository `Administration: Read` permissions for each repository that wants to host a badge. It supports personal or organization-owned repositories, public or private, when the GitHub App is installed on the repository. PolicyChecks does not call organization APIs or fetch repository file contents; the community health badge uses GitHub's community profile metric. If GitHub withholds a repository metadata field, active branch-rules response, or community profile response for the installed app, PolicyChecks reports `unknown`.
 
 ## Contributing
 

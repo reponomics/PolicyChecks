@@ -15,6 +15,7 @@ export function mockGitHub(overrides: Partial<GitHubClient>): GitHubClient {
     getImmutableReleases: unmocked,
     getActionsPermissions: unmocked,
     getBranchRules: unmocked,
+    getCommunityProfile: unmocked,
     ...overrides
   };
 }

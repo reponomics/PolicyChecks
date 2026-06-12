@@ -6,6 +6,7 @@ const productionSources = [
   "src/github/app-auth.ts",
   "src/github/client.ts",
   "src/github/installations.ts",
+  "src/claims/community-health.ts",
   "src/claims/default-branch-rules.ts",
   "src/claims/immutable-releases.ts",
   "src/claims/secret-protection.ts",
@@ -16,6 +17,7 @@ const productionSources = [
 const allowedRoutes = new Set([
   "GET /repos/{owner}/{repo}",
   "GET /repos/{owner}/{repo}/actions/permissions",
+  "GET /repos/{owner}/{repo}/community/profile",
   "GET /repos/{owner}/{repo}/immutable-releases",
   "GET /repos/{owner}/{repo}/rules/branches/{branch}",
   "GET /repos/{owner}/{repo}/installation"
