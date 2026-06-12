@@ -8,9 +8,9 @@ PolicyChecks uses a cautious three-state result model:
 
 `unknown` is not a failure assertion. It means PolicyChecks did not have enough reliable evidence to make the claim either way.
 
-PolicyChecks reports effective repository settings and selected active ruleset-derived settings. A setting may be configured directly on the repository or inherited from an organization policy, security configuration, or ruleset, as long as the repository-scoped GitHub API returns the effective value for the installed repository.
+PolicyChecks reports effective repository settings, configuration, and selected active ruleset-derived settings, as reported by GitHub's API. A setting may be configured directly on the repository or inherited from an organization policy, security configuration, or ruleset, as long as the repository-scoped GitHub API returns the effective value for the installed repository.
 
-PolicyChecks does not inspect workflow files, repository contents, generated artifacts, historical audit logs, or organization-wide inventory. It reports the current setting returned by the GitHub endpoint named in the proof response.
+PolicyChecks does not inspect workflow files, repository contents, generated artifacts, historical audit logs, or organization-wide inventory. It reports the _current state_ of a particular setting or repository configuration state, as reported by the GitHub endpoint named in the proof response.
 
 Every proof response includes the requested repository identity:
 
@@ -49,7 +49,7 @@ These mappings apply before claim-specific logic unless a claim explicitly docum
 
 ## `immutable-releases`
 
-Claim: immutable releases are enabled for the repository.
+#### Claim: Immutable releases are required for the repository, at the time of evaluation.
 
 GitHub endpoint:
 
@@ -69,7 +69,7 @@ Observed product behavior: when an organization immutable-releases policy applie
 
 ## `sha-pinning-required`
 
-Claim: repository Actions policy requires actions to be pinned to full-length commit SHAs.
+#### Claim: Repository settings require actions to be pinned to full-length commit SHAs, at the time of evaluation (workflows violating this rule will fail).
 
 GitHub endpoint:
 
@@ -88,7 +88,7 @@ Observed product behavior: when organization-level SHA pinning applies to a repo
 
 ## `secret-scanning-enabled`
 
-Claim: secret scanning is enabled for the repository.
+#### Claim: Secret scanning is enabled for the repository, at the time of evaluation.
 
 GitHub endpoint:
 
@@ -107,7 +107,7 @@ Observed product behavior: the repository metadata endpoint reports the effectiv
 
 ## `web-commit-signoff-required`
 
-Claim: contributors are required to sign off on web-based commits for the repository.
+#### Claim: Repository settings require contributors to sign off on web-based commits for the repository, at the time of evaluation.
 
 GitHub endpoint:
 
@@ -126,7 +126,7 @@ This is DCO-style commit message signoff for GitHub's web interface, not cryptog
 
 ## `community-health`
 
-Claim: GitHub reports a community profile health score for the repository.
+#### Claim: The repository is assigned the indicated community profile health score by GitHub, at the time of evaluation.
 
 GitHub endpoint:
 
@@ -147,7 +147,7 @@ The response can include both `code_of_conduct` and `code_of_conduct_file`. Poli
 
 ## `secret-push-protection-enabled`
 
-Claim: secret scanning push protection is enabled for the repository.
+#### Claim: Secret scanning push protection is enabled for the repository, at the time of evaluation.
 
 GitHub endpoint:
 
@@ -166,7 +166,7 @@ Observed product behavior: the repository metadata endpoint reports the effectiv
 
 ## Default Branch Ruleset Claims
 
-Claim: an active GitHub ruleset applies a specific rule to the repository's default branch.
+#### Claim: An active GitHub ruleset applies a specific rule to the repository's default branch, at the time of evaluation.
 
 | Claim ID | Claim | GitHub rule type |
 | --- | --- | --- |
@@ -206,5 +206,3 @@ Before adding a new public badge, document:
 4. Which responses produce `pass`, `fail`, and `unknown`.
 5. Why any `fail` state is safe to assert.
 6. Whether repository-scoped responses include inherited organization policy.
-
-Post-MVP candidates include Dependabot settings, dependency graph, code security configuration badges, and ruleset-derived branch policy badges. They should remain unpublished until their API evidence maps cleanly to an intuitive admin setting without requiring file inspection, contents access, historical audit logs, or unsupported judgment calls. The next ruleset badge milestone is outlined in [`ruleset-branch-badges-milestone.md`](ruleset-branch-badges-milestone.md).
