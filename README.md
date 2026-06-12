@@ -4,7 +4,7 @@
 
 PolicyChecks is a GitHub App-backed badge service and validation endpoint for repository settings that ordinary public badge services cannot verify. It exposes badge SVG, Shields-compatible JSON, and proof JSON endpoints for repository administration and security settings that map to clear admin UI controls and direct GitHub REST API responses. This gives maintainers a convenient way to show that a project not only follows best practices, but that these practices are backed by administrative policies at the repository settings level. This fills a modest gap in the badge ecosystem between excellent services like shields.io (which does not have the permissions to report on these facts) and OSSF Scorecard (which does take into account many of these same conditions, but does not expose individual setting-level endpoints).
 
-The current product surface is intentionally narrow, and is constrained by the goals of minimizing requested permissions, and leveraging clear signals provided by the GitHub API: it checks four effective repository settings. A setting may be configured directly at the repository level, or inherited from an organization policy or security configuration.
+The current product surface is intentionally narrow, and is constrained by the goals of minimizing requested permissions, and leveraging clear signals provided by the GitHub API: it checks effective repository settings and one active ruleset-derived default branch setting. A setting may be configured directly at the repository level, or inherited from an organization policy, security configuration, or ruleset when the repository-scoped GitHub API reports the effective value.
 
 | Check | Claim ID | Passing result | Other results |
 | --- | --- | --- | --- |
@@ -12,6 +12,7 @@ The current product surface is intentionally narrow, and is constrained by the g
 | SHA pinning | `sha-pinning-required` | `enabled` | `disabled` or `unknown` |
 | Secret scanning | `secret-scanning-enabled` | `enabled` | `disabled` or `unknown` |
 | Secret push protection | `secret-push-protection-enabled` | `enabled` | `disabled` or `unknown` |
+| Force pushes blocked | `default-branch-force-pushes-blocked` | `enabled` | `disabled` or `unknown` |
 
 Unlike OSSF Scorecard, PolicyChecks does not intend to provide any in-depth proof or evaluation regarding a repository's overall stance regarding security or best practices - it simply reports on the current state of an admin setting. It does not claim historical continuity, or prove that a privileged administrator could never change a setting. In that sense, it does not attempt to serve as a security audit - rather, it's more like: Shields.io with minimally elevated (read-only) permissions.
 
@@ -36,6 +37,8 @@ Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge 
 [![Secret scanning](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled/proof.json)
 
 [![Secret push protection](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled/proof.json)
+
+[![Force pushes blocked](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked/proof.json)
 ```
 
 The aggregate endpoint returns all currently supported claims for a repository:
@@ -58,7 +61,7 @@ Detailed per-claim response mappings are documented in [`docs/claim-semantics.md
 
 ## Permissions
 
-The app requires repository `Administration: Read` permissions for each repository that wants to host a badge. It supports personal or organization-owned repositories, public or private, when the GitHub App is installed on the repository. The MVP does not call organization APIs or read repository contents; if GitHub withholds a repository metadata field for the installed app, PolicyChecks reports `unknown`.
+The app requires repository `Administration: Read` permissions for each repository that wants to host a badge. It supports personal or organization-owned repositories, public or private, when the GitHub App is installed on the repository. PolicyChecks does not call organization APIs or read repository contents; if GitHub withholds a repository metadata field or active branch-rules response for the installed app, PolicyChecks reports `unknown`.
 
 ## Contributing
 

@@ -46,6 +46,19 @@ describe("GitHubRestClient", () => {
     });
   });
 
+  it("getBranchRules requests the branch rules route", async () => {
+    const { client, request } = clientReturning([{ type: "non_fast_forward" }]);
+
+    await expect(client.getBranchRules("OWNER", "REPO", "main")).resolves.toEqual([
+      { type: "non_fast_forward" }
+    ]);
+    expect(request).toHaveBeenCalledWith("GET /repos/{owner}/{repo}/rules/branches/{branch}", {
+      owner: "OWNER",
+      repo: "REPO",
+      branch: "main"
+    });
+  });
+
   it("translates request failures into a GitHubApiError", async () => {
     const request = vi.fn(async () => {
       throw { status: 404, message: "nope" };

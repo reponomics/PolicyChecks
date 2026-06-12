@@ -8,7 +8,7 @@ PolicyChecks uses a cautious three-state result model:
 
 `unknown` is not a failure assertion. It means PolicyChecks did not have enough reliable evidence to make the claim either way.
 
-The MVP reports effective repository settings. A setting may be configured directly on the repository or inherited from an organization policy, as long as the repository-scoped GitHub API returns the effective value for the installed repository.
+PolicyChecks reports effective repository settings and selected active ruleset-derived settings. A setting may be configured directly on the repository or inherited from an organization policy, security configuration, or ruleset, as long as the repository-scoped GitHub API returns the effective value for the installed repository.
 
 PolicyChecks does not inspect workflow files, repository contents, generated artifacts, historical audit logs, or organization-wide inventory. It reports the current setting returned by the GitHub endpoint named in the proof response.
 
@@ -24,7 +24,7 @@ Every proof response includes the requested repository identity:
 }
 ```
 
-Every proof response also includes an `evidence` object. For the MVP badges, `evidence.source` is `repository_setting` because each supported claim is evaluated from a repository-scoped GitHub REST endpoint.
+Every proof response also includes an `evidence` object. The initial repository-setting badges use `repository_setting`; ruleset-derived branch badges use `active_branch_rules`.
 
 ## Documentation References
 
@@ -33,6 +33,7 @@ Every proof response also includes an `evidence` object. For the MVP badges, `ev
 | `repository-doc` | [Get a repository](https://docs.github.com/en/rest/repos/repos#get-a-repository) |
 | `immutable-releases-doc` | [Check if immutable releases are enabled for a repository](https://docs.github.com/en/rest/repos/repos#check-if-immutable-releases-are-enabled-for-a-repository) |
 | `actions-permissions-doc` | [Get GitHub Actions permissions for a repository](https://docs.github.com/en/rest/actions/permissions#get-github-actions-permissions-for-a-repository) |
+| `branch-rules-doc` | [Get rules for a branch](https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch) |
 
 ## Global Error Mapping
 
@@ -122,6 +123,29 @@ Observed product behavior: the repository metadata endpoint reports the effectiv
 | `200 OK` with `security_and_analysis.secret_scanning_push_protection.status` as a string other than `enabled` | `fail` | selected push protection and delegated bypass fields | Direct evidence that GitHub currently does not report secret push protection enabled for this repository. |
 | `200 OK` with missing or non-string `security_and_analysis.secret_scanning_push_protection.status` | `unknown` | error details | The service cannot safely interpret the response. |
 | `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
+
+## `default-branch-force-pushes-blocked`
+
+Claim: an active GitHub ruleset blocks force pushes on the repository's default branch.
+
+GitHub endpoints:
+
+```http
+GET /repos/{owner}/{repo}
+GET /repos/{owner}/{repo}/rules/branches/{branch}
+```
+
+The branch is resolved from `default_branch` in the repository metadata response. The rules endpoint reports active rules that apply to that branch, including rules inherited from organization-level rulesets when GitHub exposes them through the repository-scoped endpoint.
+
+This claim intentionally does not evaluate classic branch protection or ruleset bypass actors. It reports whether the ruleset rule is currently active, not whether a privileged administrator could later change the policy.
+
+| GitHub response or value | PolicyChecks status | Proof details | Judgment |
+| --- | --- | --- | --- |
+| `200 OK` with an active rule whose `type` is `non_fast_forward` | `pass` | `default_branch`, `required_rule_type`, `active_rule_types`, selected `matching_rules`, limitations | Direct evidence that an active ruleset blocks force pushes for the default branch. |
+| `200 OK` with a valid active-rules array and no `non_fast_forward` rule | `fail` | `default_branch`, `required_rule_type`, `active_rule_types`, empty `matching_rules`, limitations | Direct evidence that this ruleset setting is not enabled for the default branch. |
+| Repository metadata has missing or empty `default_branch` | `unknown` | error details | The service cannot select the branch whose policy should be checked. |
+| Rules response is not an array, or a rule is missing a string `type` | `unknown` | error details | The service cannot safely interpret the response. |
+| `404 Not Found` from either endpoint | `unknown` | error details | Not safe to assert disabled from this response. |
 
 ## Adding A New Claim
 

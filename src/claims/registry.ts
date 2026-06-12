@@ -1,3 +1,4 @@
+import { defaultBranchForcePushesBlockedClaim } from "./default-branch-force-pushes.js";
 import { immutableReleasesClaim } from "./immutable-releases.js";
 import {
   secretPushProtectionEnabledClaim,
@@ -10,7 +11,8 @@ const definitions = [
   immutableReleasesClaim,
   shaPinningRequiredClaim,
   secretScanningEnabledClaim,
-  secretPushProtectionEnabledClaim
+  secretPushProtectionEnabledClaim,
+  defaultBranchForcePushesBlockedClaim
 ] satisfies ClaimDefinition[];
 
 export const claimDefinitions: readonly ClaimDefinition[] = definitions;

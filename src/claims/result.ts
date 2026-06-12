@@ -77,7 +77,7 @@ export const repositorySettingEvidence: ClaimEvidence = {
 };
 
 export const activeBranchRulesEvidence: ClaimEvidence = {
-  scope: "unknown",
+  scope: "repository",
   source: "active_branch_rules"
 };
 

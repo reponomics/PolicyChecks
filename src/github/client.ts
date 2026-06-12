@@ -23,6 +23,7 @@ export interface GitHubClient {
   getRepository(owner: string, repo: string): Promise<GitHubRepository>;
   getImmutableReleases(owner: string, repo: string): Promise<unknown>;
   getActionsPermissions(owner: string, repo: string): Promise<unknown>;
+  getBranchRules(owner: string, repo: string, branch: string): Promise<unknown>;
 }
 
 export type GitHubRequest = ReturnType<typeof request.defaults>;
@@ -48,6 +49,14 @@ export class GitHubRestClient implements GitHubClient {
     return this.getJson("GET /repos/{owner}/{repo}/actions/permissions", {
       owner,
       repo
+    });
+  }
+
+  async getBranchRules(owner: string, repo: string, branch: string): Promise<unknown> {
+    return this.getJson("GET /repos/{owner}/{repo}/rules/branches/{branch}", {
+      owner,
+      repo,
+      branch
     });
   }
 
