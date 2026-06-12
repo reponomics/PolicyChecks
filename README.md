@@ -13,6 +13,11 @@ The current product surface is intentionally narrow, and is constrained by the g
 | Secret scanning | `secret-scanning-enabled` | `enabled` | `disabled` or `unknown` |
 | Secret push protection | `secret-push-protection-enabled` | `enabled` | `disabled` or `unknown` |
 | Force pushes blocked | `default-branch-force-pushes-blocked` | `enabled` | `disabled` or `unknown` |
+| Signed commits | `default-branch-signed-commits-required` | `enabled` | `disabled` or `unknown` |
+| Linear history | `default-branch-linear-history-required` | `enabled` | `disabled` or `unknown` |
+| Deletion blocked | `default-branch-deletion-blocked` | `enabled` | `disabled` or `unknown` |
+| Pull request required | `default-branch-pull-request-required` | `enabled` | `disabled` or `unknown` |
+| Status checks | `default-branch-status-checks-required` | `enabled` | `disabled` or `unknown` |
 
 Unlike OSSF Scorecard, PolicyChecks does not intend to provide any in-depth proof or evaluation regarding a repository's overall stance regarding security or best practices - it simply reports on the current state of an admin setting. It does not claim historical continuity, or prove that a privileged administrator could never change a setting. In that sense, it does not attempt to serve as a security audit - rather, it's more like: Shields.io with minimally elevated (read-only) permissions.
 
@@ -39,6 +44,16 @@ Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge 
 [![Secret push protection](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled/proof.json)
 
 [![Force pushes blocked](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked/proof.json)
+
+[![Signed commits](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-signed-commits-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-signed-commits-required/proof.json)
+
+[![Linear history](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-linear-history-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-linear-history-required/proof.json)
+
+[![Deletion blocked](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-deletion-blocked.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-deletion-blocked/proof.json)
+
+[![Pull request required](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-pull-request-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-pull-request-required/proof.json)
+
+[![Status checks](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required/proof.json)
 ```
 
 The aggregate endpoint returns all currently supported claims for a repository:

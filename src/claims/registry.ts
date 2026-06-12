@@ -1,4 +1,11 @@
-import { defaultBranchForcePushesBlockedClaim } from "./default-branch-force-pushes.js";
+import {
+  defaultBranchDeletionBlockedClaim,
+  defaultBranchForcePushesBlockedClaim,
+  defaultBranchLinearHistoryRequiredClaim,
+  defaultBranchPullRequestRequiredClaim,
+  defaultBranchSignedCommitsRequiredClaim,
+  defaultBranchStatusChecksRequiredClaim
+} from "./default-branch-rules.js";
 import { immutableReleasesClaim } from "./immutable-releases.js";
 import {
   secretPushProtectionEnabledClaim,
@@ -12,7 +19,12 @@ const definitions = [
   shaPinningRequiredClaim,
   secretScanningEnabledClaim,
   secretPushProtectionEnabledClaim,
-  defaultBranchForcePushesBlockedClaim
+  defaultBranchForcePushesBlockedClaim,
+  defaultBranchSignedCommitsRequiredClaim,
+  defaultBranchLinearHistoryRequiredClaim,
+  defaultBranchDeletionBlockedClaim,
+  defaultBranchPullRequestRequiredClaim,
+  defaultBranchStatusChecksRequiredClaim
 ] satisfies ClaimDefinition[];
 
 export const claimDefinitions: readonly ClaimDefinition[] = definitions;

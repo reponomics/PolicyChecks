@@ -8,7 +8,7 @@ The milestone focuses on active GitHub rulesets that apply to a repository's def
 
 ## Candidate Badges
 
-The initial ruleset badge set is:
+The initial targeted ruleset badge set was:
 
 | Product surface | Claim ID | Badge label | Passing result | GitHub rule type |
 | --- | --- | --- | --- | --- |
@@ -16,7 +16,15 @@ The initial ruleset badge set is:
 | Signed commits are required on the default branch by an active ruleset | `default-branch-signed-commits-required` | `signed commits` | `enabled` | `required_signatures` |
 | Linear history is required on the default branch by an active ruleset | `default-branch-linear-history-required` | `linear history` | `enabled` | `required_linear_history` |
 
-All three badges should use the existing result vocabulary:
+After validating the first deployed badge against a live repository ruleset, the same rule-type-only pattern was extended to the other simple active rules observed from the repository endpoint:
+
+| Product surface | Claim ID | Badge label | Passing result | GitHub rule type |
+| --- | --- | --- | --- | --- |
+| Default branch deletion is blocked by an active ruleset | `default-branch-deletion-blocked` | `deletion blocked` | `enabled` | `deletion` |
+| Pull requests are required for the default branch by an active ruleset | `default-branch-pull-request-required` | `pull request required` | `enabled` | `pull_request` |
+| Status checks are required for the default branch by an active ruleset | `default-branch-status-checks-required` | `status checks` | `enabled` | `required_status_checks` |
+
+All ruleset badges should use the existing result vocabulary:
 
 - `enabled`: GitHub returned an active matching ruleset rule for the repository's default branch.
 - `disabled`: GitHub returned active ruleset evidence for the default branch, but no matching rule was present.

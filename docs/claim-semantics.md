@@ -124,9 +124,18 @@ Observed product behavior: the repository metadata endpoint reports the effectiv
 | `200 OK` with missing or non-string `security_and_analysis.secret_scanning_push_protection.status` | `unknown` | error details | The service cannot safely interpret the response. |
 | `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
 
-## `default-branch-force-pushes-blocked`
+## Default Branch Ruleset Claims
 
-Claim: an active GitHub ruleset blocks force pushes on the repository's default branch.
+Claim: an active GitHub ruleset applies a specific rule to the repository's default branch.
+
+| Claim ID | Claim | GitHub rule type |
+| --- | --- | --- |
+| `default-branch-force-pushes-blocked` | Active ruleset blocks force pushes on the default branch. | `non_fast_forward` |
+| `default-branch-signed-commits-required` | Active ruleset requires signed commits on the default branch. | `required_signatures` |
+| `default-branch-linear-history-required` | Active ruleset requires linear history on the default branch. | `required_linear_history` |
+| `default-branch-deletion-blocked` | Active ruleset blocks deleting the default branch. | `deletion` |
+| `default-branch-pull-request-required` | Active ruleset requires pull requests for the default branch. | `pull_request` |
+| `default-branch-status-checks-required` | Active ruleset requires status checks for the default branch. | `required_status_checks` |
 
 GitHub endpoints:
 
@@ -141,8 +150,8 @@ This claim intentionally does not evaluate classic branch protection or ruleset 
 
 | GitHub response or value | PolicyChecks status | Proof details | Judgment |
 | --- | --- | --- | --- |
-| `200 OK` with an active rule whose `type` is `non_fast_forward` | `pass` | `default_branch`, `required_rule_type`, `active_rule_types`, selected `matching_rules`, limitations | Direct evidence that an active ruleset blocks force pushes for the default branch. |
-| `200 OK` with a valid active-rules array and no `non_fast_forward` rule | `fail` | `default_branch`, `required_rule_type`, `active_rule_types`, empty `matching_rules`, limitations | Direct evidence that this ruleset setting is not enabled for the default branch. |
+| `200 OK` with an active rule whose `type` matches the claim's rule type | `pass` | `default_branch`, `required_rule_type`, `active_rule_types`, selected `matching_rules`, limitations | Direct evidence that the active ruleset setting is enabled for the default branch. |
+| `200 OK` with a valid active-rules array and no matching rule type | `fail` | `default_branch`, `required_rule_type`, `active_rule_types`, empty `matching_rules`, limitations | Direct evidence that this ruleset setting is not enabled for the default branch. |
 | Repository metadata has missing or empty `default_branch` | `unknown` | error details | The service cannot select the branch whose policy should be checked. |
 | Rules response is not an array, or a rule is missing a string `type` | `unknown` | error details | The service cannot safely interpret the response. |
 | `404 Not Found` from either endpoint | `unknown` | error details | Not safe to assert disabled from this response. |
