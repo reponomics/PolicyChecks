@@ -134,4 +134,4 @@ Before adding a new public badge, document:
 5. Why any `fail` state is safe to assert.
 6. Whether repository-scoped responses include inherited organization policy.
 
-Post-MVP candidates include Dependabot settings, dependency graph, code security configuration badges, and ruleset-derived branch policy badges. They should remain unpublished until their API evidence maps cleanly to an intuitive admin setting without requiring file inspection, contents access, historical audit logs, or unsupported judgment calls.
+Post-MVP candidates include Dependabot settings, dependency graph, code security configuration badges, and ruleset-derived branch policy badges. They should remain unpublished until their API evidence maps cleanly to an intuitive admin setting without requiring file inspection, contents access, historical audit logs, or unsupported judgment calls. The next ruleset badge milestone is outlined in [`ruleset-branch-badges-milestone.md`](ruleset-branch-badges-milestone.md).
