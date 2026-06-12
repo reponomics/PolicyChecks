@@ -1,0 +1,252 @@
+name: Format branch with Prettier
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch to format. Leave blank to use the branch selected in the Run workflow UI."
+        required: false
+        default: ""
+        type: string
+      path:
+        description: "File, directory, or quoted glob to format."
+        required: false
+        default: "."
+        type: string
+      package-manager:
+        description: "Package manager."
+        required: false
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - npm
+          - pnpm
+          - yarn
+      node-version:
+        description: "Node.js version. Use auto to read .nvmrc, .node-version, .npmrc, or package.json engines.node."
+        required: false
+        default: "auto"
+        type: string
+      formatter:
+        description: "How to run Prettier."
+        required: false
+        default: "prettier"
+        type: choice
+        options:
+          - auto
+          - prettier
+          - package-script
+      script-name:
+        description: "Optional package.json script to run when formatter is package-script."
+        required: false
+        default: ""
+        type: string
+      commit-message:
+        description: "Commit message for formatting changes."
+        required: false
+        default: "style: format with prettier"
+        type: string
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        default: ""
+        type: string
+      path:
+        required: false
+        default: "."
+        type: string
+      package-manager:
+        required: false
+        default: "auto"
+        type: string
+      node-version:
+        required: false
+        default: "auto"
+        type: string
+      formatter:
+        required: false
+        default: "prettier"
+        type: string
+      script-name:
+        required: false
+        default: ""
+        type: string
+      commit-message:
+        required: false
+        default: "style: format with prettier"
+        type: string
+    secrets:
+      PRETTIER_FORMATTER_APP_CLIENT_ID:
+        required: true
+      PRETTIER_FORMATTER_APP_PRIVATE_KEY:
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prettier-format-${{ github.repository }}-${{ inputs.ref || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  format:
+    name: Format branch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    outputs:
+      changed: ${{ steps.prettier.outputs.changed }}
+      target_branch: ${{ steps.resolve.outputs.target_branch }}
+
+    steps:
+      - name: Resolve inputs
+        id: resolve
+        shell: bash
+        env:
+          INPUT_REF: ${{ inputs.ref }}
+          GITHUB_REF_NAME_SAFE: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          target_branch="$INPUT_REF"
+          if [ -z "$target_branch" ]; then
+            target_branch="$GITHUB_REF_NAME_SAFE"
+          fi
+
+          if [ -z "$target_branch" ]; then
+            echo "Unable to determine target branch." >&2
+            exit 1
+          fi
+
+          if [ "${target_branch#-}" != "$target_branch" ]; then
+            echo "Target branch cannot start with '-'." >&2
+            exit 1
+          fi
+
+          if [ "${target_branch#refs/}" != "$target_branch" ]; then
+            echo "Use an unqualified branch name, not refs/*: $target_branch" >&2
+            exit 1
+          fi
+
+          if ! git check-ref-format --branch "$target_branch" >/dev/null; then
+            echo "Invalid branch name: $target_branch" >&2
+            exit 1
+          fi
+
+          {
+            echo "target_branch=$target_branch"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout workflow repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Checkout target branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ steps.resolve.outputs.target_branch }}
+          fetch-depth: 0
+          persist-credentials: false
+          path: target-branch
+
+      - name: Format with Prettier
+        id: prettier
+        uses: ./.github/actions/prettier-format
+        with:
+          working-directory: target-branch
+          path: ${{ inputs.path }}
+          package-manager: ${{ inputs.package-manager }}
+          node-version: ${{ inputs.node-version }}
+          formatter: ${{ inputs.formatter }}
+          script-name: ${{ inputs.script-name }}
+
+      - name: Upload patch
+        if: ${{ steps.prettier.outputs.changed == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: prettier-patch
+          path: ${{ steps.prettier.outputs.patch_path }}
+          if-no-files-found: error
+          retention-days: 1
+
+  push:
+    name: Push formatting commit
+    needs: format
+    if: ${{ needs.format.outputs.changed == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.format.outputs.target_branch }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download patch
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: prettier-patch
+          path: ${{ runner.temp }}
+
+      - name: Commit formatting changes
+        id: commit
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ needs.format.outputs.target_branch }}
+          COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        run: |
+          set -euo pipefail
+
+          git apply --binary "$RUNNER_TEMP/prettier.patch"
+
+          if git diff --quiet; then
+            echo "Patch applied cleanly but produced no working tree changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "$COMMIT_MESSAGE"
+
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.PRETTIER_FORMATTER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PRETTIER_FORMATTER_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Push formatting commit
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ needs.format.outputs.target_branch }}
+          PUSH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          git remote set-url origin "https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin "HEAD:refs/heads/$TARGET_BRANCH"
+
+          {
+            echo "### Formatting commit pushed"
+            echo
+            echo "- Branch: \`$TARGET_BRANCH\`"
+            echo "- Commit: \`${{ steps.commit.outputs.sha }}\`"
+            echo
+            echo "This push used a GitHub App installation token; normal push and pull request checks should be eligible to run."
+          } >> "$GITHUB_STEP_SUMMARY"
