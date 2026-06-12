@@ -105,6 +105,25 @@ Observed product behavior: the repository metadata endpoint reports the effectiv
 | `200 OK` with missing or non-string `security_and_analysis.secret_scanning.status` | `unknown` | error details | The service cannot safely interpret the response. |
 | `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
 
+## `web-commit-signoff-required`
+
+Claim: contributors are required to sign off on web-based commits for the repository.
+
+GitHub endpoint:
+
+```http
+GET /repos/{owner}/{repo}
+```
+
+This is DCO-style commit message signoff for GitHub's web interface, not cryptographic commit signing. It does not prove that commits pushed from the command line include `Signed-off-by:` lines.
+
+| GitHub response or value | PolicyChecks status | Proof details | Judgment |
+| --- | --- | --- | --- |
+| `200 OK` with `web_commit_signoff_required: true` | `pass` | `web_commit_signoff_required`, `applies_to`, limitations | Direct evidence that GitHub currently requires signoff for web-based commits. |
+| `200 OK` with `web_commit_signoff_required: false` | `fail` | `web_commit_signoff_required`, `applies_to`, limitations | Direct evidence that GitHub currently does not require signoff for web-based commits. |
+| `200 OK` with missing or non-boolean `web_commit_signoff_required` | `unknown` | error details | The service cannot safely interpret the response. |
+| `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
+
 ## `secret-push-protection-enabled`
 
 Claim: secret scanning push protection is enabled for the repository.

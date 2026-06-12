@@ -13,10 +13,12 @@ import {
 } from "./secret-protection.js";
 import { shaPinningRequiredClaim } from "./sha-pinning-required.js";
 import type { ClaimDefinition } from "./types.js";
+import { webCommitSignoffRequiredClaim } from "./web-commit-signoff.js";
 
 const definitions = [
   immutableReleasesClaim,
   shaPinningRequiredClaim,
+  webCommitSignoffRequiredClaim,
   secretScanningEnabledClaim,
   secretPushProtectionEnabledClaim,
   defaultBranchForcePushesBlockedClaim,

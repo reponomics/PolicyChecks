@@ -10,6 +10,7 @@ The current product surface is intentionally narrow, and is constrained by the g
 | --- | --- | --- | --- |
 | Immutable releases | `immutable-releases` | `enabled` | `disabled` or `unknown` |
 | SHA pinning | `sha-pinning-required` | `enabled` | `disabled` or `unknown` |
+| Web signoff | `web-commit-signoff-required` | `enabled` | `disabled` or `unknown` |
 | Secret scanning | `secret-scanning-enabled` | `enabled` | `disabled` or `unknown` |
 | Secret push protection | `secret-push-protection-enabled` | `enabled` | `disabled` or `unknown` |
 | Force pushes blocked | `default-branch-force-pushes-blocked` | `enabled` | `disabled` or `unknown` |
@@ -38,6 +39,8 @@ Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge 
 [![Immutable releases](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases/proof.json)
 
 [![SHA pinning](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/proof.json)
+
+[![Web signoff](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required/proof.json)
 
 [![Secret scanning](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled/proof.json)
 

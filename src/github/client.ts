@@ -5,6 +5,7 @@ import { toGitHubApiError } from "./errors.js";
 export interface GitHubRepository {
   id: number;
   default_branch?: string | null;
+  web_commit_signoff_required?: boolean | null;
   security_and_analysis?: GitHubRepositorySecurityAndAnalysis;
 }
 

@@ -41,7 +41,7 @@ describe("badge routes", () => {
     expect(response.body.owner).toBe("OWNER");
     expect(response.body.repo).toBe("REPO");
     expect(Array.isArray(response.body.claims)).toBe(true);
-    expect(response.body.claims).toHaveLength(10);
+    expect(response.body.claims).toHaveLength(11);
     expect(response.body.claims.map((claim: { claim: string }) => claim.claim).sort()).toEqual([
       "default-branch-deletion-blocked",
       "default-branch-force-pushes-blocked",
@@ -52,7 +52,8 @@ describe("badge routes", () => {
       "immutable-releases",
       "secret-push-protection-enabled",
       "secret-scanning-enabled",
-      "sha-pinning-required"
+      "sha-pinning-required",
+      "web-commit-signoff-required"
     ]);
   });
 
@@ -135,10 +136,11 @@ describe("badge routes", () => {
 
     const response = await request(app).get("/github/OWNER/REPO/info.json").expect(200);
 
-    expect(response.body.claims).toHaveLength(10);
+    expect(response.body.claims).toHaveLength(11);
     expect(calls).toEqual([
       "immutable-releases",
       "sha-pinning-required",
+      "web-commit-signoff-required",
       "secret-scanning-enabled",
       "secret-push-protection-enabled",
       "default-branch-force-pushes-blocked",

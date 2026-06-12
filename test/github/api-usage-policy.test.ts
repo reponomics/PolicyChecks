@@ -9,7 +9,8 @@ const productionSources = [
   "src/claims/default-branch-rules.ts",
   "src/claims/immutable-releases.ts",
   "src/claims/secret-protection.ts",
-  "src/claims/sha-pinning-required.ts"
+  "src/claims/sha-pinning-required.ts",
+  "src/claims/web-commit-signoff.ts"
 ];
 
 const allowedRoutes = new Set([
