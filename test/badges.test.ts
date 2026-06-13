@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { renderBadgeSvg } from "../src/badges/svg.js";
 import { toShieldsJson } from "../src/badges/shields-json.js";
+import { communityHealthClaim } from "../src/claims/community-health.js";
 import { shaPinningRequiredClaim } from "../src/claims/sha-pinning-required.js";
 import type { ClaimResult } from "../src/claims/types.js";
 
@@ -18,6 +19,27 @@ describe("badge renderers", () => {
       message: "unknown",
       color: "lightgrey"
     });
+  });
+
+  it("renders custom metric badge message and color", () => {
+    const communityResult: ClaimResult = {
+      ...result("pass"),
+      claim: communityHealthClaim.id,
+      source: communityHealthClaim.source,
+      evidence: communityHealthClaim.evidence ?? { scope: "unknown", source: "unavailable" },
+      details: {
+        health_percentage: 87
+      }
+    };
+
+    expect(toShieldsJson(communityHealthClaim, communityResult)).toEqual({
+      schemaVersion: 1,
+      label: "community health",
+      message: "87/100",
+      color: "#6cc613"
+    });
+
+    expect(renderBadgeSvg(communityHealthClaim, communityResult)).toContain("#6cc613");
   });
 
   it("escapes SVG label and message text", () => {

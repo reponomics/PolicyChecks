@@ -8,9 +8,9 @@ PolicyChecks uses a cautious three-state result model:
 
 `unknown` is not a failure assertion. It means PolicyChecks did not have enough reliable evidence to make the claim either way.
 
-The MVP reports effective repository settings. A setting may be configured directly on the repository or inherited from an organization policy, as long as the repository-scoped GitHub API returns the effective value for the installed repository.
+PolicyChecks reports effective repository settings, configuration, and selected active ruleset-derived settings, as reported by GitHub's API. A setting may be configured directly on the repository or inherited from an organization policy, security configuration, or ruleset, as long as the repository-scoped GitHub API returns the effective value for the installed repository.
 
-PolicyChecks does not inspect workflow files, repository contents, generated artifacts, historical audit logs, or organization-wide inventory. It reports the current setting returned by the GitHub endpoint named in the proof response.
+PolicyChecks does not inspect workflow files, repository contents, generated artifacts, historical audit logs, or organization-wide inventory. It reports the _current state_ of a particular setting or repository configuration state, as reported by the GitHub endpoint named in the proof response.
 
 Every proof response includes the requested repository identity:
 
@@ -24,7 +24,7 @@ Every proof response includes the requested repository identity:
 }
 ```
 
-Every proof response also includes an `evidence` object. For the MVP badges, `evidence.source` is `repository_setting` because each supported claim is evaluated from a repository-scoped GitHub REST endpoint.
+Every proof response also includes an `evidence` object. Repository-setting badges use `repository_setting`; ruleset-derived branch badges use `active_branch_rules`.
 
 ## Documentation References
 
@@ -33,6 +33,7 @@ Every proof response also includes an `evidence` object. For the MVP badges, `ev
 | `repository-doc` | [Get a repository](https://docs.github.com/en/rest/repos/repos#get-a-repository) |
 | `immutable-releases-doc` | [Check if immutable releases are enabled for a repository](https://docs.github.com/en/rest/repos/repos#check-if-immutable-releases-are-enabled-for-a-repository) |
 | `actions-permissions-doc` | [Get GitHub Actions permissions for a repository](https://docs.github.com/en/rest/actions/permissions#get-github-actions-permissions-for-a-repository) |
+| `branch-rules-doc` | [Get rules for a branch](https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch) |
 
 ## Global Error Mapping
 
@@ -48,7 +49,7 @@ These mappings apply before claim-specific logic unless a claim explicitly docum
 
 ## `immutable-releases`
 
-Claim: immutable releases are enabled for the repository.
+#### Claim: Immutable releases are required for the repository, at the time of evaluation.
 
 GitHub endpoint:
 
@@ -68,7 +69,7 @@ Observed product behavior: when an organization immutable-releases policy applie
 
 ## `sha-pinning-required`
 
-Claim: repository Actions policy requires actions to be pinned to full-length commit SHAs.
+#### Claim: Repository settings require actions to be pinned to full-length commit SHAs, at the time of evaluation (workflows violating this rule will fail).
 
 GitHub endpoint:
 
@@ -87,7 +88,7 @@ Observed product behavior: when organization-level SHA pinning applies to a repo
 
 ## `secret-scanning-enabled`
 
-Claim: secret scanning is enabled for the repository.
+#### Claim: Secret scanning is enabled for the repository, at the time of evaluation.
 
 GitHub endpoint:
 
@@ -104,9 +105,49 @@ Observed product behavior: the repository metadata endpoint reports the effectiv
 | `200 OK` with missing or non-string `security_and_analysis.secret_scanning.status` | `unknown` | error details | The service cannot safely interpret the response. |
 | `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
 
+## `web-commit-signoff-required`
+
+#### Claim: Repository settings require contributors to sign off on web-based commits for the repository, at the time of evaluation.
+
+GitHub endpoint:
+
+```http
+GET /repos/{owner}/{repo}
+```
+
+This is DCO-style commit message signoff for GitHub's web interface, not cryptographic commit signing. It does not prove that commits pushed from the command line include `Signed-off-by:` lines.
+
+| GitHub response or value | PolicyChecks status | Proof details | Judgment |
+| --- | --- | --- | --- |
+| `200 OK` with `web_commit_signoff_required: true` | `pass` | `web_commit_signoff_required`, `applies_to`, limitations | Direct evidence that GitHub currently requires signoff for web-based commits. |
+| `200 OK` with `web_commit_signoff_required: false` | `fail` | `web_commit_signoff_required`, `applies_to`, limitations | Direct evidence that GitHub currently does not require signoff for web-based commits. |
+| `200 OK` with missing or non-boolean `web_commit_signoff_required` | `unknown` | error details | The service cannot safely interpret the response. |
+| `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
+
+## `community-health`
+
+#### Claim: The repository is assigned the indicated community profile health score by GitHub, at the time of evaluation.
+
+GitHub endpoint:
+
+```http
+GET /repos/{owner}/{repo}/community/profile
+```
+
+The badge message is GitHub's `health_percentage` value formatted as `N/100`. PolicyChecks does not calculate this score; GitHub defines it as the percentage of recommended community health files present. The badge color is a PolicyChecks presentation gradient from red at `0`, through yellow at `50`, to green at `100`.
+
+The response can include both `code_of_conduct` and `code_of_conduct_file`. PolicyChecks treats `code_of_conduct` as detected code-of-conduct metadata and `code_of_conduct_file` as the file-presence signal returned by GitHub.
+
+| GitHub response or value | PolicyChecks status | Proof details | Judgment |
+| --- | --- | --- | --- |
+| `200 OK` with integer `health_percentage` from `0` to `100` | `pass` | `health_percentage`, `score`, `badge_color`, file-presence booleans, detected metadata | Direct evidence that GitHub returned a community profile score. |
+| `200 OK` with missing, non-integer, or out-of-range `health_percentage` | `unknown` | error details | The service cannot safely interpret the response. |
+| `403 Forbidden` | `unknown` | error details | The repository may be private, inaccessible, or outside the app's readable public-resource surface. |
+| `404 Not Found` | `unknown` | error details | Not safe to assert a score from this response. |
+
 ## `secret-push-protection-enabled`
 
-Claim: secret scanning push protection is enabled for the repository.
+#### Claim: Secret scanning push protection is enabled for the repository, at the time of evaluation.
 
 GitHub endpoint:
 
@@ -123,6 +164,38 @@ Observed product behavior: the repository metadata endpoint reports the effectiv
 | `200 OK` with missing or non-string `security_and_analysis.secret_scanning_push_protection.status` | `unknown` | error details | The service cannot safely interpret the response. |
 | `404 Not Found` | `unknown` | error details | Not safe to assert disabled from this response. |
 
+## Default Branch Ruleset Claims
+
+#### Claim: An active GitHub ruleset applies a specific rule to the repository's default branch, at the time of evaluation.
+
+| Claim ID | Claim | GitHub rule type |
+| --- | --- | --- |
+| `default-branch-force-pushes-blocked` | Active ruleset blocks force pushes on the default branch. | `non_fast_forward` |
+| `default-branch-signed-commits-required` | Active ruleset requires signed commits on the default branch. | `required_signatures` |
+| `default-branch-linear-history-required` | Active ruleset requires linear history on the default branch. | `required_linear_history` |
+| `default-branch-deletion-blocked` | Active ruleset blocks deleting the default branch. | `deletion` |
+| `default-branch-pull-request-required` | Active ruleset requires pull requests for the default branch. | `pull_request` |
+| `default-branch-status-checks-required` | Active ruleset requires status checks for the default branch. | `required_status_checks` |
+
+GitHub endpoints:
+
+```http
+GET /repos/{owner}/{repo}
+GET /repos/{owner}/{repo}/rules/branches/{branch}
+```
+
+The branch is resolved from `default_branch` in the repository metadata response. The rules endpoint reports active rules that apply to that branch, including rules inherited from organization-level rulesets when GitHub exposes them through the repository-scoped endpoint.
+
+This claim intentionally does not evaluate classic branch protection or ruleset bypass actors. It reports whether the ruleset rule is currently active, not whether a privileged administrator could later change the policy.
+
+| GitHub response or value | PolicyChecks status | Proof details | Judgment |
+| --- | --- | --- | --- |
+| `200 OK` with an active rule whose `type` matches the claim's rule type | `pass` | `default_branch`, `required_rule_type`, `active_rule_types`, selected `matching_rules`, limitations | Direct evidence that the active ruleset setting is enabled for the default branch. |
+| `200 OK` with a valid active-rules array and no matching rule type | `fail` | `default_branch`, `required_rule_type`, `active_rule_types`, empty `matching_rules`, limitations | Direct evidence that this ruleset setting is not enabled for the default branch. |
+| Repository metadata has missing or empty `default_branch` | `unknown` | error details | The service cannot select the branch whose policy should be checked. |
+| Rules response is not an array, or a rule is missing a string `type` | `unknown` | error details | The service cannot safely interpret the response. |
+| `404 Not Found` from either endpoint | `unknown` | error details | Not safe to assert disabled from this response. |
+
 ## Adding A New Claim
 
 Before adding a new public badge, document:
@@ -133,5 +206,3 @@ Before adding a new public badge, document:
 4. Which responses produce `pass`, `fail`, and `unknown`.
 5. Why any `fail` state is safe to assert.
 6. Whether repository-scoped responses include inherited organization policy.
-
-Post-MVP candidates include Dependabot settings, dependency graph, code security configuration badges, and ruleset-derived branch policy badges. They should remain unpublished until their API evidence maps cleanly to an intuitive admin setting without requiring file inspection, contents access, historical audit logs, or unsupported judgment calls.

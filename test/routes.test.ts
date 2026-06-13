@@ -41,12 +41,20 @@ describe("badge routes", () => {
     expect(response.body.owner).toBe("OWNER");
     expect(response.body.repo).toBe("REPO");
     expect(Array.isArray(response.body.claims)).toBe(true);
-    expect(response.body.claims).toHaveLength(4);
+    expect(response.body.claims).toHaveLength(12);
     expect(response.body.claims.map((claim: { claim: string }) => claim.claim).sort()).toEqual([
+      "community-health",
+      "default-branch-deletion-blocked",
+      "default-branch-force-pushes-blocked",
+      "default-branch-linear-history-required",
+      "default-branch-pull-request-required",
+      "default-branch-signed-commits-required",
+      "default-branch-status-checks-required",
       "immutable-releases",
       "secret-push-protection-enabled",
       "secret-scanning-enabled",
-      "sha-pinning-required"
+      "sha-pinning-required",
+      "web-commit-signoff-required"
     ]);
   });
 
@@ -129,12 +137,20 @@ describe("badge routes", () => {
 
     const response = await request(app).get("/github/OWNER/REPO/info.json").expect(200);
 
-    expect(response.body.claims).toHaveLength(4);
+    expect(response.body.claims).toHaveLength(12);
     expect(calls).toEqual([
       "immutable-releases",
       "sha-pinning-required",
+      "web-commit-signoff-required",
+      "community-health",
       "secret-scanning-enabled",
-      "secret-push-protection-enabled"
+      "secret-push-protection-enabled",
+      "default-branch-force-pushes-blocked",
+      "default-branch-signed-commits-required",
+      "default-branch-linear-history-required",
+      "default-branch-deletion-blocked",
+      "default-branch-pull-request-required",
+      "default-branch-status-checks-required"
     ]);
   });
 

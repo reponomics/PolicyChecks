@@ -4,16 +4,20 @@ export interface ShieldsJson {
   schemaVersion: 1;
   label: string;
   message: string;
-  color: "brightgreen" | "red" | "lightgrey";
+  color: string;
 }
 
 export function toShieldsJson(definition: ClaimDefinition, result: ClaimResult): ShieldsJson {
   return {
     schemaVersion: 1,
     label: definition.label,
-    message: messageForStatus(definition, result.status),
-    color: colorForStatus(result.status)
+    message: messageForResult(definition, result),
+    color: colorForResult(definition, result)
   };
+}
+
+export function messageForResult(definition: ClaimDefinition, result: ClaimResult): string {
+  return definition.badgeMessage?.(result) ?? messageForStatus(definition, result.status);
 }
 
 export function messageForStatus(definition: ClaimDefinition, status: ClaimStatus): string {
@@ -27,7 +31,11 @@ export function messageForStatus(definition: ClaimDefinition, status: ClaimStatu
   }
 }
 
-export function colorForStatus(status: ClaimStatus): ShieldsJson["color"] {
+export function colorForResult(definition: ClaimDefinition, result: ClaimResult): string {
+  return definition.badgeColor?.(result) ?? colorForStatus(result.status);
+}
+
+export function colorForStatus(status: ClaimStatus): string {
   switch (status) {
     case "pass":
       return "brightgreen";

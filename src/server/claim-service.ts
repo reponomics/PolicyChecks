@@ -1,7 +1,7 @@
 import type { ClaimCache } from "../cache/cache.js";
 import { makeUnknownResult } from "../claims/result.js";
 import type { ClaimDefinition, ClaimResult } from "../claims/types.js";
-import type { GitHubClient, GitHubRepository } from "../github/client.js";
+import type { GitHubClient, GitHubCommunityProfile, GitHubRepository } from "../github/client.js";
 import type { InstallationResolution } from "../github/installations.js";
 
 export interface InstallationResolver {
@@ -132,6 +132,8 @@ function memoizeGitHubClient(github: GitHubClient): GitHubClient {
   const repositories = new Map<string, Promise<GitHubRepository>>();
   const immutableReleases = new Map<string, Promise<unknown>>();
   const actionsPermissions = new Map<string, Promise<unknown>>();
+  const branchRules = new Map<string, Promise<unknown>>();
+  const communityProfiles = new Map<string, Promise<GitHubCommunityProfile>>();
 
   return {
     getRepository(owner: string, repo: string) {
@@ -147,6 +149,16 @@ function memoizeGitHubClient(github: GitHubClient): GitHubClient {
     getActionsPermissions(owner: string, repo: string) {
       return memoize(actionsPermissions, repositoryKey(owner, repo), () =>
         github.getActionsPermissions(owner, repo)
+      );
+    },
+    getBranchRules(owner: string, repo: string, branch: string) {
+      return memoize(branchRules, branchKey(owner, repo, branch), () =>
+        github.getBranchRules(owner, repo, branch)
+      );
+    },
+    getCommunityProfile(owner: string, repo: string) {
+      return memoize(communityProfiles, repositoryKey(owner, repo), () =>
+        github.getCommunityProfile(owner, repo)
       );
     }
   };
@@ -170,4 +182,8 @@ function memoize<T>(
 
 function repositoryKey(owner: string, repo: string): string {
   return `${owner.toLowerCase()}/${repo.toLowerCase()}`;
+}
+
+function branchKey(owner: string, repo: string, branch: string): string {
+  return `${repositoryKey(owner, repo)}/${branch}`;
 }

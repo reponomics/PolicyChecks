@@ -6,15 +6,20 @@ const productionSources = [
   "src/github/app-auth.ts",
   "src/github/client.ts",
   "src/github/installations.ts",
+  "src/claims/community-health.ts",
+  "src/claims/default-branch-rules.ts",
   "src/claims/immutable-releases.ts",
   "src/claims/secret-protection.ts",
-  "src/claims/sha-pinning-required.ts"
+  "src/claims/sha-pinning-required.ts",
+  "src/claims/web-commit-signoff.ts"
 ];
 
 const allowedRoutes = new Set([
   "GET /repos/{owner}/{repo}",
   "GET /repos/{owner}/{repo}/actions/permissions",
+  "GET /repos/{owner}/{repo}/community/profile",
   "GET /repos/{owner}/{repo}/immutable-releases",
+  "GET /repos/{owner}/{repo}/rules/branches/{branch}",
   "GET /repos/{owner}/{repo}/installation"
 ]);
 

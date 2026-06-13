@@ -25,7 +25,9 @@ function fakeGitHub(
   return {
     getRepository: vi.fn(async () => repository),
     getImmutableReleases: vi.fn(),
-    getActionsPermissions: vi.fn()
+    getActionsPermissions: vi.fn(),
+    getBranchRules: vi.fn(),
+    getCommunityProfile: vi.fn()
   };
 }
 

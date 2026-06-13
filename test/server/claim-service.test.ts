@@ -236,10 +236,14 @@ describe("ClaimService.evaluate", () => {
     const getRepository = vi.fn(async () => ({ id: 1, default_branch: "main" }));
     const getImmutableReleases = vi.fn(async () => ({ enabled: true }));
     const getActionsPermissions = vi.fn(async () => ({ sha_pinning_required: true }));
+    const getBranchRules = vi.fn(async () => [{ type: "non_fast_forward" }]);
+    const getCommunityProfile = vi.fn(async () => ({ health_percentage: 100 }));
     const github = {
       getRepository,
       getImmutableReleases,
-      getActionsPermissions
+      getActionsPermissions,
+      getBranchRules,
+      getCommunityProfile
     } as unknown as GitHubClient;
     const resolver = makeResolver({
       status: "ok",
@@ -261,6 +265,8 @@ describe("ClaimService.evaluate", () => {
         await memoizedGitHub.getRepository(owner, repo);
         await memoizedGitHub.getImmutableReleases(owner, repo);
         await memoizedGitHub.getActionsPermissions(owner, repo);
+        await memoizedGitHub.getBranchRules(owner, repo, "main");
+        await memoizedGitHub.getCommunityProfile(owner, repo);
         return {
           ...passResult(owner, repo),
           claim: "first-github-claim"
@@ -274,6 +280,8 @@ describe("ClaimService.evaluate", () => {
         await memoizedGitHub.getRepository(owner, repo);
         await memoizedGitHub.getImmutableReleases(owner, repo);
         await memoizedGitHub.getActionsPermissions(owner, repo);
+        await memoizedGitHub.getBranchRules(owner, repo, "main");
+        await memoizedGitHub.getCommunityProfile(owner, repo);
         return {
           ...passResult(owner, repo),
           claim: "second-github-claim"
@@ -294,6 +302,8 @@ describe("ClaimService.evaluate", () => {
     expect(getRepository).toHaveBeenCalledOnce();
     expect(getImmutableReleases).toHaveBeenCalledOnce();
     expect(getActionsPermissions).toHaveBeenCalledOnce();
+    expect(getBranchRules).toHaveBeenCalledOnce();
+    expect(getCommunityProfile).toHaveBeenCalledOnce();
   });
 });
 

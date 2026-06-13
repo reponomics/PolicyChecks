@@ -1,6 +1,6 @@
 # CI/CD Integration
 
-PolicyChecks is primarily a badge and proof service, but it can also be used in CI.
+PolicyChecks is primarily a badge and proof service, and its evaluation target is administrative settings, not source code. It can also be used as part of CI workflows, if so desired, and we demonstrate this usage below - but one should understand what it does and does not establish. If run as a check on a PR, for example, it is evaluated at workflow runtime, and what it checks is the repo settings at that time, and not the PR - a PR may contain unsigned commits, and as long as the signed-commits-required setting is enabled at the time of evaluation, the PolicyChecks endpoint would reflect that, and not assert anything about the PR. If anything, it is the actual signed-commits-required setting itself that would determine whether the PR was eligible to merge or not (although even this might be subject to bypass actor overrides). Maintainers may go to a great deal of trouble to ensure that all commits are signed, and therefore it might be nice for them to have a convenient way to demonstrate this policy, besides the commit history itself - this service aims to facilitate that need, but the scope of its claims must be kept in mind.
 
 ## Workflow Gate, No Custom Action Required
 

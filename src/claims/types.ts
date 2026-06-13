@@ -27,6 +27,7 @@ export type ClaimEvidenceScope = "repository" | "organization" | "enterprise" | 
 export type ClaimEvidenceSource =
   | "repository_setting"
   | "active_branch_rules"
+  | "community_profile"
   | "attached_code_security_configuration"
   | "unavailable";
 
@@ -74,5 +75,7 @@ export interface ClaimDefinition {
   unknownMessage: string;
   source: ClaimSource;
   evidence?: ClaimEvidence;
+  badgeMessage?(result: ClaimResult): string;
+  badgeColor?(result: ClaimResult): string;
   evaluate(input: ClaimEvaluationInput): Promise<ClaimResult>;
 }

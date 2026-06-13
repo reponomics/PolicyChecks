@@ -5,7 +5,15 @@ import { toGitHubApiError } from "./errors.js";
 export interface GitHubRepository {
   id: number;
   default_branch?: string | null;
+  web_commit_signoff_required?: boolean | null;
   security_and_analysis?: GitHubRepositorySecurityAndAnalysis;
+}
+
+export interface GitHubCommunityProfile {
+  health_percentage?: number | null;
+  files?: Record<string, unknown> | null;
+  content_reports_enabled?: boolean | null;
+  updated_at?: string | null;
 }
 
 export interface GitHubRepositorySecurityAndAnalysis {
@@ -23,6 +31,8 @@ export interface GitHubClient {
   getRepository(owner: string, repo: string): Promise<GitHubRepository>;
   getImmutableReleases(owner: string, repo: string): Promise<unknown>;
   getActionsPermissions(owner: string, repo: string): Promise<unknown>;
+  getBranchRules(owner: string, repo: string, branch: string): Promise<unknown>;
+  getCommunityProfile(owner: string, repo: string): Promise<GitHubCommunityProfile>;
 }
 
 export type GitHubRequest = ReturnType<typeof request.defaults>;
@@ -46,6 +56,21 @@ export class GitHubRestClient implements GitHubClient {
 
   async getActionsPermissions(owner: string, repo: string): Promise<unknown> {
     return this.getJson("GET /repos/{owner}/{repo}/actions/permissions", {
+      owner,
+      repo
+    });
+  }
+
+  async getBranchRules(owner: string, repo: string, branch: string): Promise<unknown> {
+    return this.getJson("GET /repos/{owner}/{repo}/rules/branches/{branch}", {
+      owner,
+      repo,
+      branch
+    });
+  }
+
+  async getCommunityProfile(owner: string, repo: string): Promise<GitHubCommunityProfile> {
+    return this.getJson<GitHubCommunityProfile>("GET /repos/{owner}/{repo}/community/profile", {
       owner,
       repo
     });

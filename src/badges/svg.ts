@@ -1,5 +1,5 @@
 import type { ClaimDefinition, ClaimResult } from "../claims/types.js";
-import { colorForStatus, messageForStatus } from "./shields-json.js";
+import { colorForResult, messageForResult } from "./shields-json.js";
 
 const colorHex = {
   brightgreen: "#4c1",
@@ -9,12 +9,12 @@ const colorHex = {
 
 export function renderBadgeSvg(definition: ClaimDefinition, result: ClaimResult): string {
   const label = definition.label;
-  const message = messageForStatus(definition, result.status);
+  const message = messageForResult(definition, result);
   const labelWidth = textWidth(label);
   const messageWidth = textWidth(message);
   const width = labelWidth + messageWidth;
   const messageX = labelWidth + messageWidth / 2;
-  const color = colorHex[colorForStatus(result.status)];
+  const color = svgColor(colorForResult(definition, result));
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="20" role="img" aria-label="${escapeXml(
     `${label}: ${message}`
@@ -41,6 +41,10 @@ export function renderBadgeSvg(definition: ClaimDefinition, result: ClaimResult)
 
 function textWidth(text: string): number {
   return Math.max(44, Math.ceil(text.length * 7 + 10));
+}
+
+function svgColor(color: string): string {
+  return color in colorHex ? colorHex[color as keyof typeof colorHex] : color;
 }
 
 function escapeXml(value: string): string {

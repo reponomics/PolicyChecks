@@ -1,0 +1,93 @@
+import { describe, expect, it } from "vitest";
+
+import { webCommitSignoffRequiredClaim } from "../../src/claims/web-commit-signoff.js";
+import { GitHubApiError } from "../../src/github/errors.js";
+import { evaluateWithMock, mockGitHub } from "../support/mock-github.js";
+
+describe("web commit signoff claim", () => {
+  it("passes when web_commit_signoff_required is true", async () => {
+    const result = await evaluateWithMock(
+      webCommitSignoffRequiredClaim,
+      mockGitHub({
+        getRepository: async () => ({
+          id: 1,
+          web_commit_signoff_required: true
+        })
+      })
+    );
+
+    expect(result).toMatchObject({
+      status: "pass",
+      value: true,
+      details: {
+        web_commit_signoff_required: true,
+        applies_to: "web_based_commits",
+        limitations: {
+          command_line_commits_evaluated: false,
+          commit_history_evaluated: false
+        }
+      }
+    });
+  });
+
+  it("fails when web_commit_signoff_required is false", async () => {
+    const result = await evaluateWithMock(
+      webCommitSignoffRequiredClaim,
+      mockGitHub({
+        getRepository: async () => ({
+          id: 1,
+          web_commit_signoff_required: false
+        })
+      })
+    );
+
+    expect(result).toMatchObject({
+      status: "fail",
+      value: false,
+      details: {
+        web_commit_signoff_required: false,
+        applies_to: "web_based_commits"
+      }
+    });
+    expect(result.error).toBeUndefined();
+  });
+
+  it("returns unknown when web_commit_signoff_required is missing", async () => {
+    const result = await evaluateWithMock(
+      webCommitSignoffRequiredClaim,
+      mockGitHub({
+        getRepository: async () => ({ id: 1 })
+      })
+    );
+
+    expect(result).toMatchObject({
+      status: "unknown",
+      value: null,
+      details: {
+        web_commit_signoff_required: null
+      },
+      error: {
+        kind: "unexpected_response"
+      }
+    });
+  });
+
+  it("returns unknown on authorization failure", async () => {
+    const result = await evaluateWithMock(
+      webCommitSignoffRequiredClaim,
+      mockGitHub({
+        getRepository: async () => {
+          throw new GitHubApiError("Forbidden", {
+            status: 403,
+            kind: "forbidden"
+          });
+        }
+      })
+    );
+
+    expect(result.status).toBe("unknown");
+    expect(result.error).toMatchObject({
+      kind: "forbidden"
+    });
+  });
+});
