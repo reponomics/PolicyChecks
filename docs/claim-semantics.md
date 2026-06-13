@@ -24,7 +24,7 @@ Every proof response includes the requested repository identity:
 }
 ```
 
-Every proof response also includes an `evidence` object. The initial repository-setting badges use `repository_setting`; ruleset-derived branch badges use `active_branch_rules`.
+Every proof response also includes an `evidence` object. Repository-setting badges use `repository_setting`; ruleset-derived branch badges use `active_branch_rules`.
 
 ## Documentation References
 

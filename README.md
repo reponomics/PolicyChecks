@@ -1,10 +1,27 @@
-# PolicyChecks
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark-1.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light-1.png">
+    <img alt="PolicyChecks Banner" src="docs/assets/banner-light-1.png" width="100%">
+</picture>
 
-[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/proof.json) [![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/proof.json) [![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/proof.json) [![Secret push protection](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled/proof.json)
+<!-- prettier-ignore-start -->
+[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/proof.json)
+[![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/proof.json)
+[![Web signoff](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required/proof.json)
+[![Community health](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health/proof.json)
+[![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/proof.json)
+[![Secret push protection](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled/proof.json)
+[![Force pushes blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked/proof.json)
+[![Signed commits](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required/proof.json)
+[![Linear history](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required/proof.json)
+[![Deletion blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked/proof.json)
+[![Pull request required](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required/proof.json)
+[![Status checks](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required/proof.json)
+<!-- prettier-ignore-end -->
 
 PolicyChecks is a GitHub App-backed badge service and validation endpoint for repository settings that ordinary public badge services cannot verify. It exposes badge SVG, Shields-compatible JSON, and proof JSON endpoints for repository administration and security settings that map to clear admin UI controls and direct GitHub REST API responses. This gives maintainers a convenient way to show that a project not only follows best practices, but that these practices are backed by administrative policies at the repository settings level. This fills a modest gap in the badge ecosystem between excellent services like shields.io (which does not have the permissions to report on these facts) and OSSF Scorecard (which does take into account many of these same conditions, but does not expose individual setting-level endpoints).
 
-The current product surface is intentionally narrow, and is constrained by the goals of minimizing requested permissions, and leveraging clear signals provided by the GitHub API: it checks effective repository settings and one active ruleset-derived default branch setting. A setting may be configured directly at the repository level, or inherited from an organization policy, security configuration, or ruleset when the repository-scoped GitHub API reports the effective value.
+The current product surface is intentionally narrow, and is constrained by the goals of minimizing requested permissions, and leveraging clear signals provided by the GitHub API: it checks effective repository settings, selected repository configuration, and active ruleset-derived default branch settings. A setting may be configured directly at the repository level, or inherited from an organization policy, security configuration, or ruleset when the repository-scoped GitHub API reports the effective value.
 
 | Check | Claim ID | Passing result | Other results |
 | --- | --- | --- | --- |
@@ -21,7 +38,7 @@ The current product surface is intentionally narrow, and is constrained by the g
 | Pull request required | `default-branch-pull-request-required` | `enabled` | `disabled` or `unknown` |
 | Status checks | `default-branch-status-checks-required` | `enabled` | `disabled` or `unknown` |
 
-Unlike OSSF Scorecard, PolicyChecks does not intend to provide any in-depth proof or evaluation regarding a repository's overall stance regarding security or best practices - it simply reports on the current state of an admin setting. It does not claim historical continuity, or prove that a privileged administrator could never change a setting. In that sense, it does not attempt to serve as a security audit - rather, it's more like: Shields.io with minimally elevated (read-only) permissions.
+Unlike OSSF Scorecard, PolicyChecks does not intend to provide any in-depth proof or evaluation regarding a repository's overall stance regarding security or best practices - it simply reports on the current state of an admin setting. It does not claim historical continuity, or prove that a privileged administrator could never change a setting. In that sense, it does not attempt to serve as a security audit - rather, it's more like: shields.io with minimally elevated (read-only) permissions.
 
 ## Endpoints
 
