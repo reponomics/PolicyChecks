@@ -8,6 +8,52 @@ PolicyChecks uses a cautious three-state result model:
 
 `unknown` is not a failure assertion. It means PolicyChecks did not have enough reliable evidence to make the claim either way.
 
+Proof responses and badge responses expose the same evaluation at different layers:
+
+- `status` is the machine-readable claim result: `pass`, `fail`, or `unknown`.
+- `value` is a compact proof value for clients: `true` when the claim passes, `false` when the claim fails, and `null` when the result is unknown. For current boolean setting and ruleset claims, `status: pass` maps to `value: true`, `status: fail` maps to `value: false`, and `status: unknown` maps to `value: null`.
+- Badge `message` is display text. Most claims display `enabled`, `disabled`, or `unknown`; metric-style claims can override this. For example, `community-health` uses `status: pass` and `value: true` when GitHub returns a valid score, while the badge message displays the score as `N/100`.
+
+In the per-claim tables below, "GitHub response or value" refers to the upstream GitHub response field being interpreted, not the proof response's top-level `value` field.
+
+## Proof JSON Contract
+
+The proof endpoint returns PolicyChecks' evaluation record, not a raw GitHub API response. Raw upstream responses are intentionally not part of the public contract because they would make the endpoint harder to understand, expose fields unrelated to the claim, and couple PolicyChecks clients to GitHub response shapes that are outside this service's control.
+
+Top-level proof fields have these meanings:
+
+| Field | Meaning |
+| --- | --- |
+| `claim` | PolicyChecks claim ID requested by the caller. |
+| `owner`, `repo`, `repository` | Repository identity used for the evaluation. |
+| `status` | Machine-readable PolicyChecks result: `pass`, `fail`, or `unknown`. |
+| `value` | Compact boolean/null result for clients. It mirrors `status` for boolean claims and indicates whether a metric claim produced a valid reportable result. |
+| `source` | The GitHub API endpoint template and field names PolicyChecks used as evidence. This is source attribution, not the raw response. |
+| `evidence` | PolicyChecks classification of the evidence source, such as `repository_setting`, `active_branch_rules`, or `community_profile`. |
+| `checked_at` | ISO timestamp for the evaluation. |
+| `details` | Claim-specific, selected evidence and normalized explanation fields. These fields may include GitHub-derived values, but only the selected fields documented below should be treated as the proof contract. |
+| `error` | Public error category and message when PolicyChecks cannot evaluate the claim. |
+
+Common `details` fields:
+
+| Field | Meaning |
+| --- | --- |
+| `enabled` | Selected GitHub boolean for the immutable-releases claim. |
+| `enforced_by_owner` | GitHub-reported indicator that immutable releases are enforced by the repository owner or owning organization. |
+| `sha_pinning_required` | Selected GitHub boolean for the Actions SHA-pinning requirement. |
+| `web_commit_signoff_required` | Selected GitHub boolean for web-based commit signoff. |
+| `applies_to` | Human-readable scope qualifier for a claim whose underlying GitHub field can be mistaken for a broader policy. |
+| `default_branch` | Repository default branch PolicyChecks evaluated for ruleset-derived claims. |
+| `required_rule_type` | GitHub ruleset rule type required for the specific ruleset-derived claim. |
+| `active_rule_types` | Sorted list of active GitHub ruleset rule types returned for the evaluated branch. |
+| `matching_rules` | Selected matching rule evidence. PolicyChecks includes the rule `type` and `parameters` when present, not the full rules response. |
+| `health_percentage` | GitHub-reported community profile health percentage. PolicyChecks does not calculate this value. |
+| `score` | Normalized `{ numerator, denominator }` representation of `health_percentage`. |
+| `badge_color` | PolicyChecks presentation color used for the metric badge. This is not a GitHub field. |
+| `files` | Boolean file-presence signals returned by GitHub's community profile endpoint. |
+| `detected` | Selected metadata GitHub reports for detected community files, such as license or code-of-conduct metadata. |
+| `limitations` | Explicit boundaries for the claim, such as whether file contents, classic branch protection, bypass actors, or commit history were evaluated. |
+
 PolicyChecks reports effective repository settings, configuration, and selected active ruleset-derived settings, as reported by GitHub's API. A setting may be configured directly on the repository or inherited from an organization policy, security configuration, or ruleset, as long as the repository-scoped GitHub API returns the effective value for the installed repository.
 
 PolicyChecks does not inspect workflow files, repository contents, generated artifacts, historical audit logs, or organization-wide inventory. It reports the _current state_ of a particular setting or repository configuration state, as reported by the GitHub endpoint named in the proof response.

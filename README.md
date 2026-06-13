@@ -87,7 +87,7 @@ https://policychecks.reponomics.org/github/OWNER/REPO/info.json
 
 ## Results
 
-Results use only `pass`, `fail`, and `unknown`.
+Proof responses use only `pass`, `fail`, and `unknown` as machine-readable statuses. Badge messages use claim-specific display values, such as `enabled`, `disabled`, `unknown`, or a GitHub-reported score like `87/100`.
 
 `unknown` is returned when PolicyChecks cannot safely interpret GitHub access, rate limits, availability, response shape, or endpoint semantics as either passing or failing evidence.
 
