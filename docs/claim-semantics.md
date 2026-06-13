@@ -1,24 +1,16 @@
 # Claim Semantics
 
-PolicyChecks uses a cautious three-state result model:
+PolicyChecks uses three states to classify claims (NOTE: Community health score is the exception - it is a percentage score returned by GitHub):
 
-- `pass`: GitHub returned a documented repository-scoped response showing that the checked setting is on.
-- `fail`: GitHub returned a documented repository-scoped response showing that the checked setting is off.
-- `unknown`: GitHub access, rate limits, response shape, or endpoint semantics prevent a confident current-state `pass` or `fail`.
+- `enabled`: GitHub returned a documented repository-scoped response showing that the checked setting is enabled.
+- `disabled`: GitHub returned a documented repository-scoped response showing that the checked setting is not enabled.
+- `unknown`: GitHub access, rate limits, response shape, or endpoint semantics prevent confidently reporting the claim as `enabled` or `disabled`.
 
 `unknown` is not a failure assertion. It means PolicyChecks did not have enough reliable evidence to make the claim either way.
 
-Proof responses and badge responses expose the same evaluation at different layers:
-
-- `status` is the machine-readable claim result: `pass`, `fail`, or `unknown`.
-- `value` is a compact proof value for clients: `true` when the claim passes, `false` when the claim fails, and `null` when the result is unknown. For current boolean setting and ruleset claims, `status: pass` maps to `value: true`, `status: fail` maps to `value: false`, and `status: unknown` maps to `value: null`.
-- Badge `message` is display text. Most claims display `enabled`, `disabled`, or `unknown`; metric-style claims can override this. For example, `community-health` uses `status: pass` and `value: true` when GitHub returns a valid score, while the badge message displays the score as `N/100`.
-
-In the per-claim tables below, "GitHub response or value" refers to the upstream GitHub response field being interpreted, not the proof response's top-level `value` field.
+Proof responses expose more detailed information about the claim, as reported by the GitHub API.
 
 ## Proof JSON Contract
-
-The proof endpoint returns PolicyChecks' evaluation record, not a raw GitHub API response. Raw upstream responses are intentionally not part of the public contract because they would make the endpoint harder to understand, expose fields unrelated to the claim, and couple PolicyChecks clients to GitHub response shapes that are outside this service's control.
 
 Top-level proof fields have these meanings:
 
@@ -26,8 +18,8 @@ Top-level proof fields have these meanings:
 | --- | --- |
 | `claim` | PolicyChecks claim ID requested by the caller. |
 | `owner`, `repo`, `repository` | Repository identity used for the evaluation. |
-| `status` | Machine-readable PolicyChecks result: `pass`, `fail`, or `unknown`. |
-| `value` | Compact boolean/null result for clients. It mirrors `status` for boolean claims and indicates whether a metric claim produced a valid reportable result. |
+| `status` | Machine-readable PolicyChecks result: `pass`, `fail`, or `unknown`. [CODEX: REMOVE THIS] |
+| `value` | Compact boolean/null result for clients. It mirrors `status` for boolean claims and indicates whether a metric claim produced a valid reportable result. [CODEX: REMOVE THIS] |
 | `source` | The GitHub API endpoint template and field names PolicyChecks used as evidence. This is source attribution, not the raw response. |
 | `evidence` | PolicyChecks classification of the evidence source, such as `repository_setting`, `active_branch_rules`, or `community_profile`. |
 | `checked_at` | ISO timestamp for the evaluation. |
