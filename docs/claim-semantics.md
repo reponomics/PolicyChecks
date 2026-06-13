@@ -54,6 +54,17 @@ Common `details` fields:
 | `detected` | Selected metadata GitHub reports for detected community files, such as license or code-of-conduct metadata. |
 | `limitations` | Explicit boundaries for the claim, such as whether file contents, classic branch protection, bypass actors, or commit history were evaluated. |
 
+Common `limitations` fields:
+
+| Field | Meaning |
+| --- | --- |
+| `public_repository_metric: true` | The claim depends on a GitHub metric intended for public repository community-profile reporting. PolicyChecks reports the metric GitHub returns and does not infer a score for private or inaccessible repositories. |
+| `file_contents_evaluated: false` | PolicyChecks did not fetch or inspect repository file contents. For community health, it uses GitHub's community profile response rather than reading files directly. |
+| `command_line_commits_evaluated: false` | PolicyChecks did not inspect commits pushed from a local Git client. This applies to web signoff because GitHub's setting concerns commits made through GitHub's web interface. |
+| `commit_history_evaluated: false` | PolicyChecks did not inspect historical commits. The claim is about the current repository setting, not whether existing commits satisfy a signoff or signature policy. |
+| `classic_branch_protection_evaluated: false` | Ruleset-derived branch claims did not inspect legacy/classic branch protection rules. A repository protected only by classic branch protection can therefore fail a ruleset badge even if a similar protection exists in the older system. |
+| `bypass_actors_evaluated: false` | Ruleset-derived branch claims did not inspect configured ruleset bypass actors. The claim reports whether the rule is currently active for the default branch, not whether selected actors can bypass it or whether administrators could later change the policy. |
+
 PolicyChecks reports effective repository settings, configuration, and selected active ruleset-derived settings, as reported by GitHub's API. A setting may be configured directly on the repository or inherited from an organization policy, security configuration, or ruleset, as long as the repository-scoped GitHub API returns the effective value for the installed repository.
 
 PolicyChecks does not inspect workflow files, repository contents, generated artifacts, historical audit logs, or organization-wide inventory. It reports the _current state_ of a particular setting or repository configuration state, as reported by the GitHub endpoint named in the proof response.
@@ -163,6 +174,8 @@ GET /repos/{owner}/{repo}
 
 This is DCO-style commit message signoff for GitHub's web interface, not cryptographic commit signing. It does not prove that commits pushed from the command line include `Signed-off-by:` lines.
 
+Proof limitations for this claim state that command-line commits and commit history were not evaluated. That means the badge only reflects GitHub's current `web_commit_signoff_required` setting; it is not evidence about existing commits or about commits made outside GitHub's web editor.
+
 | GitHub response or value | PolicyChecks status | Proof details | Judgment |
 | --- | --- | --- | --- |
 | `200 OK` with `web_commit_signoff_required: true` | `pass` | `web_commit_signoff_required`, `applies_to`, limitations | Direct evidence that GitHub currently requires signoff for web-based commits. |
@@ -183,6 +196,8 @@ GET /repos/{owner}/{repo}/community/profile
 The badge message is GitHub's `health_percentage` value formatted as `N/100`. PolicyChecks does not calculate this score; GitHub defines it as the percentage of recommended community health files present. The badge color is a PolicyChecks presentation gradient from red at `0`, through yellow at `50`, to green at `100`.
 
 The response can include both `code_of_conduct` and `code_of_conduct_file`. PolicyChecks treats `code_of_conduct` as detected code-of-conduct metadata and `code_of_conduct_file` as the file-presence signal returned by GitHub.
+
+Proof limitations for this claim state that the score is a public repository metric and that file contents were not evaluated. That means PolicyChecks reports GitHub's community profile score and selected file-presence metadata; it does not read or grade the repository's community files itself.
 
 | GitHub response or value | PolicyChecks status | Proof details | Judgment |
 | --- | --- | --- | --- |
@@ -233,6 +248,8 @@ GET /repos/{owner}/{repo}/rules/branches/{branch}
 The branch is resolved from `default_branch` in the repository metadata response. The rules endpoint reports active rules that apply to that branch, including rules inherited from organization-level rulesets when GitHub exposes them through the repository-scoped endpoint.
 
 This claim intentionally does not evaluate classic branch protection or ruleset bypass actors. It reports whether the ruleset rule is currently active, not whether a privileged administrator could later change the policy.
+
+Proof limitations for these claims include `classic_branch_protection_evaluated: false` and `bypass_actors_evaluated: false`. The bypass limitation is important: a passing ruleset badge means GitHub returned the expected active rule for the default branch, but it does not mean every actor is unable to bypass that rule. PolicyChecks treats bypass configuration as outside the claim because repository administrators can generally change repository policy, and because the product goal is to expose current settings rather than prove an immutable enforcement guarantee.
 
 | GitHub response or value | PolicyChecks status | Proof details | Judgment |
 | --- | --- | --- | --- |
