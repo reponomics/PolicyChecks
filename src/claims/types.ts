@@ -1,6 +1,6 @@
 import type { GitHubClient } from "../github/client.js";
 
-export type ClaimStatus = "pass" | "fail" | "unknown";
+export type ClaimResultText = "enabled" | "disabled" | "unknown" | string;
 
 export type ClaimErrorKind =
   | "not_installed"
@@ -48,8 +48,7 @@ export interface ClaimResult {
   owner: string;
   repo: string;
   repository: ClaimRepositoryIdentity;
-  status: ClaimStatus;
-  value: boolean | null;
+  result: ClaimResultText;
   source: ClaimSource;
   evidence: ClaimEvidence;
   checked_at: string;
@@ -70,9 +69,6 @@ export interface ClaimEvaluationInput {
 export interface ClaimDefinition {
   id: string;
   label: string;
-  passMessage: string;
-  failMessage: string;
-  unknownMessage: string;
   source: ClaimSource;
   evidence?: ClaimEvidence;
   badgeMessage?(result: ClaimResult): string;

@@ -11,9 +11,6 @@ import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
 export const immutableReleasesClaim: ClaimDefinition = {
   id: "immutable-releases",
   label: "immutable releases",
-  passMessage: "enabled",
-  failMessage: "disabled",
-  unknownMessage: "unknown",
   source: {
     provider: "github",
     api: "REST",
@@ -37,8 +34,7 @@ export const immutableReleasesClaim: ClaimDefinition = {
       return makeClaimResult(
         immutableReleasesClaim,
         resultInput(input),
-        enabled ? "pass" : "fail",
-        enabled,
+        enabled ? "enabled" : "disabled",
         {
           enabled,
           enforced_by_owner:
@@ -51,7 +47,7 @@ export const immutableReleasesClaim: ClaimDefinition = {
         error.status === 404 &&
         input.repositoryAccess === "verified"
       ) {
-        return makeClaimResult(immutableReleasesClaim, resultInput(input), "fail", false, {
+        return makeClaimResult(immutableReleasesClaim, resultInput(input), "disabled", {
           enabled: false,
           enforced_by_owner: null
         });

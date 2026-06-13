@@ -17,8 +17,7 @@ describe("web commit signoff claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "pass",
-      value: true,
+      result: "enabled",
       details: {
         web_commit_signoff_required: true,
         applies_to: "web_based_commits",
@@ -42,8 +41,7 @@ describe("web commit signoff claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "fail",
-      value: false,
+      result: "disabled",
       details: {
         web_commit_signoff_required: false,
         applies_to: "web_based_commits"
@@ -61,8 +59,7 @@ describe("web commit signoff claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "unknown",
-      value: null,
+      result: "unknown",
       details: {
         web_commit_signoff_required: null
       },
@@ -85,7 +82,7 @@ describe("web commit signoff claim", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "forbidden"
     });

@@ -8,7 +8,7 @@ import { createHttpApp } from "../src/server/http-app.js";
 
 describe("badge routes", () => {
   it("returns health status", async () => {
-    const app = createHttpApp(serviceReturning("pass"));
+    const app = createHttpApp(serviceReturning("enabled"));
 
     await request(app)
       .get("/healthz")
@@ -23,7 +23,7 @@ describe("badge routes", () => {
     webhookRouter.get("/github/webhook-test", (_request, response) => {
       response.json({ ok: true });
     });
-    const app = createHttpApp(serviceReturning("pass"), webhookRouter);
+    const app = createHttpApp(serviceReturning("enabled"), webhookRouter);
 
     const response = await request(app).get("/github/webhook-test").expect(200);
 
@@ -31,7 +31,7 @@ describe("badge routes", () => {
   });
 
   it("returns aggregated claim info for a repository", async () => {
-    const app = createHttpApp(serviceReturning("pass"));
+    const app = createHttpApp(serviceReturning("enabled"));
 
     const response = await request(app)
       .get("/github/OWNER/REPO/info.json")
@@ -42,6 +42,9 @@ describe("badge routes", () => {
     expect(response.body.repo).toBe("REPO");
     expect(Array.isArray(response.body.claims)).toBe(true);
     expect(response.body.claims).toHaveLength(12);
+    expect(response.body.claims[0]).toHaveProperty("result", "enabled");
+    expect(response.body.claims[0]).not.toHaveProperty("status");
+    expect(response.body.claims[0]).not.toHaveProperty("value");
     expect(response.body.claims.map((claim: { claim: string }) => claim.claim).sort()).toEqual([
       "community-health",
       "default-branch-deletion-blocked",
@@ -59,7 +62,7 @@ describe("badge routes", () => {
   });
 
   it("returns Shields JSON for a supported claim", async () => {
-    const app = createHttpApp(serviceReturning("pass"));
+    const app = createHttpApp(serviceReturning("enabled"));
 
     const response = await request(app)
       .get("/github/OWNER/REPO/sha-pinning-required.json")
@@ -75,7 +78,7 @@ describe("badge routes", () => {
   });
 
   it("returns proof JSON for a supported claim", async () => {
-    const app = createHttpApp(serviceReturning("fail"));
+    const app = createHttpApp(serviceReturning("disabled"));
 
     const response = await request(app)
       .get("/github/OWNER/REPO/immutable-releases/proof.json")
@@ -90,9 +93,10 @@ describe("badge routes", () => {
         repo: "REPO",
         full_name: "OWNER/REPO"
       },
-      status: "fail",
-      value: false
+      result: "disabled"
     });
+    expect(response.body).not.toHaveProperty("status");
+    expect(response.body).not.toHaveProperty("value");
   });
 
   it("returns SVG for a supported claim", async () => {
@@ -109,7 +113,7 @@ describe("badge routes", () => {
   });
 
   it("returns 404 for unsupported claims", async () => {
-    const app = createHttpApp(serviceReturning("pass"));
+    const app = createHttpApp(serviceReturning("enabled"));
 
     const response = await request(app).get("/github/OWNER/REPO/not-a-claim.json").expect(404);
 
@@ -131,7 +135,7 @@ describe("badge routes", () => {
         repo: string
       ): Promise<ClaimResult> {
         calls.push(definition.id);
-        return resultFor(definition, owner, repo, "pass");
+        return resultFor(definition, owner, repo, "enabled");
       }
     });
 
@@ -155,7 +159,7 @@ describe("badge routes", () => {
   });
 
   it("returns the app-level 404 for unmatched routes", async () => {
-    const app = createHttpApp(serviceReturning("pass"));
+    const app = createHttpApp(serviceReturning("enabled"));
 
     const response = await request(app).get("/not-found").expect(404);
 
@@ -168,7 +172,7 @@ describe("badge routes", () => {
       evaluateMany: async () => {
         throw new Error("private failure");
       },
-      evaluate: async (definition, owner, repo) => resultFor(definition, owner, repo, "pass")
+      evaluate: async (definition, owner, repo) => resultFor(definition, owner, repo, "enabled")
     });
 
     try {
@@ -185,10 +189,10 @@ describe("badge routes", () => {
   });
 });
 
-function serviceReturning(status: ClaimResult["status"]): ClaimEvaluator {
+function serviceReturning(result: ClaimResult["result"]): ClaimEvaluator {
   return {
     async evaluate(definition: ClaimDefinition, owner: string, repo: string): Promise<ClaimResult> {
-      return resultFor(definition, owner, repo, status);
+      return resultFor(definition, owner, repo, result);
     }
   };
 }
@@ -197,7 +201,7 @@ function resultFor(
   definition: ClaimDefinition,
   owner: string,
   repo: string,
-  status: ClaimResult["status"]
+  result: ClaimResult["result"]
 ): ClaimResult {
   return {
     claim: definition.id,
@@ -208,8 +212,7 @@ function resultFor(
       repo,
       full_name: `${owner}/${repo}`
     },
-    status,
-    value: status === "unknown" ? null : status === "pass",
+    result,
     source: definition.source,
     evidence: definition.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: "2026-05-30T00:00:00.000Z",

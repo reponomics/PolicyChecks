@@ -17,8 +17,7 @@ describe("immutable releases claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "pass",
-      value: true,
+      result: "enabled",
       checked_at: checkedAt,
       details: {
         enabled: true,
@@ -39,8 +38,7 @@ describe("immutable releases claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "fail",
-      value: false,
+      result: "disabled",
       details: {
         enabled: false,
         enforced_by_owner: false
@@ -61,8 +59,7 @@ describe("immutable releases claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "pass",
-      value: true,
+      result: "enabled",
       details: {
         enabled: true,
         enforced_by_owner: true
@@ -84,8 +81,7 @@ describe("immutable releases claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "fail",
-      value: false,
+      result: "disabled",
       details: {
         enabled: false,
         enforced_by_owner: null
@@ -107,8 +103,7 @@ describe("immutable releases claim", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
-    expect(result.value).toBeNull();
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "forbidden"
     });
@@ -128,8 +123,7 @@ describe("immutable releases claim", () => {
       "unknown"
     );
 
-    expect(result.status).toBe("unknown");
-    expect(result.value).toBeNull();
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "not_found"
     });
@@ -143,7 +137,7 @@ describe("immutable releases claim", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "unexpected_response"
     });

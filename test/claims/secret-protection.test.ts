@@ -24,8 +24,7 @@ describe("secret protection claims", () => {
     );
 
     expect(result).toMatchObject({
-      status: "pass",
-      value: true,
+      result: "enabled",
       details: {
         security_and_analysis: {
           secret_scanning: {
@@ -52,8 +51,7 @@ describe("secret protection claims", () => {
     );
 
     expect(result).toMatchObject({
-      status: "fail",
-      value: false,
+      result: "disabled",
       details: {
         security_and_analysis: {
           secret_scanning: {
@@ -84,8 +82,7 @@ describe("secret protection claims", () => {
     );
 
     expect(result).toMatchObject({
-      status: "pass",
-      value: true,
+      result: "enabled",
       details: {
         security_and_analysis: {
           secret_scanning_push_protection: {
@@ -116,8 +113,7 @@ describe("secret protection claims", () => {
     );
 
     expect(result).toMatchObject({
-      status: "fail",
-      value: false,
+      result: "disabled",
       details: {
         security_and_analysis: {
           secret_scanning_push_protection: {
@@ -139,7 +135,7 @@ describe("secret protection claims", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "unexpected_response"
     });
@@ -163,7 +159,7 @@ describe("secret protection claims", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "forbidden"
     });

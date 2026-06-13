@@ -16,8 +16,7 @@ describe("SHA pinning claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "pass",
-      value: true,
+      result: "enabled",
       details: {
         sha_pinning_required: true
       }
@@ -35,8 +34,7 @@ describe("SHA pinning claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "fail",
-      value: false,
+      result: "disabled",
       details: {
         sha_pinning_required: false
       }
@@ -56,7 +54,7 @@ describe("SHA pinning claim", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "forbidden"
     });
@@ -75,7 +73,7 @@ describe("SHA pinning claim", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "not_found"
     });
@@ -89,7 +87,7 @@ describe("SHA pinning claim", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "unexpected_response"
     });

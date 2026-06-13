@@ -11,9 +11,6 @@ import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
 export const shaPinningRequiredClaim: ClaimDefinition = {
   id: "sha-pinning-required",
   label: "SHA pinning",
-  passMessage: "enabled",
-  failMessage: "disabled",
-  unknownMessage: "unknown",
   source: {
     provider: "github",
     api: "REST",
@@ -37,8 +34,7 @@ export const shaPinningRequiredClaim: ClaimDefinition = {
       return makeClaimResult(
         shaPinningRequiredClaim,
         resultInput(input),
-        required ? "pass" : "fail",
-        required,
+        required ? "enabled" : "disabled",
         {
           sha_pinning_required: required
         }

@@ -36,8 +36,7 @@ describe("community health claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "pass",
-      value: true,
+      result: "87/100",
       evidence: {
         scope: "repository",
         source: "community_profile"
@@ -87,8 +86,7 @@ describe("community health claim", () => {
     );
 
     expect(result).toMatchObject({
-      status: "unknown",
-      value: null,
+      result: "unknown",
       details: {
         health_percentage: null
       },
@@ -108,7 +106,7 @@ describe("community health claim", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "unexpected_response"
     });
@@ -127,7 +125,7 @@ describe("community health claim", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "forbidden"
     });
