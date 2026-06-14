@@ -69,8 +69,7 @@ function makeResult(checkedAt: string): ClaimResult {
       repo: "repo",
       full_name: "owner/repo"
     },
-    status: "pass",
-    value: true,
+    result: "enabled",
     source: shaPinningRequiredClaim.source,
     evidence: shaPinningRequiredClaim.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: checkedAt,

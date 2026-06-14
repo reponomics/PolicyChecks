@@ -59,8 +59,7 @@ describe("default branch ruleset claims", () => {
     );
 
     expect(result).toMatchObject({
-      status: "pass",
-      value: true,
+      result: "enabled",
       evidence: {
         scope: "repository",
         source: "active_branch_rules"
@@ -95,8 +94,7 @@ describe("default branch ruleset claims", () => {
     );
 
     expect(result).toMatchObject({
-      status: "fail",
-      value: false,
+      result: "disabled",
       details: {
         default_branch: "main",
         required_rule_type: "non_fast_forward",
@@ -117,8 +115,7 @@ describe("default branch ruleset claims", () => {
     );
 
     expect(result).toMatchObject({
-      status: "fail",
-      value: false,
+      result: "disabled",
       details: {
         active_rule_types: [],
         matching_rules: []
@@ -135,8 +132,7 @@ describe("default branch ruleset claims", () => {
     );
 
     expect(result).toMatchObject({
-      status: "unknown",
-      value: null,
+      result: "unknown",
       details: {
         default_branch: null
       },
@@ -156,8 +152,7 @@ describe("default branch ruleset claims", () => {
     );
 
     expect(result).toMatchObject({
-      status: "unknown",
-      value: null,
+      result: "unknown",
       details: {
         default_branch: "main",
         required_rule_type: "non_fast_forward"
@@ -177,7 +172,7 @@ describe("default branch ruleset claims", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "unexpected_response"
     });
@@ -197,7 +192,7 @@ describe("default branch ruleset claims", () => {
       })
     );
 
-    expect(result.status).toBe("unknown");
+    expect(result.result).toBe("unknown");
     expect(result.error).toMatchObject({
       kind: "forbidden"
     });

@@ -1,4 +1,4 @@
-import type { ClaimDefinition, ClaimResult, ClaimStatus } from "../claims/types.js";
+import type { ClaimDefinition, ClaimResult } from "../claims/types.js";
 
 export interface ShieldsJson {
   schemaVersion: 1;
@@ -17,31 +17,22 @@ export function toShieldsJson(definition: ClaimDefinition, result: ClaimResult):
 }
 
 export function messageForResult(definition: ClaimDefinition, result: ClaimResult): string {
-  return definition.badgeMessage?.(result) ?? messageForStatus(definition, result.status);
-}
-
-export function messageForStatus(definition: ClaimDefinition, status: ClaimStatus): string {
-  switch (status) {
-    case "pass":
-      return definition.passMessage;
-    case "fail":
-      return definition.failMessage;
-    case "unknown":
-      return definition.unknownMessage;
-  }
+  return definition.badgeMessage?.(result) ?? result.result;
 }
 
 export function colorForResult(definition: ClaimDefinition, result: ClaimResult): string {
-  return definition.badgeColor?.(result) ?? colorForStatus(result.status);
+  return definition.badgeColor?.(result) ?? colorForResultText(result.result);
 }
 
-export function colorForStatus(status: ClaimStatus): string {
-  switch (status) {
-    case "pass":
+export function colorForResultText(result: string): string {
+  switch (result) {
+    case "enabled":
       return "brightgreen";
-    case "fail":
+    case "disabled":
       return "red";
     case "unknown":
       return "lightgrey";
+    default:
+      return "brightgreen";
   }
 }

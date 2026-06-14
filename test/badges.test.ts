@@ -8,7 +8,7 @@ import type { ClaimResult } from "../src/claims/types.js";
 
 describe("badge renderers", () => {
   it("renders Shields-compatible JSON", () => {
-    expect(toShieldsJson(shaPinningRequiredClaim, result("pass"))).toEqual({
+    expect(toShieldsJson(shaPinningRequiredClaim, result("enabled"))).toEqual({
       schemaVersion: 1,
       label: "SHA pinning",
       message: "enabled",
@@ -23,7 +23,7 @@ describe("badge renderers", () => {
 
   it("renders custom metric badge message and color", () => {
     const communityResult: ClaimResult = {
-      ...result("pass"),
+      ...result("enabled"),
       claim: communityHealthClaim.id,
       source: communityHealthClaim.source,
       evidence: communityHealthClaim.evidence ?? { scope: "unknown", source: "unavailable" },
@@ -45,11 +45,10 @@ describe("badge renderers", () => {
   it("escapes SVG label and message text", () => {
     const definition = {
       ...shaPinningRequiredClaim,
-      label: "SHA <actions>",
-      failMessage: "not & enforced"
+      label: "SHA <actions>"
     };
     const svg = renderBadgeSvg(definition, {
-      ...result("fail"),
+      ...result("not & enforced"),
       details: {
         ignored: "<script>"
       }
@@ -61,7 +60,7 @@ describe("badge renderers", () => {
   });
 });
 
-function result(status: ClaimResult["status"]): ClaimResult {
+function result(result: ClaimResult["result"]): ClaimResult {
   return {
     claim: shaPinningRequiredClaim.id,
     owner: "OWNER",
@@ -71,8 +70,7 @@ function result(status: ClaimResult["status"]): ClaimResult {
       repo: "REPO",
       full_name: "OWNER/REPO"
     },
-    status,
-    value: status === "unknown" ? null : status === "pass",
+    result,
     source: shaPinningRequiredClaim.source,
     evidence: shaPinningRequiredClaim.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: "2026-05-30T00:00:00.000Z",

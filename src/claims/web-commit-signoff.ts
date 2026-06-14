@@ -10,9 +10,6 @@ import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
 export const webCommitSignoffRequiredClaim: ClaimDefinition = {
   id: "web-commit-signoff-required",
   label: "web signoff",
-  passMessage: "enabled",
-  failMessage: "disabled",
-  unknownMessage: "unknown",
   source: {
     provider: "github",
     api: "REST",
@@ -42,8 +39,7 @@ export const webCommitSignoffRequiredClaim: ClaimDefinition = {
       return makeClaimResult(
         webCommitSignoffRequiredClaim,
         resultInput(input),
-        required ? "pass" : "fail",
-        required,
+        required ? "enabled" : "disabled",
         {
           web_commit_signoff_required: required,
           applies_to: "web_based_commits",

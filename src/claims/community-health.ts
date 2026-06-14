@@ -21,9 +21,6 @@ const communityFileFields = [
 export const communityHealthClaim: ClaimDefinition = {
   id: "community-health",
   label: "community health",
-  passMessage: "available",
-  failMessage: "unavailable",
-  unknownMessage: "unknown",
   source: {
     provider: "github",
     api: "REST",
@@ -58,7 +55,7 @@ export const communityHealthClaim: ClaimDefinition = {
         );
       }
 
-      return makeClaimResult(communityHealthClaim, resultInput(input), "pass", true, {
+      return makeClaimResult(communityHealthClaim, resultInput(input), `${score}/100`, {
         health_percentage: score,
         score: {
           numerator: score,

@@ -4,7 +4,7 @@ import type {
   ClaimError,
   ClaimEvaluationInput,
   ClaimResult,
-  ClaimStatus
+  ClaimResultText
 } from "./types.js";
 
 interface ResultInput {
@@ -20,8 +20,7 @@ export function checkedAt(now?: () => Date): string {
 export function makeClaimResult(
   definition: ClaimDefinition,
   input: ResultInput,
-  status: ClaimStatus,
-  value: boolean | null,
+  result: ClaimResultText,
   details: Record<string, unknown>,
   error?: ClaimError,
   evidence: ClaimEvidence = definition.evidence ?? unavailableEvidence
@@ -31,8 +30,7 @@ export function makeClaimResult(
     owner: input.owner,
     repo: input.repo,
     repository: repositoryIdentity(input),
-    status,
-    value,
+    result,
     source: definition.source,
     evidence,
     checked_at: checkedAt(input.now),
@@ -56,7 +54,7 @@ export function makeUnknownResult(
   details: Record<string, unknown> = {},
   evidence: ClaimEvidence = unavailableEvidence
 ): ClaimResult {
-  return makeClaimResult(definition, input, "unknown", null, details, error, evidence);
+  return makeClaimResult(definition, input, "unknown", details, error, evidence);
 }
 
 export function resultInput(input: ClaimEvaluationInput): ResultInput {

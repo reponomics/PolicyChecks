@@ -508,8 +508,7 @@ describe("webhook routes", () => {
           repo: "REPO",
           full_name: "OWNER/REPO"
         },
-        status: "pass",
-        value: true,
+        result: "enabled",
         source: shaPinningRequiredClaim.source,
         evidence: shaPinningRequiredClaim.evidence ?? { scope: "unknown", source: "unavailable" },
         checked_at: "2026-06-01T00:00:00.000Z",

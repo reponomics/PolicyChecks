@@ -54,9 +54,6 @@ function defaultBranchRuleClaim(options: DefaultBranchRuleClaimOptions): ClaimDe
   const definition: ClaimDefinition = {
     id: options.id,
     label: options.label,
-    passMessage: "enabled",
-    failMessage: "disabled",
-    unknownMessage: "unknown",
     source: {
       provider: "github",
       api: "REST",
@@ -115,7 +112,7 @@ function evaluateRules(
   const matchingRules = rules.filter((rule) => ruleTypeFrom(rule) === requiredRuleType);
   const enabled = matchingRules.length > 0;
 
-  return makeClaimResult(definition, resultInput(input), enabled ? "pass" : "fail", enabled, {
+  return makeClaimResult(definition, resultInput(input), enabled ? "enabled" : "disabled", {
     default_branch: defaultBranch,
     required_rule_type: requiredRuleType,
     active_rule_types: activeRuleTypes,

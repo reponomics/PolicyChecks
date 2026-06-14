@@ -9,9 +9,6 @@ import { ClaimService, type InstallationResolver } from "../../src/server/claim-
 const definition: ClaimDefinition = {
   id: "demo-claim",
   label: "Demo",
-  passMessage: "pass",
-  failMessage: "fail",
-  unknownMessage: "unknown",
   source: { provider: "github", api: "REST", endpoint: "/demo", fields: ["x"] },
   evaluate: vi.fn(async ({ owner, repo }) => passResult(owner, repo))
 };
@@ -36,8 +33,7 @@ function passResult(owner: string, repo: string): ClaimResult {
       repo,
       full_name: `${owner}/${repo}`
     },
-    status: "pass",
-    value: true,
+    result: "enabled",
     source: definition.source,
     evidence: definition.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: "2026-05-30T00:00:00.000Z",
@@ -92,7 +88,7 @@ describe("ClaimService.evaluate", () => {
     const service = makeService(resolver, cache);
     const result = await service.evaluate(definition, "owner", "repo");
 
-    expect(result.status).toBe("pass");
+    expect(result.result).toBe("enabled");
     expect(definition.evaluate).toHaveBeenCalledOnce();
     expect(definition.evaluate).toHaveBeenCalledWith({
       owner: "owner",
@@ -114,8 +110,7 @@ describe("ClaimService.evaluate", () => {
 
     const result = await makeService(resolver, cache).evaluate(definition, "owner", "repo");
 
-    expect(result.status).toBe("unknown");
-    expect(result.value).toBeNull();
+    expect(result.result).toBe("unknown");
     expect(result.error).toEqual({ kind: "not_installed", message: "no install" });
     expect(resolver.resolve).toHaveBeenCalledWith("owner", "repo");
     expect(definition.evaluate).not.toHaveBeenCalled();
@@ -225,7 +220,7 @@ describe("ClaimService.evaluate", () => {
     expect(results[0]).toBe(cached);
     expect(results[1]).toMatchObject({
       claim: "second-claim",
-      status: "unknown",
+      result: "unknown",
       error: { kind: "not_installed", message: "no install" }
     });
     expect(resolver.resolve).toHaveBeenCalledOnce();

@@ -32,9 +32,6 @@ function secretProtectionClaim(options: SecretProtectionClaimOptions): ClaimDefi
   const definition: ClaimDefinition = {
     id: options.id,
     label: options.label,
-    passMessage: "enabled",
-    failMessage: "disabled",
-    unknownMessage: "unknown",
     source: {
       provider: "github",
       api: "REST",
@@ -84,7 +81,7 @@ function evaluateSecretProtection(
 
   const enabled = feature.status === "enabled";
 
-  return makeClaimResult(definition, resultInput(input), enabled ? "pass" : "fail", enabled, {
+  return makeClaimResult(definition, resultInput(input), enabled ? "enabled" : "disabled", {
     security_and_analysis: selectedSecurityDetails(securityAndAnalysis, detailFieldsFor(field))
   });
 }
