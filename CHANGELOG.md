@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/reponomics/PolicyChecks/compare/v0.3.1...v0.4.0) (2026-06-14)
+
+
+### Features
+
+* add ruleset and community health badges ([#20](https://github.com/reponomics/PolicyChecks/issues/20)) ([e770d11](https://github.com/reponomics/PolicyChecks/commit/e770d11fcce78f4ed32c74d78c84613492ffc0dd))
+
 ## [0.3.1](https://github.com/reponomics/PolicyChecks/compare/v0.3.0...v0.3.1) (2026-06-04)
 
 ### Bug Fixes
