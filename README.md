@@ -123,6 +123,15 @@ https://policychecks.reponomics.org/github/OWNER/REPO/info.json
 
 The app requires repository `Administration: Read` permissions for each repository that hosts a badge. It supports personal or organization-owned repositories, public or private, as long as the GitHub App is installed on the repository. PolicyChecks does not call organization APIs or fetch repository file contents; the community health badge uses GitHub's community profile metric. If the GitHub API is inconclusive, PolicyChecks does not make any effort to infer whether the setting holds or not via some other indirect means - it simply reports the data as it is provided by the GitHub REST API. This is to emphasize that the primary intention of PolicyChecks is _not_ to make any substantive claims about a repository or its codebase, beyond the current status of its _settings_.
 
+## Documentation References
+
+| Reference | GitHub docs |
+| --- | --- |
+| `repository-doc` | [Get a repository](https://docs.github.com/en/rest/repos/repos#get-a-repository) |
+| `immutable-releases-doc` | [Check if immutable releases are enabled for a repository](https://docs.github.com/en/rest/repos/repos#check-if-immutable-releases-are-enabled-for-a-repository) |
+| `actions-permissions-doc` | [Get GitHub Actions permissions for a repository](https://docs.github.com/en/rest/actions/permissions#get-github-actions-permissions-for-a-repository) |
+| `branch-rules-doc` | [Get rules for a branch](https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch) |
+
 ## Limitations
 
 As described above, a repository setting is not the same thing as a security audit, or even a guarantee of compliance, historically speaking. Rather, settings enforce compliance with ceratin policies _so long as that setting is enabled_. This comes with a few caveats worth noting:

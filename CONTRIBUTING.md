@@ -8,9 +8,13 @@ All contributors are expected to have read and agreed with the [Code of Conduct]
 
 Thank you for contributing to this project.
 
+## Types of Contributions
+
+Besides contributing targeted bug fixes and enhancements, PolicyChecks is also open to expanding the set of badges that we provide, on condition that doing so (a) does not require any additional permissions beyond repository `Administration: Read`, and (b) the badge status can be reported on the basis of a single GitHub API endpoint, and does not require any non-trivial inference.
+
 ## Local Development
 
-PolicyChecks is a Node.js project. Use Node.js 24 or newer.
+PolicyChecks is a Node.js project. Use Node.js 24 or newer - or simply refer to the `.nvmrc` file.
 
 Install dependencies from the lockfile:
 
