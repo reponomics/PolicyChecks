@@ -30,10 +30,10 @@
     "repository-settings",
     "badge",
     "supply-chain",
-    "proof-of-settings"
+    "best-practices"
   ],
   "author": {
-    "name": "Really Him",
+    "name": "Reponomics Contributors",
     "email": "policychecks@reponomics.org"
   },
   "license": "MIT",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.0",
     "@types/supertest": "^7.2.0",
     "@vitest/coverage-v8": "^4.1.9",
     "husky": "^9.1.7",
@@ -54,6 +54,6 @@
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9",
-    "wrangler": "^4.101.0"
+    "wrangler": "^4.103.0"
   }
 }
