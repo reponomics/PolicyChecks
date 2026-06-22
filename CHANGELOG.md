@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/reponomics/PolicyChecks/compare/v0.4.0...v0.5.0) (2026-06-22)
+
+
+### Bug Fixes
+
+* **deps:** update deps with vulns and polish docs ([#29](https://github.com/reponomics/PolicyChecks/issues/29)) ([1bc1f49](https://github.com/reponomics/PolicyChecks/commit/1bc1f4986db317ec682498c93f1db69c648bf670))
+
+
+### Continuous Integration
+
+* deploy to cloudflare from github ([#31](https://github.com/reponomics/PolicyChecks/issues/31)) ([4c915bb](https://github.com/reponomics/PolicyChecks/commit/4c915bb14a3ced7efea7d96087ff98ef0a5cf836))
+
 ## [0.4.0](https://github.com/reponomics/PolicyChecks/compare/v0.3.1...v0.4.0) (2026-06-14)
 
 
