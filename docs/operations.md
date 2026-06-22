@@ -146,6 +146,8 @@ Unsupported webhook events are acknowledged with `ignored: true`. Repository lif
 
 Successful webhook deliveries are visible in Cloudflare request logs and GitHub's webhook delivery UI. Do not log payloads, signatures, tokens, installation IDs, account IDs, repository IDs, repository names, or Marketplace purchaser details.
 
+Webhook volume abuse should be controlled at the Cloudflare edge, not with in-process per-isolate counters. The webhook handler must stay cheap and side-effect free: cap request bodies, verify the GitHub HMAC before parsing JSON, avoid GitHub API calls, and avoid state mutation. Configure a Cloudflare WAF or rate-limiting rule for abusive `POST /github/webhook` traffic if public traffic makes request volume a concern.
+
 ## Reintroducing Repository Webhooks
 
 Repository webhook cache invalidation is intentionally retired for Marketplace launch. Reintroduce it only if all of these become true:
