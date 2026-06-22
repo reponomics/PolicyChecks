@@ -30,28 +30,3 @@ jobs:
         with:
           config-file: .github/release-please-config.json
           manifest-file: .github/.release-please-manifest.json
-
-      - name: Promote Cloudflare deploy branch
-        if: ${{ steps.release.outputs.release_created }}
-        shell: bash
-        env:
-          DEPLOY_BRANCH: cloudflare-production
-          RELEASE_SHA: ${{ steps.release.outputs.sha }}
-        run: |
-          set -euo pipefail
-
-          if [[ -z "${RELEASE_SHA}" ]]; then
-            echo "Release Please did not return a release SHA." >&2
-            exit 1
-          fi
-
-          deploy_ref="refs/heads/${DEPLOY_BRANCH}"
-
-          git cat-file -e "${RELEASE_SHA}^{commit}" 2>/dev/null || git fetch --depth=1 origin "${RELEASE_SHA}"
-
-          if git ls-remote --exit-code --heads origin "${DEPLOY_BRANCH}" >/dev/null 2>&1; then
-            expected="$(git ls-remote origin "${deploy_ref}" | awk '{print $1}')"
-            git push --force-with-lease="${deploy_ref}:${expected}" origin "${RELEASE_SHA}:${deploy_ref}"
-          else
-            git push origin "${RELEASE_SHA}:${deploy_ref}"
-          fi

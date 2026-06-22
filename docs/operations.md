@@ -45,6 +45,8 @@ Log fields deliberately avoid tokens and repository coordinates where possible. 
 
 Launch monitoring is intentionally coarse. PolicyChecks is a free, read-only, current-state badge service; the first useful alert is not "one badge is stale", but "usage or GitHub API pressure is high enough that an operator should look".
 
+The Codex automation named `PolicyChecks Worker monitor` runs daily at 09:00 local time. It smoke-tests the public health and badge/API surfaces, then checks Cloudflare Worker activity when the local automation environment has access to Cloudflare credentials. It should alert only when something deserves maintainer attention, such as a health-check failure, unexpected deployment/configuration failure, any `github_api_circuit_opened` event, repeated GitHub API throttling/errors, rate-limit remaining below `500`, more than `1000` Worker requests in 24 hours, or an unexpected Cloudflare usage/billing warning.
+
 Configure Cloudflare notifications before Marketplace publication:
 
 | Alert | Purpose | Initial guidance |
@@ -60,6 +62,51 @@ If the app grows enough that GitHub API pressure matters, add one of these befor
 3. Durable shared caching, such as KV or Durable Objects, before reintroducing repository webhooks for cache invalidation.
 
 Do not add high-cardinality metrics containing repository names. Route templates, event names, status codes, rate-limit buckets, and aggregate counts are sufficient.
+
+## Git-Backed Cloudflare Deployment
+
+PolicyChecks should deploy through Cloudflare Workers Builds connected to the GitHub repository. This removes local machines from the production deploy path while keeping deployment independent from public GitHub release notes.
+
+Recommended production setup:
+
+| Setting                  | Value                         |
+| ------------------------ | ----------------------------- |
+| Git provider             | GitHub                        |
+| Production branch        | `main`                        |
+| Install command          | `npm ci`                      |
+| Validation/build command | `npm run check`               |
+| Deploy command           | `npm run deploy`              |
+| Wrangler config          | `wrangler.policychecks.jsonc` |
+
+Use `main` as the Cloudflare production branch so internal fixes, dependency maintenance, and Worker-only changes can deploy after they pass review and CI, even when they do not create a user-facing release. Release Please remains responsible for changelog and GitHub release publication; it is not the production deployment gate.
+
+If the Cloudflare dashboard provides only one command field for deployment, use:
+
+```bash
+npm run check && npm run deploy
+```
+
+Keep runtime secrets in the deployed Worker's Settings > Variables and Secrets, not in Cloudflare build variables. Build variables are for the build environment; the Worker still needs runtime access to its GitHub App credentials and webhook secret after deployment.
+
+Required runtime secrets:
+
+```text
+GITHUB_APP_ID
+GITHUB_PRIVATE_KEY_BASE64
+GITHUB_WEBHOOK_SECRET
+```
+
+Optional runtime variables:
+
+```text
+CACHE_TTL_SECONDS
+GITHUB_API_BASE_URL
+GITHUB_API_VERSION
+```
+
+Preview deployments are useful for Worker code changes, but avoid making preview URLs part of Marketplace documentation or badge examples. The public service URL should remain `https://policychecks.reponomics.org/`.
+
+If a stricter promotion gate becomes necessary later, add a protected deploy branch and a manual promotion workflow. Do that only when there is a concrete need; otherwise it makes private maintenance fixes unnecessarily coupled to release mechanics.
 
 ## Manual Monitoring
 

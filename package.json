@@ -21,6 +21,7 @@
     "check": "npm run format:check && npm run typecheck && npm test",
     "check-updates": "if [ \"$CI\" = \"true\" ]; then echo 'Skipping dependency update notifier in CI.'; else npx npm-check-updates --enginesNode; fi",
     "check-updates:update": "npx npm-check-updates --enginesNode -u",
+    "deploy": "wrangler deploy -c wrangler.policychecks.jsonc",
     "deploy:policychecks": "wrangler deploy -c wrangler.policychecks.jsonc",
     "prepare": "husky"
   },
