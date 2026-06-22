@@ -22,7 +22,7 @@ Current limitation: the cache is in-memory per Worker isolate. It is a quota red
 
 ## GitHub API Safety Invariants
 
-Webhook handling must not call GitHub. This is covered by tests in `test/webhook-routes.test.ts`.
+Marketplace webhook handling must not call GitHub, mutate repository state, or invalidate caches. This is covered by tests in `test/webhook-routes.test.ts`.
 
 Production GitHub REST usage is restricted by `test/github/api-usage-policy.test.ts`. The allowed request surface is intentionally small and does not include repository enumeration, search, GraphQL, pagination helpers, or mutating repository routes.
 
@@ -41,6 +41,73 @@ The rate limiter emits structured JSON logs through `console.log` for GitHub API
 
 Log fields deliberately avoid tokens and repository coordinates where possible. Route templates such as `GET /repos/{owner}/{repo}/actions/permissions` are safe to log.
 
+## Unattended Monitoring
+
+Launch monitoring is intentionally coarse. PolicyChecks is a free, read-only, current-state badge service; the first useful alert is not "one badge is stale", but "usage or GitHub API pressure is high enough that an operator should look".
+
+The Codex automation named `PolicyChecks Worker monitor` runs daily at 09:00 local time. It smoke-tests the public health and badge/API surfaces, then checks Cloudflare Worker activity when the local automation environment has access to Cloudflare credentials. It should alert only when something deserves maintainer attention, such as a health-check failure, unexpected deployment/configuration failure, any `github_api_circuit_opened` event, repeated GitHub API throttling/errors, rate-limit remaining below `500`, more than `1000` Worker requests in 24 hours, or an unexpected Cloudflare usage/billing warning.
+
+Configure Cloudflare notifications before Marketplace publication:
+
+| Alert | Purpose | Initial guidance |
+| --- | --- | --- |
+| Cloudflare Budget Alert | Wake up on unexpected usage-based spend. | Use a low dollar threshold that you would not expect a quiet free app to cross. |
+| Cloudflare Usage Based Billing notification for Workers | Wake up on a material Worker request-volume increase. | Set the threshold above normal smoke testing and below a level that would surprise you on a dormant app. |
+| Cloudflare Status Incident Alert | Distinguish platform incidents from app regressions. | Subscribe to incidents affecting Workers and core CDN/routing. |
+
+If the app grows enough that GitHub API pressure matters, add one of these before relying on manual log review:
+
+1. Logpush or Workers Logs export to an alerting system that can match `github_api_circuit_opened`, `github_api_throttled`, or repeated `github_api_error`.
+2. A small application alert sink wired to the rate limiter that sends a single cooldown-limited notification when a circuit opens.
+3. Durable shared caching, such as KV or Durable Objects, before reintroducing repository webhooks for cache invalidation.
+
+Do not add high-cardinality metrics containing repository names. Route templates, event names, status codes, rate-limit buckets, and aggregate counts are sufficient.
+
+## Git-Backed Cloudflare Deployment
+
+PolicyChecks should deploy through Cloudflare Workers Builds connected to the GitHub repository. This removes local machines from the production deploy path while keeping deployment independent from public GitHub release notes.
+
+Recommended production setup:
+
+| Setting                  | Value                         |
+| ------------------------ | ----------------------------- |
+| Git provider             | GitHub                        |
+| Production branch        | `main`                        |
+| Install command          | `npm ci`                      |
+| Validation/build command | `npm run check`               |
+| Deploy command           | `npm run deploy`              |
+| Wrangler config          | `wrangler.policychecks.jsonc` |
+
+Use `main` as the Cloudflare production branch so internal fixes, dependency maintenance, and Worker-only changes can deploy after they pass review and CI, even when they do not create a user-facing release. Release Please remains responsible for changelog and GitHub release publication; it is not the production deployment gate.
+
+If the Cloudflare dashboard provides only one command field for deployment, use:
+
+```bash
+npm run check && npm run deploy
+```
+
+Keep runtime secrets in the deployed Worker's Settings > Variables and Secrets, not in Cloudflare build variables. Build variables are for the build environment; the Worker still needs runtime access to its GitHub App credentials and webhook secret after deployment.
+
+Required runtime secrets:
+
+```text
+GITHUB_APP_ID
+GITHUB_PRIVATE_KEY_BASE64
+GITHUB_WEBHOOK_SECRET
+```
+
+Optional runtime variables:
+
+```text
+CACHE_TTL_SECONDS
+GITHUB_API_BASE_URL
+GITHUB_API_VERSION
+```
+
+Preview deployments are useful for Worker code changes, but avoid making preview URLs part of Marketplace documentation or badge examples. The public service URL should remain `https://policychecks.reponomics.org/`.
+
+If a stricter promotion gate becomes necessary later, add a protected deploy branch and a manual promotion workflow. Do that only when there is a concrete need; otherwise it makes private maintenance fixes unnecessarily coupled to release mechanics.
+
 ## Manual Monitoring
 
 During installation testing or operational debugging, run:
@@ -55,7 +122,7 @@ For structured filtering, use JSON output if available in the local Wrangler ver
 npx wrangler tail -c wrangler.policychecks.jsonc --format json | jq 'select(.logs[]?.message[]? | tostring | contains("github_api_"))'
 ```
 
-Alert manually on these conditions:
+Investigate after an unattended alert, or during installation testing, on these conditions:
 
 | Severity | Condition | Response |
 | --- | --- | --- |
@@ -64,13 +131,39 @@ Alert manually on these conditions:
 | Medium | Sustained `github_api_throttled` events. | Raise cache TTL or reduce caller frequency. |
 | Medium | Repeated `github_api_error` with status `403` or `429`. | Treat as rate-limit pressure even before a circuit opens. |
 
-For unattended monitoring, configure a durable alert path from Cloudflare logs or a log drain for `github_api_circuit_opened`. Until that exists, monitoring is manual.
-
 ## Webhook Monitoring
 
-Successful webhook deliveries are visible in Cloudflare request logs and GitHub's webhook delivery UI. Webhooks are installation/cache invalidation hints only; they do not provide continuity guarantees.
+PolicyChecks currently accepts webhooks only to satisfy the minimal GitHub Marketplace lifecycle surface for a free listing.
 
-If webhook observability becomes operationally important, add a structured summary log containing only event name, action, delivery id, updated/removed repository counts, invalidated claim count, and ignored flag. Do not log payloads, signatures, tokens, installation IDs, or repository names.
+Supported webhook events:
+
+| Event | Actions | Behavior |
+| --- | --- | --- |
+| `ping` | n/a | Verify the signature and acknowledge the delivery. |
+| `marketplace_purchase` | `purchased`, `cancelled` | Verify the signature and acknowledge the delivery. No account state is provisioned or deleted because PolicyChecks does not maintain customer accounts. |
+
+Unsupported webhook events are acknowledged with `ignored: true`. Repository lifecycle and repository settings webhooks are intentionally disabled for launch.
+
+Successful webhook deliveries are visible in Cloudflare request logs and GitHub's webhook delivery UI. Do not log payloads, signatures, tokens, installation IDs, account IDs, repository IDs, repository names, or Marketplace purchaser details.
+
+Webhook volume abuse should be controlled at the Cloudflare edge, not with in-process per-isolate counters. The webhook handler must stay cheap and side-effect free: cap request bodies, verify the GitHub HMAC before parsing JSON, avoid GitHub API calls, and avoid state mutation. Configure a Cloudflare WAF or rate-limiting rule for abusive `POST /github/webhook` traffic if public traffic makes request volume a concern.
+
+## Reintroducing Repository Webhooks
+
+Repository webhook cache invalidation is intentionally retired for Marketplace launch. Reintroduce it only if all of these become true:
+
+- GitHub API telemetry shows meaningful rate-limit pressure or repeated cold-cache misses.
+- A durable shared cache is in place, or the team accepts that per-isolate in-memory invalidation is only best effort.
+- The privacy policy is updated to describe repository webhook payload receipt.
+
+The narrow event set to reconsider is:
+
+- `installation`
+- `installation_repositories`
+- `repository`
+- `repository_ruleset`
+
+The reintroduced processor must still verify signatures before parsing, avoid GitHub API calls during webhook handling, avoid payload logging, and invalidate only cache entries for affected repositories.
 
 ## Credential Storage
 

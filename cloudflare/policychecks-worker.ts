@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-import { InMemoryClaimCache, type ClaimCache } from "../src/cache/cache.js";
+import { InMemoryClaimCache } from "../src/cache/cache.js";
 import { renderBadgeSvg } from "../src/badges/svg.js";
 import { toShieldsJson } from "../src/badges/shields-json.js";
 import { claimDefinitions, getClaimDefinition } from "../src/claims/registry.js";
@@ -8,9 +8,7 @@ import type { ClaimDefinition } from "../src/claims/types.js";
 import { GitHubAppTokenFactory } from "../src/github/app-auth.js";
 import {
   GitHubInstallationResolver,
-  InMemoryRepositoryStore,
-  type RepositoryRecord,
-  type RepositoryStore
+  InMemoryRepositoryStore
 } from "../src/github/installations.js";
 import { ClaimService } from "../src/server/claim-service.js";
 
@@ -26,9 +24,6 @@ interface WorkerEnv {
 
 interface Runtime {
   claimService: ClaimService;
-  repositoryStore: InMemoryRepositoryStore;
-  claimCache: InMemoryClaimCache;
-  webhookSecret: string;
 }
 
 interface RuntimeConfig {
@@ -36,20 +31,13 @@ interface RuntimeConfig {
   github: {
     appId: number;
     privateKey: string;
-    webhookSecret: string;
     apiBaseUrl: string;
     apiVersion: string;
   };
 }
 
-interface ProcessedWebhookResult {
-  updated_repositories: number;
-  removed_repositories: number;
-  invalidated_claims: number;
-  ignored: boolean;
-}
-
 const cacheControl = "public, max-age=300, stale-while-revalidate=300";
+const maxWebhookBodyBytes = 256 * 1024;
 let runtimeCache: Runtime | undefined;
 let runtimeKey: string | undefined;
 
@@ -66,8 +54,7 @@ export default {
       }
 
       if (request.method === "POST" && pathname === "/github/webhook") {
-        const runtime = getRuntime(env);
-        return handleWebhook(request, runtime);
+        return handleWebhook(request, getWebhookSecret(env));
       }
 
       if (request.method !== "GET") {
@@ -227,11 +214,34 @@ function parsePath(pathname: string): ParsedPath {
   return { kind: "not_found" };
 }
 
-async function handleWebhook(request: Request, runtime: Runtime): Promise<Response> {
+async function handleWebhook(request: Request, webhookSecret: string): Promise<Response> {
+  const contentLength = parseContentLength(request.headers.get("content-length"));
+
+  if (contentLength !== undefined && contentLength > maxWebhookBodyBytes) {
+    return json(
+      {
+        ok: false,
+        error: "payload_too_large"
+      },
+      413
+    );
+  }
+
   const body = new Uint8Array(await request.arrayBuffer());
+
+  if (body.byteLength > maxWebhookBodyBytes) {
+    return json(
+      {
+        ok: false,
+        error: "payload_too_large"
+      },
+      413
+    );
+  }
+
   const signature = request.headers.get("x-hub-signature-256") ?? undefined;
 
-  if (!verifySignature(body, signature, runtime.webhookSecret)) {
+  if (!verifySignature(body, signature, webhookSecret)) {
     return json(
       {
         ok: false,
@@ -274,21 +284,17 @@ async function handleWebhook(request: Request, runtime: Runtime): Promise<Respon
     });
   }
 
-  const processed =
-    event === "installation"
-      ? processInstallationEvent(payload, runtime.repositoryStore, runtime.claimCache)
-      : event === "installation_repositories"
-        ? processInstallationRepositoriesEvent(payload, runtime.repositoryStore, runtime.claimCache)
-        : event === "repository_ruleset" || event === "repository"
-          ? processRepositoryScopedUpdateEvent(payload, runtime.repositoryStore, runtime.claimCache)
-          : processUnsupportedEvent();
+  const action = getString(payload.action);
+  const ignored =
+    event !== "marketplace_purchase" || (action !== "purchased" && action !== "cancelled");
 
   return json(
     {
       ok: true,
       event,
       delivery,
-      ...processed
+      action,
+      ignored
     },
     202
   );
@@ -301,153 +307,6 @@ function parseWebhookPayload(body: Uint8Array): Record<string, unknown> | undefi
   } catch {
     return undefined;
   }
-}
-
-function processUnsupportedEvent(): ProcessedWebhookResult {
-  return {
-    updated_repositories: 0,
-    removed_repositories: 0,
-    invalidated_claims: 0,
-    ignored: true
-  };
-}
-
-function processInstallationEvent(
-  payload: Record<string, unknown>,
-  repositoryStore: RepositoryStore,
-  claimCache?: ClaimCache
-): ProcessedWebhookResult {
-  const action = getString(payload.action);
-  const installationId = getInstallationId(payload);
-
-  if (action === undefined || installationId === undefined) {
-    return processUnsupportedEvent();
-  }
-
-  if (action === "deleted") {
-    const deleted = repositoryStore.deleteByInstallationId(installationId);
-    let invalidated = 0;
-
-    for (const record of deleted) {
-      invalidated += invalidateRepositoryClaims(claimCache, record.owner, record.repo);
-    }
-
-    return {
-      updated_repositories: 0,
-      removed_repositories: deleted.length,
-      invalidated_claims: invalidated,
-      ignored: false
-    };
-  }
-
-  if (action !== "created" && action !== "new_permissions_accepted" && action !== "unsuspend") {
-    return processUnsupportedEvent();
-  }
-
-  const repositories = getArray(payload.repositories);
-  const now = new Date().toISOString();
-  let updated = 0;
-  let invalidated = 0;
-
-  for (const repository of repositories) {
-    const record = toRepositoryRecord(repository, installationId, now);
-
-    if (record === undefined) {
-      continue;
-    }
-
-    repositoryStore.put(record);
-    invalidated += invalidateRepositoryClaims(claimCache, record.owner, record.repo);
-    updated += 1;
-  }
-
-  return {
-    updated_repositories: updated,
-    removed_repositories: 0,
-    invalidated_claims: invalidated,
-    ignored: false
-  };
-}
-
-function processInstallationRepositoriesEvent(
-  payload: Record<string, unknown>,
-  repositoryStore: RepositoryStore,
-  claimCache?: ClaimCache
-): ProcessedWebhookResult {
-  const installationId = getInstallationId(payload);
-
-  if (installationId === undefined) {
-    return processUnsupportedEvent();
-  }
-
-  const repositoriesAdded = getArray(payload.repositories_added);
-  const repositoriesRemoved = getArray(payload.repositories_removed);
-  const now = new Date().toISOString();
-  let updated = 0;
-  let removed = 0;
-  let invalidated = 0;
-
-  for (const repository of repositoriesAdded) {
-    const record = toRepositoryRecord(repository, installationId, now);
-
-    if (record === undefined) {
-      continue;
-    }
-
-    repositoryStore.put(record);
-    invalidated += invalidateRepositoryClaims(claimCache, record.owner, record.repo);
-    updated += 1;
-  }
-
-  for (const repository of repositoriesRemoved) {
-    const coordinates = toRepositoryCoordinates(repository);
-
-    if (coordinates === undefined) {
-      continue;
-    }
-
-    invalidated += invalidateRepositoryClaims(claimCache, coordinates.owner, coordinates.repo);
-    removed += repositoryStore.delete(coordinates.owner, coordinates.repo) ? 1 : 0;
-  }
-
-  return {
-    updated_repositories: updated,
-    removed_repositories: removed,
-    invalidated_claims: invalidated,
-    ignored: false
-  };
-}
-
-function processRepositoryScopedUpdateEvent(
-  payload: Record<string, unknown>,
-  repositoryStore: RepositoryStore,
-  claimCache?: ClaimCache
-): ProcessedWebhookResult {
-  const installationId = getInstallationId(payload);
-  const repository = isRecord(payload.repository) ? payload.repository : undefined;
-  const coordinates = toRepositoryCoordinates(repository);
-  let invalidated = 0;
-  let updated = 0;
-
-  if (coordinates !== undefined) {
-    invalidated = invalidateRepositoryClaims(claimCache, coordinates.owner, coordinates.repo);
-
-    if (installationId !== undefined) {
-      const record = toRepositoryRecord(repository, installationId, new Date().toISOString());
-
-      if (record !== undefined) {
-        repositoryStore.put(record);
-        updated = 1;
-      }
-    }
-  }
-
-  return {
-    updated_repositories: updated,
-    removed_repositories: 0,
-    invalidated_claims: invalidated,
-    ignored: coordinates === undefined
-  };
 }
 
 function getRuntime(env: WorkerEnv): Runtime {
@@ -474,10 +333,7 @@ function getRuntime(env: WorkerEnv): Runtime {
   });
 
   runtimeCache = {
-    claimService,
-    repositoryStore,
-    claimCache,
-    webhookSecret: config.github.webhookSecret
+    claimService
   };
   runtimeKey = key;
   return runtimeCache;
@@ -486,18 +342,20 @@ function getRuntime(env: WorkerEnv): Runtime {
 function loadWorkerConfig(env: WorkerEnv): RuntimeConfig {
   const appId = parseRequiredInteger(env.GITHUB_APP_ID, "GITHUB_APP_ID");
   const privateKey = readPrivateKey(env);
-  const webhookSecret = parseRequiredString(env.GITHUB_WEBHOOK_SECRET, "GITHUB_WEBHOOK_SECRET");
 
   return {
     cacheTtlMs: parseOptionalInteger(env.CACHE_TTL_SECONDS, 3600, "CACHE_TTL_SECONDS") * 1000,
     github: {
       appId,
       privateKey,
-      webhookSecret,
       apiBaseUrl: env.GITHUB_API_BASE_URL ?? "https://api.github.com",
       apiVersion: env.GITHUB_API_VERSION ?? "2026-03-10"
     }
   };
+}
+
+function getWebhookSecret(env: WorkerEnv): string {
+  return parseRequiredString(env.GITHUB_WEBHOOK_SECRET, "GITHUB_WEBHOOK_SECRET");
 }
 
 function readPrivateKey(env: WorkerEnv): string {
@@ -571,100 +429,21 @@ function verifySignature(body: Uint8Array, signature: string | undefined, secret
   return timingSafeEqual(Buffer.from(received, "utf8"), Buffer.from(expected, "utf8"));
 }
 
-function toRepositoryRecord(
-  repository: unknown,
-  installationId: number,
-  timestamp: string
-): RepositoryRecord | undefined {
-  const coordinates = toRepositoryCoordinates(repository);
-
-  if (coordinates === undefined) {
-    return undefined;
-  }
-
-  const id = getNumber((repository as Record<string, unknown>).id);
-
-  if (id === undefined) {
-    return undefined;
-  }
-
-  const defaultBranch = getString((repository as Record<string, unknown>).default_branch) ?? null;
-
-  return {
-    owner: coordinates.owner,
-    repo: coordinates.repo,
-    repositoryId: id,
-    installationId,
-    defaultBranch,
-    createdAt: timestamp,
-    updatedAt: timestamp
-  };
-}
-
-function toRepositoryCoordinates(repository: unknown):
-  | {
-      owner: string;
-      repo: string;
-    }
-  | undefined {
-  if (!isRecord(repository)) {
-    return undefined;
-  }
-
-  const fullName = getString(repository.full_name);
-
-  if (fullName !== undefined) {
-    const [owner, repo] = fullName.split("/");
-
-    if (owner !== undefined && owner.trim() !== "" && repo !== undefined && repo.trim() !== "") {
-      return { owner, repo };
-    }
-  }
-
-  const owner = isRecord(repository.owner) ? getString(repository.owner.login) : undefined;
-  const repo = getString(repository.name);
-
-  if (owner === undefined || repo === undefined) {
-    return undefined;
-  }
-
-  return { owner, repo };
-}
-
-function getInstallationId(payload: Record<string, unknown>): number | undefined {
-  if (!isRecord(payload.installation)) {
-    return undefined;
-  }
-
-  return getNumber(payload.installation.id);
-}
-
-function invalidateRepositoryClaims(
-  claimCache: ClaimCache | undefined,
-  owner: string,
-  repo: string
-): number {
-  if (claimCache === undefined) {
-    return 0;
-  }
-
-  return claimCache.deleteByRepository(owner, repo);
-}
-
-function getArray(value: unknown): unknown[] {
-  return Array.isArray(value) ? value : [];
-}
-
 function getString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() !== "" ? value : undefined;
 }
 
-function getNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseContentLength(value: string | null): number | undefined {
+  if (value === null || !/^\d+$/.test(value)) {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : undefined;
 }
 
 function json(body: unknown, status = 200, headers: Record<string, string> = {}): Response {

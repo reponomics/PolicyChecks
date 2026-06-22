@@ -22,8 +22,6 @@ const claimService = new ClaimService({
 const app = createHttpApp(
   claimService,
   createWebhookRouter({
-    repositoryStore,
-    claimCache,
     webhookSecret: config.github.webhookSecret
   })
 );
