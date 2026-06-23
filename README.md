@@ -25,7 +25,7 @@ PolicyChecks is a badge service and validation endpoint that checks the current 
 
 PolicyChecks uses a GitHub app that requests repository `Administration: Read` permissions so that it can query the GitHub REST API for information about repo settings that public badge services are otherwise unable to provide.
 
-For example, in its documentation about the [secure use](https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions) of GitHub Actions, GitHub recommends pinning actions to a full-length commit SHA. Adminstrators of repositories and organizations are able to configure repositories so that full-SHA-pinned actions are required (when enabled, workflows with actions that do not satisfy this criterion will fail). By installing PolicyChecks, a repo can display a badge that shows whetheer that setting is enabled or not.
+For example, in its documentation about the [secure use](https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions) of GitHub Actions, GitHub recommends pinning actions to a full-length commit SHA. Adminstrators of repositories and organizations are able to configure repositories so that full-SHA-pinned actions are required (when enabled, workflows with actions that do not satisfy this criterion will fail). By installing PolicyChecks, a repo can display a badge that shows whether that setting is enabled or not.
 
 <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/full-sha-pinned-setting-dark.png">
@@ -33,25 +33,7 @@ For example, in its documentation about the [secure use](https://docs.github.com
     <img alt="PolicyChecks Banner" src="docs/assets/full-sha-pinned-setting-light.png" width="100%">
 </picture>
 
-## Why Another Badge Service?
-
-While trusted services, such as [OSSF Scorecard](https://github.com/ossf/scorecard-action), provide reliable ways to verify that a repository is only using full-SHA-pinned actions, and maintainers can proudly display an OSSF Scorecard badge demonstrating their compliance with the high standards set by the [Open Source Security Foundation](https://openssf.org/), they do not provide badges that represent _specific_ best practices, such as the one mentioned above.
-
-At the same time, while other invaluable services like [Shields.io](https://github.com/badges/shields) offer a wide range of badges that report information that is critical to understanding the maintenance health and security posture of a GitHub repository, they are limited to providing GitHub data that is publicly accessible.
-
-By installing the PolicyChecks app, and granting it read-only permissions to repository administration data, PolicyChecks is able to fill a modest gap in the badge ecosystem by querying GitHub API endpoints that require repository `Administration: Read` permissions, and then providing an endpoint that serves badges for specific administrative settings.
-
-## A Window Into the Current State of a Repository's Settings
-
-PolicyChecks can be thought of as nothing more, and nothing less, than a transparent window into the _current_ status of selective repository settings. It does not offer a detailed security audit of any kind; it does not check whether the relevant settings have been applied consistently in the past; it does not even report whether the codebase as a whole currently conforms to the requirements that the settings are meant to enforce. For instance, a repository could include workflow actions that are not pinned to full-length commit SHAs, and still show a PolicyChecks badge showing that the `SHA-pinning` setting is enabled (since the actions could very well have been added while the setting was _not_ enabled) - that's because the badge service does not analyze the codebase, but merely reports on the status of specific settings, as reported by the GitHub API, at the time of evaluation - and those settings themselves provide no information about the codebase either.
-
-Inversely, a repository could follow strict adherence to SHA-pinned actions in their codebase - but unless that checkbox is enabled in the admin settings page, PolicyChecks will report that that policy setting is currently `disabled`. This is a crucial difference between PolicyChecks and a service like OSSF Scorecard - the latter is a far more rigorous and in-depth source of information for things relating to supply-chain security, because it _does_ actually read and report on the workflow files themselves. (The Scorecard API even provides detailed information about each of the criteria that it uses to evaluate a repository when assigning a score - including, for example, whether or not that repository's workflow files use SHA-pinned actions. The difference is: (i) Scorecard does not expose the data that their JSON endpoint reports in an individual-check-level badge-friendly way; (ii) Scorecard reports on the repository's _actual_ codebase and CI/CD practices, regardless of whether those practices are backed by administrative settings.)
-
-## What PolicyChecks _Is_ - And What It Is _Not_
-
-These explanations are only intended to make clear to potential users exactly what PolicyChecks is, and what it does, and does not claim to establish. Although Reponomics may refer to some of these settings as enforcing _best pracices_, PolicyChecks does not take any strong stance on whether a particular setting is any sort of requirement or expectation for the reliability or trustworthiness of a particular software project.
-
-Nevertheless, maintainers often go to great lengths to ensure that their repositories meet the highest standards of excellence and security. And while enabling a checkbox does not _in itself_ provide proof that those standards have been followed over the lifetime of a project, they still represent a strong commitment on behalf of repository and organization administrators. So, since making such a commitment is something that a maintainer ought to feel proud of, PolicyChecks is simply a way to provide a public signal of that commitment - nothing more, and nothing less.
+<div align="center"><picture><img src="docs/assets/SHA-pinning-enabled.png" /></picture></div>
 
 ## PolicyChecks Badges
 
@@ -61,18 +43,18 @@ If the GitHub API provides an endpoint that reliably tracks a specific repo sett
 
 | Check | Repo Setting Description | API endpoint |
 | --- | --- | --- |
-| Immutable releases | Disallow assets and tags from being modified once a release is published | `repos/{owner}/{repo}/immutable-releases` |
-| SHA pinning | Require actions to be pinned to a full-length commit SHA | `repos/{owner}/{repo}/actions/permissions` |
+| Immutable releases | Disallow assets and tags from being modified once a release is published | `/repos/{owner}/{repo}/immutable-releases` |
+| SHA pinning | Require actions to be pinned to a full-length commit SHA | `/repos/{owner}/{repo}/actions/permissions` |
 | Web signoff | Require contributors to sign off on web-based commits | `/repos/{owner}/{repo}` |
 | Secret scanning | Get notified when a secret is pushed to a repository | `/repos/{owner}/{repo}` |
 | Secret push protection | Block commits that contain supported secrets | `/repos/{owner}/{repo}` |
-| Force pushes blocked | Prevent users with push access from force pushing to refs | `repos/{owner}/{repo}/rules/branches/{branch}` |
-| Signed commits | Commits pushed to matching refs must have verified signatures | `repos/{owner}/{repo}/rules/branches/{branch}` |
-| Linear history | Prevent merge commits from being pushed to matching refs | `repos/{owner}/{repo}/rules/branches/{branch}` |
-| Deletion blocked | Only allow users with bypass permissions to delete matching refs | `repos/{owner}/{repo}/rules/branches/{branch}` |
-| Pull request required | Require all commits to be made to a non-target branch and submitted via a pull request before they can be merged | `repos/{owner}/{repo}/rules/branches/{branch}` |
-| Status checks | Require status checks to pass before the default branch is updated | `repos/{owner}/{repo}/rules/branches/{branch}` |
-| Community health | A percentage of how many of GitHub's recommended community health files are present | `repos/{owner}/{repo}/community/profile` |
+| Force pushes blocked | Prevent users with push access from force pushing to refs | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Signed commits | Commits pushed to matching refs must have verified signatures | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Linear history | Prevent merge commits from being pushed to matching refs | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Deletion blocked | Only allow users with bypass permissions to delete matching refs | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Pull request required | Require all commits to be made to a non-target branch and submitted via a pull request before they can be merged | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Status checks | Require status checks to pass before the default branch is updated | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Community health | A percentage of how many of GitHub's recommended community health files are present | `/repos/{owner}/{repo}/community/profile` |
 
 ## Endpoints
 
@@ -89,7 +71,12 @@ Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge 
 
 ```markdown
 [![Immutable releases](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases/proof.json)
+```
 
+<details>
+<summary><h3>More examples</h3></summary>
+
+```markdown
 [![SHA pinning](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/proof.json)
 
 [![Web signoff](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required/proof.json)
@@ -113,11 +100,33 @@ Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge 
 [![Status checks](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required/proof.json)
 ```
 
+</details>
+
 The aggregate endpoint returns all currently supported claims for a repository:
 
 ```text
 https://policychecks.reponomics.org/github/OWNER/REPO/info.json
 ```
+
+## Why Another Badge Service?
+
+While trusted services, such as [OSSF Scorecard](https://github.com/ossf/scorecard-action), provide reliable ways to verify that a repository is only using full-SHA-pinned actions, and maintainers can proudly display an OSSF Scorecard badge demonstrating their compliance with the high standards set by the [Open Source Security Foundation](https://openssf.org/), they do not provide badges that represent _specific_ best practices, such as the one mentioned above.
+
+At the same time, while other invaluable services like [Shields.io](https://github.com/badges/shields) offer a wide range of badges that report information that is critical to understanding the maintenance health and security posture of a GitHub repository, they are limited to providing GitHub data that is publicly accessible.
+
+By installing the PolicyChecks app, and granting it read-only permissions to repository administration data, PolicyChecks is able to fill a modest gap in the badge ecosystem by querying GitHub API endpoints that require repository `Administration: Read` permissions, and then providing an endpoint that serves badges for specific administrative settings.
+
+## A Window Into the Current State of a Repository's Settings
+
+PolicyChecks can be thought of as nothing more, and nothing less, than a transparent window into the _current_ status of selective repository settings. It does not offer a detailed security audit of any kind; it does not check whether the relevant settings have been applied consistently in the past; it does not even report whether the codebase as a whole currently conforms to the requirements that the settings are meant to enforce. For instance, a repository could include workflow actions that are not pinned to full-length commit SHAs, and still show a PolicyChecks badge showing that the `SHA-pinning` setting is enabled (since the actions could very well have been added while the setting was _not_ enabled) - that's because the badge service does not analyze the codebase, but merely reports on the status of specific settings, as reported by the GitHub API, at the time of evaluation - and those settings themselves provide no information about the codebase either.
+
+Inversely, a repository could follow strict adherence to SHA-pinned actions in their codebase - but unless that checkbox is enabled in the admin settings page, PolicyChecks will report that that policy setting is currently `disabled`. This is a crucial difference between PolicyChecks and a service like OSSF Scorecard - the latter is a far more rigorous and in-depth source of information for things relating to supply-chain security, because it _does_ actually read and report on the workflow files themselves. (The Scorecard API even provides detailed information about each of the criteria that it uses to evaluate a repository when assigning a score - including, for example, whether or not that repository's workflow files use SHA-pinned actions. The difference is: (i) Scorecard does not expose the data that their JSON endpoint reports in an individual-check-level badge-friendly way; (ii) Scorecard reports on the repository's _actual_ codebase and CI/CD practices, regardless of whether those practices are backed by administrative settings.)
+
+## What PolicyChecks _Is_ - And What It Is _Not_
+
+These explanations are only intended to make clear to potential users exactly what PolicyChecks is, and what it does and does not claim to establish. Although Reponomics may refer to some of these settings as enforcing _best pracices_, PolicyChecks does not take any strong stance on whether a particular setting is any sort of requirement or expectation for the reliability or trustworthiness of a particular software project.
+
+Nevertheless, maintainers often go to great lengths to ensure that their repositories meet the highest standards of excellence and security. And while enabling a checkbox does not _in itself_ provide proof that those standards have been followed over the lifetime of a project, they still represent a strong commitment on behalf of repository and organization administrators. So, since making such a commitment is something that a maintainer ought to feel proud of, PolicyChecks is simply a way to provide a public signal of that commitment - nothing more, and nothing less.
 
 ## Permissions
 
