@@ -1,3 +1,7 @@
 #!/usr/bin/env sh
+if [ "${SKIP_TYPOS:-0}" != "1" ]; then
+  git ls-files '*.md' | tr '\n' '\0' | xargs -0 npx --yes @ocular-d/typos-bin@1.47.2 --isolated || true
+fi
+
 npm run check
 npm run check-updates || true
