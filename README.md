@@ -25,7 +25,7 @@ PolicyChecks is a badge service and validation endpoint that checks the current 
 
 PolicyChecks uses a GitHub app that requests repository `Administration: Read` permissions so that it can query the GitHub REST API for information about repo settings that public badge services are otherwise unable to provide.
 
-For example, in its documentation about the [secure use](https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions) of GitHub Actions, GitHub recommends pinning actions to a full-length commit SHA. Adminstrators of repositories and organizations are able to configure repositories so that full-SHA-pinned actions are required (when enabled, workflows with actions that do not satisfy this criterion will fail). By installing PolicyChecks, a repo can display a badge that shows whether that setting is enabled or not.
+For example, in its documentation about the [secure use](https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions) of GitHub Actions, GitHub recommends pinning actions to a full-length commit SHA. Administrators of repositories and organizations are able to configure repositories so that full-SHA-pinned actions are required (when enabled, workflows with actions that do not satisfy this criterion will fail). By installing PolicyChecks, a repo can display a badge that shows whether that setting is enabled or not.
 
 <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/full-sha-pinned-setting-dark.png">
@@ -63,7 +63,7 @@ Each claim supports the same endpoint shape:
 ```text
 GET /github/{owner}/{repo}/{setting}.svg  # Returns an SVG badge with status `enabled`, `disabled`, or `unknown` for a given setting
 GET /github/{owner}/{repo}/{setting}.json  # Returns a Shields-compatible JSON result for use in custom badge tooling
-GET /github/{owner}/{repo}/{setting}/proof.json. # Returns metadata and additional contextual information that the GitHub API returns regarding each reported setting
+GET /github/{owner}/{repo}/{setting}/proof.json  # Returns metadata and additional contextual information that the GitHub API returns regarding each reported setting
 GET /github/{owner}/{repo}/info.json  # A general JSON response that provides collective information about multiple different settings
 ```
 
@@ -124,7 +124,7 @@ Inversely, a repository could follow strict adherence to SHA-pinned actions in t
 
 ## What PolicyChecks _Is_ - And What It Is _Not_
 
-These explanations are only intended to make clear to potential users exactly what PolicyChecks is, and what it does and does not claim to establish. Although Reponomics may refer to some of these settings as enforcing _best pracices_, PolicyChecks does not take any strong stance on whether a particular setting is any sort of requirement or expectation for the reliability or trustworthiness of a particular software project.
+These explanations are only intended to make clear to potential users exactly what PolicyChecks is, and what it does and does not claim to establish. Although Reponomics may refer to some of these settings as enforcing _best practices_, PolicyChecks does not take any strong stance on whether a particular setting is any sort of requirement or expectation for the reliability or trustworthiness of a particular software project.
 
 Nevertheless, maintainers often go to great lengths to ensure that their repositories meet the highest standards of excellence and security. And while enabling a checkbox does not _in itself_ provide proof that those standards have been followed over the lifetime of a project, they still represent a strong commitment on behalf of repository and organization administrators. So, since making such a commitment is something that a maintainer ought to feel proud of, PolicyChecks is simply a way to provide a public signal of that commitment - nothing more, and nothing less.
 
@@ -143,11 +143,11 @@ The app requires repository `Administration: Read` permissions for each reposito
 
 ## Limitations
 
-As described above, a repository setting is not the same thing as a security audit, or even a guarantee of compliance, historically speaking. Rather, settings enforce compliance with ceratin policies _so long as that setting is enabled_. This comes with a few caveats worth noting:
+As described above, a repository setting is not the same thing as a security audit, or even a guarantee of compliance, historically speaking. Rather, settings enforce compliance with certain policies _so long as that setting is enabled_. This comes with a few caveats worth noting:
 
-(i) Repository and organization adminstrators who are able to modify these settings may do so at any time without PolicyChecks "knowing" anything about it; we do not attempt to report on historical continuity, so a setting that prohibits force-pushing could simply be temporarily disabled whenever an admin wished to make a force-push to the main branch;
+(i) Repository and organization administrators who are able to modify these settings may do so at any time without PolicyChecks "knowing" anything about it; we do not attempt to report on historical continuity, so a setting that prohibits force-pushing could simply be temporarily disabled whenever an admin wished to make a force-push to the main branch;
 
-(ii) Even without any such "trickery", ruleset-based settings allow for certain users or roles to be granted bypass permissions (these are known as bypass actors). PolicyChecks does not take bypass actors into account when deciding whether a setting is enabled or disabled; this is for two reasons: (a) confident claims about the presence or absence of bypass actors generally requires more elevated permissions than `Administration: Read` (such as `Administration: Write`), and our current policy is to limit ourselves to this particular scope alone; (b) since we do not make any attempt to track the status of settings over time, those who have the required permisssions may at any time temporariliy add themselves as bypass actors - so, without historical continuity checks, or the ability to access organization audit logs, any attempt to make decisions on the basis of the presence of absence of bypass actors would be extremely misleading and fraught.
+(ii) Even without any such "trickery", ruleset-based settings allow for certain users or roles to be granted bypass permissions (these are known as bypass actors). PolicyChecks does not take bypass actors into account when deciding whether a setting is enabled or disabled; this is for two reasons: (a) confident claims about the presence or absence of bypass actors generally requires more elevated permissions than `Administration: Read` (such as `Administration: Write`), and our current policy is to limit ourselves to this particular scope alone; (b) since we do not make any attempt to track the status of settings over time, those who have the required permissions may at any time temporarily add themselves as bypass actors - so, without historical continuity checks, or the ability to access organization audit logs, any attempt to make decisions on the basis of the presence of absence of bypass actors would be extremely misleading and fraught.
 
 in that sense, unless PolicyChecks were granted very broad access to a repository or organization's entire administrative apparatus, such as the ability to monitor the audit log, any attempt to take designated bypass actors into account when reading the API response about a ruleset, would be extremely misleading and fraught.
 
