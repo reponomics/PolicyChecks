@@ -94,7 +94,7 @@ function deferred<T>() {
 describe("normalizePrivateKeyPem", () => {
   it("exports a parseable private key as canonical PKCS#8 PEM", () => {
     const { privateKey } = generateKeyPairSync("rsa", {
-      modulusLength: 1024,
+      modulusLength: 2048,
       publicKeyEncoding: { format: "pem", type: "spki" },
       privateKeyEncoding: { format: "pem", type: "pkcs1" }
     });
