@@ -146,6 +146,25 @@ describe("secret protection claims", () => {
     });
   });
 
+  it("returns unknown when security analysis metadata is absent", async () => {
+    const result = await evaluateWithMock(
+      secretScanningEnabledClaim,
+      mockGitHub({
+        getRepository: async () => ({
+          id: 1
+        })
+      })
+    );
+
+    expect(result.result).toBe("unknown");
+    expect(result.error).toMatchObject({
+      kind: "unexpected_response"
+    });
+    expect(result.details).toEqual({
+      security_and_analysis: null
+    });
+  });
+
   it("returns unknown on authorization failure", async () => {
     const result = await evaluateWithMock(
       secretScanningEnabledClaim,

@@ -126,6 +126,13 @@ describe("badge routes", () => {
     await request(app).get("/github/OWNER/REPO/dependabot-alerts-enabled.json").expect(404);
   });
 
+  it("returns 404 for unsupported SVG and proof claim routes", async () => {
+    const app = createHttpApp(serviceReturning("enabled"));
+
+    await request(app).get("/github/OWNER/REPO/not-a-claim.svg").expect(404);
+    await request(app).get("/github/OWNER/REPO/not-a-claim/proof.json").expect(404);
+  });
+
   it("falls back to individual evaluation when evaluateMany is unavailable", async () => {
     const calls: string[] = [];
     const app = createHttpApp({

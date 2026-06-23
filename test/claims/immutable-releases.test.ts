@@ -67,6 +67,25 @@ describe("immutable releases claim", () => {
     });
   });
 
+  it("normalizes missing organization enforcement metadata", async () => {
+    const result = await evaluateWithMock(
+      immutableReleasesClaim,
+      mockGitHub({
+        getImmutableReleases: async () => ({
+          enabled: true
+        })
+      })
+    );
+
+    expect(result).toMatchObject({
+      result: "enabled",
+      details: {
+        enabled: true,
+        enforced_by_owner: null
+      }
+    });
+  });
+
   it("fails on a 404 after repository access has been verified", async () => {
     const result = await evaluateWithMock(
       immutableReleasesClaim,

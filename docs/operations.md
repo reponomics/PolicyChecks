@@ -76,6 +76,7 @@ Recommended production setup:
 | Install command          | `npm ci`                      |
 | Validation/build command | `npm run check`               |
 | Deploy command           | `npm run deploy`              |
+| Preview deploy command   | `npm run deploy:preview`      |
 | Wrangler config          | `wrangler.policychecks.jsonc` |
 
 Use `main` as the Cloudflare production branch so internal fixes, dependency maintenance, and Worker-only changes can deploy after they pass review and CI, even when they do not create a user-facing release. Release Please remains responsible for changelog and GitHub release publication; it is not the production deployment gate.
@@ -104,7 +105,7 @@ GITHUB_API_BASE_URL
 GITHUB_API_VERSION
 ```
 
-Preview deployments are useful for Worker code changes, but avoid making preview URLs part of Marketplace documentation or badge examples. The public service URL should remain `https://policychecks.reponomics.org/`.
+Preview deployments are useful for Worker code changes, but avoid making preview URLs part of Marketplace documentation or badge examples. The public service URL should remain `https://policychecks.reponomics.org/`. Preview builds must use `npm run deploy:preview`, not a bare `npx wrangler versions upload`, because this project uses `wrangler.policychecks.jsonc` instead of the default `wrangler.jsonc` filename.
 
 If a stricter promotion gate becomes necessary later, add a protected deploy branch and a manual promotion workflow. Do that only when there is a concrete need; otherwise it makes private maintenance fixes unnecessarily coupled to release mechanics.
 

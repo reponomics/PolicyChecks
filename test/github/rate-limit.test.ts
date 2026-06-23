@@ -133,6 +133,57 @@ describe("GitHubRateLimiter", () => {
     });
   });
 
+  it("can observe rate-limit headers outside a wrapped request", async () => {
+    const { policy, logs, sleeps } = makePolicy();
+    const limiter = new GitHubRateLimiter(policy);
+
+    limiter.observeHeaders(
+      "installation:1",
+      {
+        "x-ratelimit-remaining": "999"
+      },
+      { route: "GET /repos/{owner}/{repo}" }
+    );
+    await limiter.run("installation:1", async () => ({ headers: {} }), {
+      route: "GET /repos/{owner}/{repo}"
+    });
+
+    expect(sleeps).toEqual([1_000]);
+    expect(logs).toContainEqual({
+      event: "github_api_throttled",
+      bucket: "installation:1",
+      route: "GET /repos/{owner}/{repo}",
+      delay_ms: 1_000
+    });
+  });
+
+  it("opens a circuit when observed headers mention a secondary rate limit", async () => {
+    const { policy, logs } = makePolicy();
+    const limiter = new GitHubRateLimiter(policy);
+
+    limiter.observeHeaders(
+      "installation:1",
+      {
+        "x-github-warning": "secondary rate limit active"
+      },
+      { route: "GET /repos/{owner}/{repo}" }
+    );
+
+    await expect(
+      limiter.run("installation:1", async () => ({ headers: {} }))
+    ).rejects.toMatchObject({
+      kind: "rate_limited",
+      status: 429
+    });
+    expect(logs).toContainEqual({
+      event: "github_api_circuit_opened",
+      bucket: "installation:1",
+      route: "GET /repos/{owner}/{repo}",
+      reason: "secondary_rate_limit",
+      open_until: "1970-01-01T00:01:00.000Z"
+    });
+  });
+
   it("applies minimum spacing between successful requests in the same bucket", async () => {
     const { policy, sleeps } = makePolicy();
     const limiter = new GitHubRateLimiter(policy);
@@ -236,6 +287,27 @@ describe("GitHubRateLimiter", () => {
     });
   });
 
+  it("treats 403 abuse-detection messages as secondary rate limits", async () => {
+    const { policy, logs } = makePolicy();
+    const limiter = new GitHubRateLimiter(policy);
+
+    await expect(
+      limiter.run("installation:1", async () => {
+        throw {
+          status: 403,
+          message: "abuse detection mechanism triggered"
+        };
+      })
+    ).rejects.toMatchObject({ status: 403 });
+
+    expect(logs).toContainEqual({
+      event: "github_api_circuit_opened",
+      bucket: "installation:1",
+      reason: "secondary_rate_limit",
+      open_until: "1970-01-01T00:01:00.000Z"
+    });
+  });
+
   it("opens a primary-exhausted circuit for error responses with zero remaining quota", async () => {
     const { policy, logs } = makePolicy();
     const limiter = new GitHubRateLimiter(policy);
@@ -307,6 +379,56 @@ describe("GitHubRateLimiter", () => {
         used: 1000,
         reset_at: "1970-01-01T00:01:00.000Z",
         retry_after_seconds: 2
+      }
+    });
+  });
+
+  it("ignores missing and non-object response header shapes", async () => {
+    const { policy, logs } = makePolicy();
+    const limiter = new GitHubRateLimiter(policy);
+
+    await limiter.run("installation:1", async () => "ok");
+    await limiter.run("installation:2", async () => ({ status: "200", headers: null }));
+
+    expect(logs).toContainEqual({
+      event: "github_api_response",
+      bucket: "installation:1"
+    });
+    expect(logs).toContainEqual({
+      event: "github_api_response",
+      bucket: "installation:2"
+    });
+  });
+
+  it("throws after a slow-delay wait if a circuit opens during sleep", async () => {
+    const { policy, logs } = makePolicy();
+    const limiter = new GitHubRateLimiter(policy);
+
+    await limiter.run("installation:1", async () => ({
+      headers: { "x-ratelimit-remaining": "999" }
+    }));
+    policy.sleep = async (durationMs) => {
+      limiter.observeHeaders("installation:1", {
+        "x-ratelimit-remaining": "0",
+        "x-ratelimit-reset": "60"
+      });
+      policy.clock = () => durationMs;
+    };
+
+    await expect(
+      limiter.run("installation:1", async () => ({ headers: {} }))
+    ).rejects.toMatchObject({
+      kind: "rate_limited",
+      status: 429
+    });
+    expect(logs).toContainEqual({
+      event: "github_api_circuit_opened",
+      bucket: "installation:1",
+      reason: "primary_exhausted",
+      open_until: "1970-01-01T00:01:00.000Z",
+      rate_limit: {
+        remaining: 0,
+        reset_at: "1970-01-01T00:01:00.000Z"
       }
     });
   });

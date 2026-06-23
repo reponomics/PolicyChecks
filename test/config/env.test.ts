@@ -85,6 +85,12 @@ describe("loadConfig", () => {
     }
   );
 
+  it("throws when GITHUB_APP_ID is outside the safe integer range", () => {
+    expect(() =>
+      loadConfig({ ...baseEnv, GITHUB_APP_ID: String(Number.MAX_SAFE_INTEGER + 1) })
+    ).toThrow(/GITHUB_APP_ID must be a positive integer/);
+  });
+
   it.each([
     ["PORT", { PORT: "not-a-port" }],
     ["PORT", { PORT: "12abc" }],
