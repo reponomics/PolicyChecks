@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { renderBadgeSvg } from "../src/badges/svg.js";
-import { toShieldsJson } from "../src/badges/shields-json.js";
+import {
+  colorForResult,
+  colorForResultText,
+  messageForResult,
+  toShieldsJson
+} from "../src/badges/shields-json.js";
 import { communityHealthClaim } from "../src/claims/community-health.js";
 import { shaPinningRequiredClaim } from "../src/claims/sha-pinning-required.js";
 import type { ClaimResult } from "../src/claims/types.js";
@@ -19,6 +24,20 @@ describe("badge renderers", () => {
       message: "unknown",
       color: "lightgrey"
     });
+  });
+
+  it("maps default Shields colors from claim results", () => {
+    expect(colorForResultText("enabled")).toBe("brightgreen");
+    expect(colorForResultText("disabled")).toBe("red");
+    expect(colorForResultText("unknown")).toBe("lightgrey");
+    expect(colorForResultText("custom")).toBe("brightgreen");
+  });
+
+  it("uses default badge message and color when claims do not customize them", () => {
+    const disabledResult = result("disabled");
+
+    expect(messageForResult(shaPinningRequiredClaim, disabledResult)).toBe("disabled");
+    expect(colorForResult(shaPinningRequiredClaim, disabledResult)).toBe("red");
   });
 
   it("renders custom metric badge message and color", () => {

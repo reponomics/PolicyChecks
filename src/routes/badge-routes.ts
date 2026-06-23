@@ -14,11 +14,7 @@ export function createBadgeRouter(claimService: ClaimEvaluator): Router {
   router.get(
     "/github/:owner/:repo/info.json",
     asyncHandler(async (request, response) => {
-      const route = parseRepositoryRoute(request, response);
-
-      if (route === undefined) {
-        return;
-      }
+      const route = parseRepositoryRoute(request);
 
       const claims = await evaluateClaims(claimService, route.owner, route.repo);
 
@@ -97,26 +93,12 @@ async function evaluateClaims(
   return claims;
 }
 
-function parseRepositoryRoute(
-  request: Request,
-  response: Response
-):
-  | {
-      owner: string;
-      repo: string;
-    }
-  | undefined {
-  const owner = singleParam(request.params.owner);
-  const repo = singleParam(request.params.repo);
-
-  if (owner === undefined || repo === undefined) {
-    response.status(400).json({
-      error: "bad_request",
-      message: "owner and repo are required."
-    });
-    return undefined;
-  }
-
+function parseRepositoryRoute(request: Request): {
+  owner: string;
+  repo: string;
+} {
+  const owner = routeParam(request, "owner");
+  const repo = routeParam(request, "repo");
   return { owner, repo };
 }
 
@@ -130,24 +112,11 @@ function parseClaimRoute(
       definition: ClaimDefinition;
     }
   | undefined {
-  const repositoryRoute = parseRepositoryRoute(request, response);
-
-  if (repositoryRoute === undefined) {
-    return undefined;
-  }
+  const repositoryRoute = parseRepositoryRoute(request);
 
   const owner = repositoryRoute.owner;
   const repo = repositoryRoute.repo;
-  const claim = singleParam(request.params.claim);
-
-  if (claim === undefined) {
-    response.status(400).json({
-      error: "bad_request",
-      message: "owner, repo, and claim are required."
-    });
-    return undefined;
-  }
-
+  const claim = routeParam(request, "claim");
   const definition = getClaimDefinition(claim);
 
   if (definition === undefined) {
@@ -165,8 +134,8 @@ function parseClaimRoute(
   };
 }
 
-function singleParam(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
+function routeParam(request: Request, name: string): string {
+  return request.params[name] as string;
 }
 
 function asyncHandler(
