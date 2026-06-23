@@ -41,6 +41,7 @@ pip-delete-this-directory.txt
 
 # Testing
 coverage/
+.playwright-mcp/
 .nyc_output/
 .pytest_cache/
 htmlcov/
