@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/reponomics/PolicyChecks/compare/v0.5.0...v0.5.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* docs and test coverage ([#32](https://github.com/reponomics/PolicyChecks/issues/32)) ([86476df](https://github.com/reponomics/PolicyChecks/commit/86476dfe2ca760eac68105627175cb670c313d7c))
+
 ## [0.5.0](https://github.com/reponomics/PolicyChecks/compare/v0.4.0...v0.5.0) (2026-06-22)
 
 
