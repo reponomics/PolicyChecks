@@ -153,6 +153,24 @@ describe("GitHubInstallationResolver.resolve", () => {
     expect(stored).toMatchObject({ repositoryId: 99, installationId: 7, defaultBranch: "trunk" });
   });
 
+  it("persists null when a discovered repository has no default branch", async () => {
+    const store = new InMemoryRepositoryStore();
+    const github = fakeGitHub({ id: 99 });
+    const appRequest = vi.fn(async () => ({ data: { id: 7 } }));
+    const tokenFactory = fakeTokenFactory({
+      createAppRequest: vi.fn(async () => appRequest),
+      createInstallationClient: vi.fn(async () => github)
+    });
+
+    await new GitHubInstallationResolver(tokenFactory, store).resolve("OWNER", "REPO");
+
+    expect(store.get("OWNER", "REPO")).toMatchObject({
+      repositoryId: 99,
+      installationId: 7,
+      defaultBranch: null
+    });
+  });
+
   it("maps a 404 during installation lookup to not_installed", async () => {
     const appRequest = vi.fn(async () => {
       throw { status: 404, message: "no installation" };

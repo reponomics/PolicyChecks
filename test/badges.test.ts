@@ -61,6 +61,13 @@ describe("badge renderers", () => {
     expect(renderBadgeSvg(communityHealthClaim, communityResult)).toContain("#6cc613");
   });
 
+  it("renders unknown community health when no valid score is available", () => {
+    expect(toShieldsJson(communityHealthClaim, result("unknown"))).toMatchObject({
+      message: "unknown",
+      color: "lightgrey"
+    });
+  });
+
   it("escapes SVG label and message text", () => {
     const definition = {
       ...shaPinningRequiredClaim,

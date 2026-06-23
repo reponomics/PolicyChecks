@@ -33,5 +33,15 @@ jobs:
       - name: Run quality checks
         run: npm run check
 
+      - name: Run coverage
+        run: npm run coverage -- --coverage.reporter=text --coverage.reporter=html --coverage.reporter=lcov --coverage.reporter=json-summary
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-report
+          path: coverage
+          retention-days: 7
+
       - name: Build worker
         run: npm run build

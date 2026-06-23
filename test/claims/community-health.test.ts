@@ -112,6 +112,56 @@ describe("community health claim", () => {
     });
   });
 
+  it("handles community profile metadata that is missing or malformed", async () => {
+    const result = await evaluateWithMock(
+      communityHealthClaim,
+      mockGitHub({
+        getCommunityProfile: async () => ({
+          health_percentage: 50,
+          files: {
+            code_of_conduct: "unexpected",
+            license: null
+          }
+        })
+      })
+    );
+
+    expect(result).toMatchObject({
+      result: "50/100",
+      details: {
+        detected: {
+          code_of_conduct: null,
+          license: null
+        }
+      }
+    });
+  });
+
+  it("treats missing community files as absent metadata", async () => {
+    const result = await evaluateWithMock(
+      communityHealthClaim,
+      mockGitHub({
+        getCommunityProfile: async () => ({
+          health_percentage: 25,
+          files: null
+        })
+      })
+    );
+
+    expect(result.details).toMatchObject({
+      badge_color: "#e0882e",
+      files: {
+        code_of_conduct: false,
+        license: false,
+        readme: false
+      },
+      detected: {
+        code_of_conduct: null,
+        license: null
+      }
+    });
+  });
+
   it("returns unknown on authorization failure", async () => {
     const result = await evaluateWithMock(
       communityHealthClaim,
