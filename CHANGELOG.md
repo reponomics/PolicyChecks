@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0](https://github.com/reponomics/PolicyChecks/compare/v0.5.1...v0.6.0) (2026-06-24)
+
+
+### Features
+
+* expose badge ids in details json ([#43](https://github.com/reponomics/PolicyChecks/issues/43)) ([778fa55](https://github.com/reponomics/PolicyChecks/commit/778fa55990a7a460bba3f3b3fa7b383af64adbbc))
+* make badge service dependent on README publication ([#41](https://github.com/reponomics/PolicyChecks/issues/41)) ([703cebd](https://github.com/reponomics/PolicyChecks/commit/703cebd9fdcf9e0e448367b9e5957d93d787f1f6))
+
 ## [0.5.1](https://github.com/reponomics/PolicyChecks/compare/v0.5.0...v0.5.1) (2026-06-23)
 
 
