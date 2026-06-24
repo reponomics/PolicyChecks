@@ -15,6 +15,7 @@ GitHub documents three repository README locations that it recognizes and surfac
 - Remove or disable the public aggregate `info.json` endpoint.
 - Serve a per-claim badge only when the repository is public and its preferred README contains the canonical badge URL for that claim.
 - Apply the same publication rule to SVG badge, Shields JSON, and proof JSON endpoints.
+- Couple live badge service responses to maintainer-controlled placement in the target repository's preferred README, reducing casual badge misrepresentation without claiming cryptographic anti-forgery.
 - Avoid durable customer configuration, setup dashboards, tokenized badge URLs, and private repository content access.
 - Keep caching conservative enough for a quiet side project, while leaving clear escalation points if traffic grows.
 

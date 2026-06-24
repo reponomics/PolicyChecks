@@ -93,6 +93,7 @@ Positive:
 - No PolicyChecks customer database is required.
 - No snippet-generation dashboard is required.
 - Revocation is understandable: remove the badge from the README and wait for cache expiry.
+- Live badge service responses are coupled to the target repository's own README, which reduces casual badge misrepresentation even though static image copying remains possible.
 - Restricting the service to public repositories matches the product purpose of showing public recognition for public repository policy choices.
 - PolicyChecks can avoid private repository content access by not supporting private repository badges.
 
