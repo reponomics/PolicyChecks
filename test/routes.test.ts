@@ -2,8 +2,8 @@ import request from "supertest";
 import { Router } from "express";
 import { describe, expect, it, vi } from "vitest";
 
-import type { ClaimDefinition, ClaimResult } from "../src/claims/types.js";
-import type { ClaimEvaluator } from "../src/server/claim-service.js";
+import type { BadgeDefinition, BadgeResult } from "../src/badges/types.js";
+import type { BadgeEvaluator } from "../src/server/badge-service.js";
 import { createHttpApp } from "../src/server/http-app.js";
 
 describe("badge routes", () => {
@@ -30,7 +30,7 @@ describe("badge routes", () => {
     expect(response.body).toEqual({ ok: true });
   });
 
-  it("returns aggregated claim info for a repository", async () => {
+  it("returns aggregated badge info for a repository", async () => {
     const app = createHttpApp(serviceReturning("enabled"));
 
     const response = await request(app)
@@ -40,12 +40,12 @@ describe("badge routes", () => {
 
     expect(response.body.owner).toBe("OWNER");
     expect(response.body.repo).toBe("REPO");
-    expect(Array.isArray(response.body.claims)).toBe(true);
-    expect(response.body.claims).toHaveLength(12);
-    expect(response.body.claims[0]).toHaveProperty("result", "enabled");
-    expect(response.body.claims[0]).not.toHaveProperty("status");
-    expect(response.body.claims[0]).not.toHaveProperty("value");
-    expect(response.body.claims.map((claim: { claim: string }) => claim.claim).sort()).toEqual([
+    expect(Array.isArray(response.body.badges)).toBe(true);
+    expect(response.body.badges).toHaveLength(12);
+    expect(response.body.badges[0]).toHaveProperty("result", "enabled");
+    expect(response.body.badges[0]).not.toHaveProperty("status");
+    expect(response.body.badges[0]).not.toHaveProperty("value");
+    expect(response.body.badges.map((badge: { badgeId: string }) => badge.badgeId).sort()).toEqual([
       "community-health",
       "default-branch-deletion-blocked",
       "default-branch-force-pushes-blocked",
@@ -61,7 +61,7 @@ describe("badge routes", () => {
     ]);
   });
 
-  it("returns Shields JSON for a supported claim", async () => {
+  it("returns Shields JSON for a supported badge", async () => {
     const app = createHttpApp(serviceReturning("enabled"));
 
     const response = await request(app)
@@ -77,7 +77,7 @@ describe("badge routes", () => {
     });
   });
 
-  it("returns details JSON for a supported claim", async () => {
+  it("returns details JSON for a supported badge", async () => {
     const app = createHttpApp(serviceReturning("disabled"));
 
     const response = await request(app)
@@ -95,13 +95,11 @@ describe("badge routes", () => {
       },
       result: "disabled"
     });
-    expect(response.body).not.toHaveProperty("claim");
-    expect(response.body).not.toHaveProperty("evidence");
     expect(response.body).not.toHaveProperty("status");
     expect(response.body).not.toHaveProperty("value");
   });
 
-  it("returns SVG for a supported claim", async () => {
+  it("returns SVG for a supported badge", async () => {
     const app = createHttpApp(serviceReturning("unknown"));
 
     const response = await request(app)
@@ -114,25 +112,25 @@ describe("badge routes", () => {
     expect(svg).toContain("unknown");
   });
 
-  it("returns 404 for unsupported claims", async () => {
+  it("returns 404 for unsupported badges", async () => {
     const app = createHttpApp(serviceReturning("enabled"));
 
-    const response = await request(app).get("/github/OWNER/REPO/not-a-claim.json").expect(404);
+    const response = await request(app).get("/github/OWNER/REPO/not-a-badge.json").expect(404);
 
     expect(response.body).toEqual({
-      error: "unsupported_claim",
-      claim: "not-a-claim"
+      error: "unsupported_badge",
+      badgeId: "not-a-badge"
     });
 
     await request(app).get("/github/OWNER/REPO/dependency-graph-enabled.json").expect(404);
     await request(app).get("/github/OWNER/REPO/dependabot-alerts-enabled.json").expect(404);
   });
 
-  it("returns 404 for unsupported SVG and details claim routes", async () => {
+  it("returns 404 for unsupported SVG and details badge routes", async () => {
     const app = createHttpApp(serviceReturning("enabled"));
 
-    await request(app).get("/github/OWNER/REPO/not-a-claim.svg").expect(404);
-    await request(app).get("/github/OWNER/REPO/not-a-claim/details.json").expect(404);
+    await request(app).get("/github/OWNER/REPO/not-a-badge.svg").expect(404);
+    await request(app).get("/github/OWNER/REPO/not-a-badge/details.json").expect(404);
   });
 
   it("does not serve the pre-release legacy endpoint name", async () => {
@@ -145,10 +143,10 @@ describe("badge routes", () => {
     const calls: string[] = [];
     const app = createHttpApp({
       async evaluate(
-        definition: ClaimDefinition,
+        definition: BadgeDefinition,
         owner: string,
         repo: string
-      ): Promise<ClaimResult> {
+      ): Promise<BadgeResult> {
         calls.push(definition.id);
         return resultFor(definition, owner, repo, "enabled");
       }
@@ -156,7 +154,7 @@ describe("badge routes", () => {
 
     const response = await request(app).get("/github/OWNER/REPO/info.json").expect(200);
 
-    expect(response.body.claims).toHaveLength(12);
+    expect(response.body.badges).toHaveLength(12);
     expect(calls).toEqual([
       "immutable-releases",
       "sha-pinning-required",
@@ -195,7 +193,7 @@ describe("badge routes", () => {
 
       expect(response.body).toEqual({
         error: "internal_error",
-        message: "The request failed before the claim could be verified."
+        message: "The request failed before the badge could be evaluated."
       });
       expect(consoleError).toHaveBeenCalledOnce();
     } finally {
@@ -204,22 +202,22 @@ describe("badge routes", () => {
   });
 });
 
-function serviceReturning(result: ClaimResult["result"]): ClaimEvaluator {
+function serviceReturning(result: BadgeResult["result"]): BadgeEvaluator {
   return {
-    async evaluate(definition: ClaimDefinition, owner: string, repo: string): Promise<ClaimResult> {
+    async evaluate(definition: BadgeDefinition, owner: string, repo: string): Promise<BadgeResult> {
       return resultFor(definition, owner, repo, result);
     }
   };
 }
 
 function resultFor(
-  definition: ClaimDefinition,
+  definition: BadgeDefinition,
   owner: string,
   repo: string,
-  result: ClaimResult["result"]
-): ClaimResult {
+  result: BadgeResult["result"]
+): BadgeResult {
   return {
-    claim: definition.id,
+    badgeId: definition.id,
     owner,
     repo,
     repository: {
@@ -229,7 +227,6 @@ function resultFor(
     },
     result,
     source: definition.source,
-    evidence: definition.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: "2026-05-30T00:00:00.000Z",
     details: {}
   };

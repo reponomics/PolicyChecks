@@ -1,6 +1,6 @@
-import type { ClaimCache } from "../cache/cache.js";
-import { makeUnknownResult } from "../claims/result.js";
-import type { ClaimDefinition, ClaimResult } from "../claims/types.js";
+import type { BadgeCache } from "../cache/cache.js";
+import { makeUnknownResult } from "../badges/result.js";
+import type { BadgeDefinition, BadgeResult } from "../badges/types.js";
 import type { GitHubClient, GitHubCommunityProfile, GitHubRepository } from "../github/client.js";
 import type { InstallationResolution } from "../github/installations.js";
 
@@ -8,27 +8,27 @@ export interface InstallationResolver {
   resolve(owner: string, repo: string): Promise<InstallationResolution>;
 }
 
-export interface ClaimServiceOptions {
-  cache: ClaimCache;
+export interface BadgeServiceOptions {
+  cache: BadgeCache;
   installationResolver: InstallationResolver;
   cacheTtlMs: number;
 }
 
-export interface ClaimEvaluator {
-  evaluate(definition: ClaimDefinition, owner: string, repo: string): Promise<ClaimResult>;
+export interface BadgeEvaluator {
+  evaluate(definition: BadgeDefinition, owner: string, repo: string): Promise<BadgeResult>;
   evaluateMany?(
-    definitions: readonly ClaimDefinition[],
+    definitions: readonly BadgeDefinition[],
     owner: string,
     repo: string
-  ): Promise<ClaimResult[]>;
+  ): Promise<BadgeResult[]>;
 }
 
-export class ClaimService implements ClaimEvaluator {
-  private readonly inFlight = new Map<string, Promise<ClaimResult>>();
+export class BadgeService implements BadgeEvaluator {
+  private readonly inFlight = new Map<string, Promise<BadgeResult>>();
 
-  constructor(private readonly options: ClaimServiceOptions) {}
+  constructor(private readonly options: BadgeServiceOptions) {}
 
-  async evaluate(definition: ClaimDefinition, owner: string, repo: string): Promise<ClaimResult> {
+  async evaluate(definition: BadgeDefinition, owner: string, repo: string): Promise<BadgeResult> {
     const cached = this.options.cache.get(owner, repo, definition.id);
 
     if (cached !== undefined) {
@@ -53,11 +53,11 @@ export class ClaimService implements ClaimEvaluator {
   }
 
   async evaluateMany(
-    definitions: readonly ClaimDefinition[],
+    definitions: readonly BadgeDefinition[],
     owner: string,
     repo: string
-  ): Promise<ClaimResult[]> {
-    const results = new Map<string, ClaimResult>();
+  ): Promise<BadgeResult[]> {
+    const results = new Map<string, BadgeResult>();
     const missing = definitions.filter((definition) => {
       const cached = this.options.cache.get(owner, repo, definition.id);
 
@@ -94,7 +94,7 @@ export class ClaimService implements ClaimEvaluator {
       const result = results.get(definition.id);
 
       if (result === undefined) {
-        throw new Error(`Missing claim result for ${definition.id}.`);
+        throw new Error(`Missing badge result for ${definition.id}.`);
       }
 
       return result;
@@ -102,10 +102,10 @@ export class ClaimService implements ClaimEvaluator {
   }
 
   private async evaluateUncached(
-    definition: ClaimDefinition,
+    definition: BadgeDefinition,
     owner: string,
     repo: string
-  ): Promise<ClaimResult> {
+  ): Promise<BadgeResult> {
     const resolution = await this.options.installationResolver.resolve(owner, repo);
 
     const result =
@@ -124,8 +124,8 @@ export class ClaimService implements ClaimEvaluator {
   }
 }
 
-function cacheKey(owner: string, repo: string, claim: string): string {
-  return `${owner.toLowerCase()}/${repo.toLowerCase()}/${claim}`;
+function cacheKey(owner: string, repo: string, badgeId: string): string {
+  return `${owner.toLowerCase()}/${repo.toLowerCase()}/${badgeId}`;
 }
 
 function memoizeGitHubClient(github: GitHubClient): GitHubClient {

@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { immutableReleasesClaim } from "../../src/claims/immutable-releases.js";
-import { GitHubApiError } from "../../src/github/errors.js";
-import { checkedAt, evaluateWithMock, mockGitHub } from "../support/mock-github.js";
+import { immutableReleasesBadge } from "../../../src/badges/immutable-releases.js";
+import { GitHubApiError } from "../../../src/github/errors.js";
+import { checkedAt, evaluateWithMock, mockGitHub } from "../../support/mock-github.js";
 
-describe("immutable releases claim", () => {
+describe("immutable releases badge", () => {
   it("passes when GitHub reports immutable releases are enabled", async () => {
     const result = await evaluateWithMock(
-      immutableReleasesClaim,
+      immutableReleasesBadge,
       mockGitHub({
         getImmutableReleases: async () => ({
           enabled: true,
@@ -28,7 +28,7 @@ describe("immutable releases claim", () => {
 
   it("fails when GitHub reports immutable releases are disabled", async () => {
     const result = await evaluateWithMock(
-      immutableReleasesClaim,
+      immutableReleasesBadge,
       mockGitHub({
         getImmutableReleases: async () => ({
           enabled: false,
@@ -49,7 +49,7 @@ describe("immutable releases claim", () => {
 
   it("passes when organization policy enforces immutable releases for the repository", async () => {
     const result = await evaluateWithMock(
-      immutableReleasesClaim,
+      immutableReleasesBadge,
       mockGitHub({
         getImmutableReleases: async () => ({
           enabled: true,
@@ -69,7 +69,7 @@ describe("immutable releases claim", () => {
 
   it("normalizes missing organization enforcement metadata", async () => {
     const result = await evaluateWithMock(
-      immutableReleasesClaim,
+      immutableReleasesBadge,
       mockGitHub({
         getImmutableReleases: async () => ({
           enabled: true
@@ -88,7 +88,7 @@ describe("immutable releases claim", () => {
 
   it("fails on a 404 after repository access has been verified", async () => {
     const result = await evaluateWithMock(
-      immutableReleasesClaim,
+      immutableReleasesBadge,
       mockGitHub({
         getImmutableReleases: async () => {
           throw new GitHubApiError("Not found", {
@@ -111,7 +111,7 @@ describe("immutable releases claim", () => {
 
   it("returns unknown on authorization failure", async () => {
     const result = await evaluateWithMock(
-      immutableReleasesClaim,
+      immutableReleasesBadge,
       mockGitHub({
         getImmutableReleases: async () => {
           throw new GitHubApiError("Forbidden", {
@@ -130,7 +130,7 @@ describe("immutable releases claim", () => {
 
   it("returns unknown on an ambiguous 404", async () => {
     const result = await evaluateWithMock(
-      immutableReleasesClaim,
+      immutableReleasesBadge,
       mockGitHub({
         getImmutableReleases: async () => {
           throw new GitHubApiError("Not found", {
@@ -150,7 +150,7 @@ describe("immutable releases claim", () => {
 
   it("returns unknown when the response shape is unexpected", async () => {
     const result = await evaluateWithMock(
-      immutableReleasesClaim,
+      immutableReleasesBadge,
       mockGitHub({
         getImmutableReleases: async () => ({})
       })

@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { webCommitSignoffRequiredClaim } from "../../src/claims/web-commit-signoff.js";
-import { GitHubApiError } from "../../src/github/errors.js";
-import { evaluateWithMock, mockGitHub } from "../support/mock-github.js";
+import { webCommitSignoffRequiredBadge } from "../../../src/badges/web-commit-signoff.js";
+import { GitHubApiError } from "../../../src/github/errors.js";
+import { evaluateWithMock, mockGitHub } from "../../support/mock-github.js";
 
-describe("web commit signoff claim", () => {
+describe("web commit signoff badge", () => {
   it("passes when web_commit_signoff_required is true", async () => {
     const result = await evaluateWithMock(
-      webCommitSignoffRequiredClaim,
+      webCommitSignoffRequiredBadge,
       mockGitHub({
         getRepository: async () => ({
           id: 1,
@@ -31,7 +31,7 @@ describe("web commit signoff claim", () => {
 
   it("fails when web_commit_signoff_required is false", async () => {
     const result = await evaluateWithMock(
-      webCommitSignoffRequiredClaim,
+      webCommitSignoffRequiredBadge,
       mockGitHub({
         getRepository: async () => ({
           id: 1,
@@ -52,7 +52,7 @@ describe("web commit signoff claim", () => {
 
   it("returns unknown when web_commit_signoff_required is missing", async () => {
     const result = await evaluateWithMock(
-      webCommitSignoffRequiredClaim,
+      webCommitSignoffRequiredBadge,
       mockGitHub({
         getRepository: async () => ({ id: 1 })
       })
@@ -71,7 +71,7 @@ describe("web commit signoff claim", () => {
 
   it("returns unknown on authorization failure", async () => {
     const result = await evaluateWithMock(
-      webCommitSignoffRequiredClaim,
+      webCommitSignoffRequiredBadge,
       mockGitHub({
         getRepository: async () => {
           throw new GitHubApiError("Forbidden", {

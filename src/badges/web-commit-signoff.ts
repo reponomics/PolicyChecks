@@ -1,13 +1,8 @@
-import { publicMessage, toPublicClaimError } from "../github/errors.js";
-import {
-  makeClaimResult,
-  makeUnknownResult,
-  repositorySettingEvidence,
-  resultInput
-} from "./result.js";
-import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
+import { publicMessage, toPublicBadgeError } from "../github/errors.js";
+import { makeBadgeResult, makeUnknownResult, resultInput } from "./result.js";
+import type { BadgeDefinition, BadgeEvaluationInput } from "./types.js";
 
-export const webCommitSignoffRequiredClaim: ClaimDefinition = {
+export const webCommitSignoffRequiredBadge: BadgeDefinition = {
   id: "web-commit-signoff-required",
   label: "web signoff",
   source: {
@@ -16,15 +11,14 @@ export const webCommitSignoffRequiredClaim: ClaimDefinition = {
     endpoint: "GET /repos/{owner}/{repo}",
     fields: ["web_commit_signoff_required"]
   },
-  evidence: repositorySettingEvidence,
-  async evaluate(input: ClaimEvaluationInput) {
+  async evaluate(input: BadgeEvaluationInput) {
     try {
       const repository = await input.github.getRepository(input.owner, input.repo);
       const required = repository.web_commit_signoff_required;
 
       if (typeof required !== "boolean") {
         return makeUnknownResult(
-          webCommitSignoffRequiredClaim,
+          webCommitSignoffRequiredBadge,
           resultInput(input),
           {
             kind: "unexpected_response",
@@ -36,8 +30,8 @@ export const webCommitSignoffRequiredClaim: ClaimDefinition = {
         );
       }
 
-      return makeClaimResult(
-        webCommitSignoffRequiredClaim,
+      return makeBadgeResult(
+        webCommitSignoffRequiredBadge,
         resultInput(input),
         required ? "enabled" : "disabled",
         {
@@ -51,9 +45,9 @@ export const webCommitSignoffRequiredClaim: ClaimDefinition = {
       );
     } catch (error) {
       return makeUnknownResult(
-        webCommitSignoffRequiredClaim,
+        webCommitSignoffRequiredBadge,
         resultInput(input),
-        toPublicClaimError(error)
+        toPublicBadgeError(error)
       );
     }
   }

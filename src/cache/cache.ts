@@ -1,22 +1,22 @@
-import type { ClaimResult } from "../claims/types.js";
+import type { BadgeResult } from "../badges/types.js";
 
 interface CacheEntry {
-  result: ClaimResult;
+  result: BadgeResult;
   expiresAt: number;
 }
 
-export interface ClaimCache {
-  get(owner: string, repo: string, claim: string): ClaimResult | undefined;
-  set(result: ClaimResult, ttlMs: number): void;
-  delete(owner: string, repo: string, claim: string): boolean;
+export interface BadgeCache {
+  get(owner: string, repo: string, badgeId: string): BadgeResult | undefined;
+  set(result: BadgeResult, ttlMs: number): void;
+  delete(owner: string, repo: string, badgeId: string): boolean;
   deleteByRepository(owner: string, repo: string): number;
 }
 
-export class InMemoryClaimCache implements ClaimCache {
+export class InMemoryBadgeCache implements BadgeCache {
   private readonly entries = new Map<string, CacheEntry>();
 
-  get(owner: string, repo: string, claim: string): ClaimResult | undefined {
-    const key = cacheKey(owner, repo, claim);
+  get(owner: string, repo: string, badgeId: string): BadgeResult | undefined {
+    const key = cacheKey(owner, repo, badgeId);
     const entry = this.entries.get(key);
 
     if (entry === undefined) {
@@ -31,15 +31,15 @@ export class InMemoryClaimCache implements ClaimCache {
     return entry.result;
   }
 
-  set(result: ClaimResult, ttlMs: number): void {
-    this.entries.set(cacheKey(result.owner, result.repo, result.claim), {
+  set(result: BadgeResult, ttlMs: number): void {
+    this.entries.set(cacheKey(result.owner, result.repo, result.badgeId), {
       result,
       expiresAt: Date.now() + ttlMs
     });
   }
 
-  delete(owner: string, repo: string, claim: string): boolean {
-    return this.entries.delete(cacheKey(owner, repo, claim));
+  delete(owner: string, repo: string, badgeId: string): boolean {
+    return this.entries.delete(cacheKey(owner, repo, badgeId));
   }
 
   deleteByRepository(owner: string, repo: string): number {
@@ -57,6 +57,6 @@ export class InMemoryClaimCache implements ClaimCache {
   }
 }
 
-function cacheKey(owner: string, repo: string, claim: string): string {
-  return `${owner.toLowerCase()}/${repo.toLowerCase()}/${claim}`;
+function cacheKey(owner: string, repo: string, badgeId: string): string {
+  return `${owner.toLowerCase()}/${repo.toLowerCase()}/${badgeId}`;
 }

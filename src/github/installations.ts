@@ -1,5 +1,5 @@
-import type { ClaimError } from "../claims/types.js";
-import { GitHubApiError, publicMessage, toGitHubApiError, toPublicClaimError } from "./errors.js";
+import type { BadgeError } from "../badges/types.js";
+import { GitHubApiError, publicMessage, toGitHubApiError, toPublicBadgeError } from "./errors.js";
 import type { GitHubClient } from "./client.js";
 import type { GitHubAppTokenFactory } from "./app-auth.js";
 
@@ -57,7 +57,7 @@ export type InstallationResolution =
     }
   | {
       status: "error";
-      error: ClaimError;
+      error: BadgeError;
     };
 
 export class GitHubInstallationResolver {
@@ -79,7 +79,7 @@ export class GitHubInstallationResolver {
       } catch (error) {
         return {
           status: "error",
-          error: toPublicClaimError(error)
+          error: toPublicBadgeError(error)
         };
       }
     }
@@ -119,7 +119,7 @@ export class GitHubInstallationResolver {
     } catch (error) {
       return {
         status: "error",
-        error: toPublicClaimError(error)
+        error: toPublicBadgeError(error)
       };
     }
   }
@@ -147,7 +147,7 @@ export class GitHubInstallationResolver {
     }
   }
 
-  private toInstallationLookupError(error: unknown): ClaimError {
+  private toInstallationLookupError(error: unknown): BadgeError {
     const githubError = toGitHubApiError(error);
 
     if (githubError.status === 404) {
@@ -157,7 +157,7 @@ export class GitHubInstallationResolver {
       };
     }
 
-    return toPublicClaimError(githubError);
+    return toPublicBadgeError(githubError);
   }
 }
 

@@ -1,25 +1,20 @@
-import type {
-  ClaimError,
-  ClaimRepositoryIdentity,
-  ClaimResult,
-  ClaimSource
-} from "../claims/types.js";
+import type { BadgeError, BadgeRepositoryIdentity, BadgeResult, BadgeSource } from "./types.js";
 
 export interface DetailsJson {
   badgeId: string;
   owner: string;
   repo: string;
-  repository: ClaimRepositoryIdentity;
-  result: ClaimResult["result"];
-  source: ClaimSource;
+  repository: BadgeRepositoryIdentity;
+  result: BadgeResult["result"];
+  source: BadgeSource;
   checked_at: string;
   details: Record<string, unknown>;
-  error?: ClaimError;
+  error?: BadgeError;
 }
 
-export function toDetailsJson(result: ClaimResult): DetailsJson {
+export function toDetailsJson(result: BadgeResult): DetailsJson {
   return {
-    badgeId: result.claim,
+    badgeId: result.badgeId,
     owner: result.owner,
     repo: result.repo,
     repository: result.repository,

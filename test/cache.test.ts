@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { InMemoryClaimCache } from "../src/cache/cache.js";
-import { shaPinningRequiredClaim } from "../src/claims/sha-pinning-required.js";
-import type { ClaimResult } from "../src/claims/types.js";
+import { InMemoryBadgeCache } from "../src/cache/cache.js";
+import { shaPinningRequiredBadge } from "../src/badges/sha-pinning-required.js";
+import type { BadgeResult } from "../src/badges/types.js";
 
-describe("in-memory claim cache", () => {
+describe("in-memory badge cache", () => {
   it("returns the cached result with the original checked_at timestamp", () => {
-    const cache = new InMemoryClaimCache();
+    const cache = new InMemoryBadgeCache();
     const result = makeResult("2026-05-30T00:00:00.000Z");
 
     cache.set(result, 60_000);
@@ -17,7 +17,7 @@ describe("in-memory claim cache", () => {
   });
 
   it("expires entries after their ttl", async () => {
-    const cache = new InMemoryClaimCache();
+    const cache = new InMemoryBadgeCache();
     cache.set(makeResult("2026-05-30T00:00:00.000Z"), 1);
 
     await new Promise((resolve) => setTimeout(resolve, 5));
@@ -25,21 +25,21 @@ describe("in-memory claim cache", () => {
     expect(cache.get("owner", "repo", "sha-pinning-required")).toBeUndefined();
   });
 
-  it("deletes a specific cached claim", () => {
-    const cache = new InMemoryClaimCache();
+  it("deletes a specific cached badge", () => {
+    const cache = new InMemoryBadgeCache();
     cache.set(makeResult("2026-05-30T00:00:00.000Z"), 60_000);
 
     expect(cache.delete("owner", "repo", "sha-pinning-required")).toBe(true);
     expect(cache.get("owner", "repo", "sha-pinning-required")).toBeUndefined();
   });
 
-  it("deletes all cached claims for a repository", () => {
-    const cache = new InMemoryClaimCache();
+  it("deletes all cached badges for a repository", () => {
+    const cache = new InMemoryBadgeCache();
     cache.set(makeResult("2026-05-30T00:00:00.000Z"), 60_000);
     cache.set(
       {
         ...makeResult("2026-05-30T00:00:00.000Z"),
-        claim: "immutable-releases"
+        badgeId: "immutable-releases"
       },
       60_000
     );
@@ -59,9 +59,9 @@ describe("in-memory claim cache", () => {
   });
 });
 
-function makeResult(checkedAt: string): ClaimResult {
+function makeResult(checkedAt: string): BadgeResult {
   return {
-    claim: shaPinningRequiredClaim.id,
+    badgeId: shaPinningRequiredBadge.id,
     owner: "owner",
     repo: "repo",
     repository: {
@@ -70,8 +70,7 @@ function makeResult(checkedAt: string): ClaimResult {
       full_name: "owner/repo"
     },
     result: "enabled",
-    source: shaPinningRequiredClaim.source,
-    evidence: shaPinningRequiredClaim.evidence ?? { scope: "unknown", source: "unavailable" },
+    source: shaPinningRequiredBadge.source,
     checked_at: checkedAt,
     details: {
       sha_pinning_required: true

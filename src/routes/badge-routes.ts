@@ -3,13 +3,13 @@ import { Router, type NextFunction, type Request, type Response } from "express"
 import { toDetailsJson } from "../badges/details-json.js";
 import { renderBadgeSvg } from "../badges/svg.js";
 import { toShieldsJson } from "../badges/shields-json.js";
-import { claimDefinitions, getClaimDefinition } from "../claims/registry.js";
-import type { ClaimDefinition, ClaimResult } from "../claims/types.js";
-import type { ClaimEvaluator } from "../server/claim-service.js";
+import { badgeDefinitions, getBadgeDefinition } from "../badges/registry.js";
+import type { BadgeDefinition, BadgeResult } from "../badges/types.js";
+import type { BadgeEvaluator } from "../server/badge-service.js";
 
 const cacheControl = "public, max-age=300, stale-while-revalidate=300";
 
-export function createBadgeRouter(claimService: ClaimEvaluator): Router {
+export function createBadgeRouter(badgeService: BadgeEvaluator): Router {
   const router = Router();
 
   router.get(
@@ -17,57 +17,57 @@ export function createBadgeRouter(claimService: ClaimEvaluator): Router {
     asyncHandler(async (request, response) => {
       const route = parseRepositoryRoute(request);
 
-      const claims = await evaluateClaims(claimService, route.owner, route.repo);
+      const badges = await evaluateBadges(badgeService, route.owner, route.repo);
 
       response.setHeader("Cache-Control", cacheControl);
       response.json({
         owner: route.owner,
         repo: route.repo,
-        claims
+        badges
       });
     })
   );
 
   router.get(
-    "/github/:owner/:repo/:claim.json",
+    "/github/:owner/:repo/:badgeId.json",
     asyncHandler(async (request, response) => {
-      const route = parseClaimRoute(request, response);
+      const route = parseBadgeRoute(request, response);
 
       if (route === undefined) {
         return;
       }
 
-      const result = await claimService.evaluate(route.definition, route.owner, route.repo);
+      const result = await badgeService.evaluate(route.definition, route.owner, route.repo);
       response.setHeader("Cache-Control", cacheControl);
       response.json(toShieldsJson(route.definition, result));
     })
   );
 
   router.get(
-    "/github/:owner/:repo/:claim.svg",
+    "/github/:owner/:repo/:badgeId.svg",
     asyncHandler(async (request, response) => {
-      const route = parseClaimRoute(request, response);
+      const route = parseBadgeRoute(request, response);
 
       if (route === undefined) {
         return;
       }
 
-      const result = await claimService.evaluate(route.definition, route.owner, route.repo);
+      const result = await badgeService.evaluate(route.definition, route.owner, route.repo);
       response.setHeader("Cache-Control", cacheControl);
       response.type("image/svg+xml").send(renderBadgeSvg(route.definition, result));
     })
   );
 
   router.get(
-    "/github/:owner/:repo/:claim/details.json",
+    "/github/:owner/:repo/:badgeId/details.json",
     asyncHandler(async (request, response) => {
-      const route = parseClaimRoute(request, response);
+      const route = parseBadgeRoute(request, response);
 
       if (route === undefined) {
         return;
       }
 
-      const result = await claimService.evaluate(route.definition, route.owner, route.repo);
+      const result = await badgeService.evaluate(route.definition, route.owner, route.repo);
       response.setHeader("Cache-Control", cacheControl);
       response.json(toDetailsJson(result));
     })
@@ -76,22 +76,22 @@ export function createBadgeRouter(claimService: ClaimEvaluator): Router {
   return router;
 }
 
-async function evaluateClaims(
-  claimService: ClaimEvaluator,
+async function evaluateBadges(
+  badgeService: BadgeEvaluator,
   owner: string,
   repo: string
-): Promise<ClaimResult[]> {
-  if (claimService.evaluateMany !== undefined) {
-    return claimService.evaluateMany(claimDefinitions, owner, repo);
+): Promise<BadgeResult[]> {
+  if (badgeService.evaluateMany !== undefined) {
+    return badgeService.evaluateMany(badgeDefinitions, owner, repo);
   }
 
-  const claims: ClaimResult[] = [];
+  const badges: BadgeResult[] = [];
 
-  for (const definition of claimDefinitions) {
-    claims.push(await claimService.evaluate(definition, owner, repo));
+  for (const definition of badgeDefinitions) {
+    badges.push(await badgeService.evaluate(definition, owner, repo));
   }
 
-  return claims;
+  return badges;
 }
 
 function parseRepositoryRoute(request: Request): {
@@ -103,27 +103,27 @@ function parseRepositoryRoute(request: Request): {
   return { owner, repo };
 }
 
-function parseClaimRoute(
+function parseBadgeRoute(
   request: Request,
   response: Response
 ):
   | {
       owner: string;
       repo: string;
-      definition: ClaimDefinition;
+      definition: BadgeDefinition;
     }
   | undefined {
   const repositoryRoute = parseRepositoryRoute(request);
 
   const owner = repositoryRoute.owner;
   const repo = repositoryRoute.repo;
-  const claim = routeParam(request, "claim");
-  const definition = getClaimDefinition(claim);
+  const badgeId = routeParam(request, "badgeId");
+  const definition = getBadgeDefinition(badgeId);
 
   if (definition === undefined) {
     response.status(404).json({
-      error: "unsupported_claim",
-      claim
+      error: "unsupported_badge",
+      badgeId
     });
     return undefined;
   }

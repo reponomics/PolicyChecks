@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { communityHealthClaim } from "../../src/claims/community-health.js";
-import { GitHubApiError } from "../../src/github/errors.js";
-import { evaluateWithMock, mockGitHub } from "../support/mock-github.js";
+import { communityHealthBadge } from "../../../src/badges/community-health.js";
+import { GitHubApiError } from "../../../src/github/errors.js";
+import { evaluateWithMock, mockGitHub } from "../../support/mock-github.js";
 
-describe("community health claim", () => {
+describe("community health badge", () => {
   it("returns the GitHub community health score", async () => {
     const result = await evaluateWithMock(
-      communityHealthClaim,
+      communityHealthBadge,
       mockGitHub({
         getCommunityProfile: async () => ({
           health_percentage: 87,
@@ -37,10 +37,6 @@ describe("community health claim", () => {
 
     expect(result).toMatchObject({
       result: "87/100",
-      evidence: {
-        scope: "repository",
-        source: "community_profile"
-      },
       details: {
         health_percentage: 87,
         score: {
@@ -79,7 +75,7 @@ describe("community health claim", () => {
 
   it("returns unknown when health_percentage is missing", async () => {
     const result = await evaluateWithMock(
-      communityHealthClaim,
+      communityHealthBadge,
       mockGitHub({
         getCommunityProfile: async () => ({})
       })
@@ -98,7 +94,7 @@ describe("community health claim", () => {
 
   it("returns unknown when health_percentage is outside the documented range", async () => {
     const result = await evaluateWithMock(
-      communityHealthClaim,
+      communityHealthBadge,
       mockGitHub({
         getCommunityProfile: async () => ({
           health_percentage: 101
@@ -114,7 +110,7 @@ describe("community health claim", () => {
 
   it("handles community profile metadata that is missing or malformed", async () => {
     const result = await evaluateWithMock(
-      communityHealthClaim,
+      communityHealthBadge,
       mockGitHub({
         getCommunityProfile: async () => ({
           health_percentage: 50,
@@ -139,7 +135,7 @@ describe("community health claim", () => {
 
   it("treats missing community files as absent metadata", async () => {
     const result = await evaluateWithMock(
-      communityHealthClaim,
+      communityHealthBadge,
       mockGitHub({
         getCommunityProfile: async () => ({
           health_percentage: 25,
@@ -164,7 +160,7 @@ describe("community health claim", () => {
 
   it("returns unknown on authorization failure", async () => {
     const result = await evaluateWithMock(
-      communityHealthClaim,
+      communityHealthBadge,
       mockGitHub({
         getCommunityProfile: async () => {
           throw new GitHubApiError("Forbidden", {

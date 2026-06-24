@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { shaPinningRequiredClaim } from "../../src/claims/sha-pinning-required.js";
-import { GitHubApiError } from "../../src/github/errors.js";
-import { evaluateWithMock, mockGitHub } from "../support/mock-github.js";
+import { shaPinningRequiredBadge } from "../../../src/badges/sha-pinning-required.js";
+import { GitHubApiError } from "../../../src/github/errors.js";
+import { evaluateWithMock, mockGitHub } from "../../support/mock-github.js";
 
-describe("SHA pinning claim", () => {
+describe("SHA pinning badge", () => {
   it("passes when sha_pinning_required is true", async () => {
     const result = await evaluateWithMock(
-      shaPinningRequiredClaim,
+      shaPinningRequiredBadge,
       mockGitHub({
         getActionsPermissions: async () => ({
           sha_pinning_required: true
@@ -25,7 +25,7 @@ describe("SHA pinning claim", () => {
 
   it("fails when sha_pinning_required is false", async () => {
     const result = await evaluateWithMock(
-      shaPinningRequiredClaim,
+      shaPinningRequiredBadge,
       mockGitHub({
         getActionsPermissions: async () => ({
           sha_pinning_required: false
@@ -43,7 +43,7 @@ describe("SHA pinning claim", () => {
 
   it("returns unknown on authorization failure", async () => {
     const result = await evaluateWithMock(
-      shaPinningRequiredClaim,
+      shaPinningRequiredBadge,
       mockGitHub({
         getActionsPermissions: async () => {
           throw new GitHubApiError("Forbidden", {
@@ -62,7 +62,7 @@ describe("SHA pinning claim", () => {
 
   it("returns unknown on a 404", async () => {
     const result = await evaluateWithMock(
-      shaPinningRequiredClaim,
+      shaPinningRequiredBadge,
       mockGitHub({
         getActionsPermissions: async () => {
           throw new GitHubApiError("Not found", {
@@ -81,7 +81,7 @@ describe("SHA pinning claim", () => {
 
   it("returns unknown when sha_pinning_required is missing", async () => {
     const result = await evaluateWithMock(
-      shaPinningRequiredClaim,
+      shaPinningRequiredBadge,
       mockGitHub({
         getActionsPermissions: async () => ({})
       })
