@@ -16,7 +16,7 @@ That creates a consent mismatch:
 
 - Installing the GitHub App grants PolicyChecks read access to selected repository administration settings.
 - Public badge endpoints disclose the result of any supported setting check to anyone who knows or guesses the endpoint URL.
-- The aggregate `info.json` endpoint exposes all supported check results together, which makes the service look more like a public audit surface than a maintainer-selected badge service.
+- The aggregate `info.json` endpoint exposes all supported badge results together, which makes the service look more like a public audit surface than a maintainer-selected badge service.
 
 This is especially sensitive because these settings are not all publicly available through the unauthenticated GitHub API. A maintainer may want to publish one badge, such as immutable releases, without also making every other supported repository setting easy to query.
 
@@ -62,20 +62,20 @@ Both proposals require removing or disabling the public aggregate `info.json` en
 
 Restrict PolicyChecks to public repositories and serve a badge only when the canonical badge URL appears in the repository's preferred README on the default branch.
 
-Under this proposal, publication is controlled by the repository itself. A maintainer publishes a claim by committing the badge URL to the public repository README. If the badge URL is not present, PolicyChecks does not serve the badge or details endpoint for that claim.
+Under this proposal, publication is controlled by the repository itself. A maintainer publishes a badge by committing the badge URL to the public repository README. If the badge URL is not present, PolicyChecks does not serve the badge or details endpoint for that badge ID.
 
 Example publication check:
 
 ```text
-GET /github/{owner}/{repo}/{claim}.svg
+GET /github/{owner}/{repo}/{badge-id}.svg
 ```
 
 PolicyChecks verifies:
 
 1. The repository is public.
 2. The GitHub App is installed on the repository.
-3. The repository's preferred README on the default branch contains the canonical badge URL for that claim.
-4. The requested claim can be evaluated from GitHub API data.
+3. The repository's preferred README on the default branch contains the canonical badge URL for that badge ID.
+4. The requested badge can be evaluated from GitHub API data.
 
 If any publication check fails, PolicyChecks returns a generic unavailable response, such as `404`. It should not return `disabled`, because `disabled` is the privileged information the publication check is meant to protect.
 
@@ -114,20 +114,20 @@ This proposal is accepted because it keeps the project small and keeps the publi
 
 Use tokenized public badge URLs and remove the public aggregate `info.json` endpoint.
 
-Public badge and details endpoints would require a per-repository, per-claim token. A token authorizes disclosure of exactly one claim for exactly one repository installation. PolicyChecks can derive these tokens deterministically from a private server-side signing secret rather than storing each token in a database.
+Public badge and details endpoints would require a per-repository, per-badge token. A token authorizes disclosure of exactly one badge result for exactly one repository installation. PolicyChecks can derive these tokens deterministically from a private server-side signing secret rather than storing each token in a database.
 
 Example endpoint shapes:
 
 ```text
-GET /github/{owner}/{repo}/{claim}.svg?token={token}
-GET /github/{owner}/{repo}/{claim}.json?token={token}
-GET /github/{owner}/{repo}/{claim}/details.json?token={token}
+GET /github/{owner}/{repo}/{badge-id}.svg?token={token}
+GET /github/{owner}/{repo}/{badge-id}.json?token={token}
+GET /github/{owner}/{repo}/{badge-id}/details.json?token={token}
 ```
 
-The token should be computed from stable GitHub identifiers and the claim identifier:
+The token should be computed from stable GitHub identifiers and the badge ID:
 
 ```text
-token = HMAC(BADGE_TOKEN_SECRET, installation_id + repository_id + claim_id)
+token = HMAC(BADGE_TOKEN_SECRET, installation_id + repository_id + badge_id)
 ```
 
 `BADGE_TOKEN_SECRET` is a private PolicyChecks runtime secret. It is never shown to installers. The public token derived from it is safe to place in README badge Markdown because it authorizes only a single public badge result.
@@ -136,7 +136,7 @@ Including `installation_id` means uninstalling and reinstalling the GitHub App r
 
 ## Publication Model
 
-Under this model, "published" means that a maintainer has chosen to use the tokenized URL for a specific repository and claim. PolicyChecks does not need to detect where the URL is embedded.
+Under this model, "published" means that a maintainer has chosen to use the tokenized URL for a specific repository and badge ID. PolicyChecks does not need to detect where the URL is embedded.
 
 Anyone can view a badge once they have the tokenized URL, but they cannot derive other badge URLs from it. For example, a token for `immutable-releases` on repository A cannot be used to query `sha-pinning-required` on repository A or `immutable-releases` on repository B.
 
@@ -154,7 +154,7 @@ This preserves the practical workflow:
 2. Copy the badge snippets you want.
 3. Paste them where you want the badges to appear.
 
-No per-claim database state is required for the initial version.
+No per-badge database state is required for the initial version.
 
 ### Consequences
 
@@ -166,7 +166,7 @@ Positive:
 - The product remains close to "install and paste a badge."
 - No repository contents permission is required.
 - No committed configuration file is required.
-- No durable per-claim publication database is required.
+- No durable per-badge publication database is required.
 - Tokens can be regenerated for authorized maintainers because they are deterministic.
 
 Negative:
@@ -181,7 +181,7 @@ Negative:
 
 ### Option A: Keep the current public endpoint model
 
-Installation continues to expose every supported claim endpoint for an installed repository.
+Installation continues to expose every supported badge endpoint for an installed repository.
 
 Benefits:
 
@@ -200,7 +200,7 @@ This option conflicts with the desired consent model.
 
 ### Option B: Remove `info.json` only
 
-Delete or disable the aggregate endpoint, but leave individual claim endpoints public and guessable.
+Delete or disable the aggregate endpoint, but leave individual badge endpoints public and guessable.
 
 Benefits:
 
@@ -210,14 +210,14 @@ Benefits:
 
 Costs:
 
-- Anyone can still query every individual supported claim for an installed repository.
-- Maintainers still cannot selectively publish one claim without exposing the rest.
+- Anyone can still query every individual supported badge for an installed repository.
+- Maintainers still cannot selectively publish one badge without exposing the rest.
 
 This is a useful immediate mitigation, but it does not fully solve the disclosure model.
 
-### Option C: Store a per-repository, per-claim publication allowlist
+### Option C: Store a per-repository, per-badge publication allowlist
 
-Add a small configuration store that records which claims are publicly enabled for each repository.
+Add a small configuration store that records which badges are publicly enabled for each repository.
 
 Example:
 
@@ -226,7 +226,7 @@ repository_id
 installation_id
 owner
 repo
-published_claims
+published_badges
 updated_by
 updated_at
 ```
@@ -275,14 +275,14 @@ This option is not recommended unless PolicyChecks intentionally expands into re
 
 ### Option E: Use tokenized per-badge URLs
 
-Generate unguessable badge URLs for every repository and claim, and require the matching token on public badge and details endpoints.
+Generate unguessable badge URLs for every repository and badge ID, and require the matching token on public badge and details endpoints.
 
 Benefits:
 
 - Maintainers choose what to publish by choosing which badge URL to use.
 - No durable publication database is required.
 - No repository contents permission is required.
-- Public callers cannot enumerate unpublished claims.
+- Public callers cannot enumerate unpublished badges.
 - Tokens can be regenerated for authorized maintainers.
 - Keeps the product close to a no-configuration badge workflow.
 
@@ -302,14 +302,14 @@ The public aggregate endpoint should be removed or disabled:
 GET /github/{owner}/{repo}/info.json
 ```
 
-If an aggregate endpoint is later reintroduced, it should return only claims that the maintainer has explicitly published. It should not act as a public repository policy profile.
+If an aggregate endpoint is later reintroduced, it should return only badges that the maintainer has explicitly published. It should not act as a public repository policy profile.
 
-Badge, Shields JSON, and details JSON endpoints should all use the same publication rule. Under the README-presence proposal, the details endpoint is available only when the corresponding badge URL is present in the preferred README. Under the tokenized URL proposal, the details endpoint requires the same per-repository, per-claim token as the badge. Details JSON can disclose more context than a badge, so it should not remain available through an unauthenticated, guessable URL. The details endpoint is supporting evaluation context derived from GitHub API responses, not an audit report, guarantee, or independent compliance attestation.
+Badge, Shields JSON, and details JSON endpoints should all use the same publication rule. Under the README-presence proposal, the details endpoint is available only when the corresponding badge URL is present in the preferred README. Under the tokenized URL proposal, the details endpoint requires the same per-repository, per-badge token as the badge. Details JSON can disclose more context than a badge, so it should not remain available through an unauthenticated, guessable URL. The details endpoint is supporting evaluation context derived from GitHub API responses, not an audit report, guarantee, or independent compliance attestation.
 
 For failed publication checks, responses should avoid distinguishing:
 
 - GitHub App not installed.
-- Claim not published.
+- Badge not published.
 - Token invalid.
 - Repository not found.
 - Repository is private.
@@ -352,4 +352,4 @@ This keeps PolicyChecks closest to its core value: a small public badge service 
 
 Tokenized badge URLs remain the leading alternative if private repository support or non-README publication becomes important enough to justify the extra setup and authorization surface.
 
-If schedule pressure requires a smaller immediate change, remove `info.json` first. The current all-claims-public posture should not be treated as the intended long-term model.
+If schedule pressure requires a smaller immediate change, remove `info.json` first. The current all-badges-public posture should not be treated as the intended long-term model.

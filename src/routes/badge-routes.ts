@@ -1,5 +1,6 @@
 import { Router, type NextFunction, type Request, type Response } from "express";
 
+import { toDetailsJson } from "../badges/details-json.js";
 import { renderBadgeSvg } from "../badges/svg.js";
 import { toShieldsJson } from "../badges/shields-json.js";
 import { claimDefinitions, getClaimDefinition } from "../claims/registry.js";
@@ -68,7 +69,7 @@ export function createBadgeRouter(claimService: ClaimEvaluator): Router {
 
       const result = await claimService.evaluate(route.definition, route.owner, route.repo);
       response.setHeader("Cache-Control", cacheControl);
-      response.json(result);
+      response.json(toDetailsJson(result));
     })
   );
 

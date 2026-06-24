@@ -85,7 +85,7 @@ describe("badge routes", () => {
       .expect(200);
 
     expect(response.body).toMatchObject({
-      claim: "immutable-releases",
+      badgeId: "immutable-releases",
       owner: "OWNER",
       repo: "REPO",
       repository: {
@@ -95,6 +95,8 @@ describe("badge routes", () => {
       },
       result: "disabled"
     });
+    expect(response.body).not.toHaveProperty("claim");
+    expect(response.body).not.toHaveProperty("evidence");
     expect(response.body).not.toHaveProperty("status");
     expect(response.body).not.toHaveProperty("value");
   });

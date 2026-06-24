@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { InMemoryClaimCache } from "../src/cache/cache.js";
+import { toDetailsJson } from "../src/badges/details-json.js";
 import { renderBadgeSvg } from "../src/badges/svg.js";
 import { toShieldsJson } from "../src/badges/shields-json.js";
 import { claimDefinitions, getClaimDefinition } from "../src/claims/registry.js";
@@ -120,7 +121,7 @@ export default {
       }
 
       if (route.kind === "details") {
-        return json(result, 200, {
+        return json(toDetailsJson(result), 200, {
           "Cache-Control": cacheControl
         });
       }
