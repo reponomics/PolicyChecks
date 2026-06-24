@@ -60,7 +60,7 @@ Both proposals require removing or disabling the public aggregate `info.json` en
 
 ## Proposal 1: Public repositories with README presence
 
-Restrict PolicyChecks to public repositories and serve a badge only when the canonical badge URL appears in an accepted README file on the repository's default branch.
+Restrict PolicyChecks to public repositories and serve a badge only when the canonical badge URL appears in the repository's preferred README on the default branch.
 
 Under this proposal, publication is controlled by the repository itself. A maintainer publishes a claim by committing the badge URL to the public repository README. If the badge URL is not present, PolicyChecks does not serve the badge or proof endpoint for that claim.
 
@@ -74,23 +74,12 @@ PolicyChecks verifies:
 
 1. The repository is public.
 2. The GitHub App is installed on the repository.
-3. An accepted README file on the default branch contains the canonical badge URL for that claim.
+3. The repository's preferred README on the default branch contains the canonical badge URL for that claim.
 4. The requested claim can be evaluated from GitHub API data.
 
 If any publication check fails, PolicyChecks returns a generic unavailable response, such as `404`. It should not return `disabled`, because `disabled` is the privileged information the publication check is meant to protect.
 
-Accepted README files should be intentionally narrow in the initial version, for example:
-
-```text
-README
-README.md
-README.markdown
-README.rst
-README.txt
-README.* localized variants at the repository root
-```
-
-The first version should check only root-level README files on the default branch. It should not search the full repository tree.
+PolicyChecks should use GitHub's `GET /repos/{owner}/{repo}/readme` endpoint, which returns the repository's preferred README and defaults to the repository's default branch when no `ref` is supplied. This lets GitHub determine the front-page README instead of reimplementing README precedence across `.github`, root, and `docs`.
 
 README publication checks can be cached aggressively, such as for 24 hours. This means PolicyChecks should stop presenting badges as real-time policy reports. A more accurate framing is that badges are cached public signals of selected repository settings, not real-time audits.
 
@@ -312,7 +301,7 @@ GET /github/{owner}/{repo}/info.json
 
 If an aggregate endpoint is later reintroduced, it should return only claims that the maintainer has explicitly published. It should not act as a public repository policy profile.
 
-Badge, Shields JSON, and proof JSON endpoints should all use the same publication rule. Under the README-presence proposal, the proof endpoint is available only when the corresponding badge URL is present in an accepted README. Under the tokenized URL proposal, the proof endpoint requires the same per-repository, per-claim token as the badge. Proof JSON can disclose more context than a badge, so it should not remain available through an unauthenticated, guessable URL.
+Badge, Shields JSON, and proof JSON endpoints should all use the same publication rule. Under the README-presence proposal, the proof endpoint is available only when the corresponding badge URL is present in the preferred README. Under the tokenized URL proposal, the proof endpoint requires the same per-repository, per-claim token as the badge. Proof JSON can disclose more context than a badge, so it should not remain available through an unauthenticated, guessable URL.
 
 For failed publication checks, responses should avoid distinguishing:
 
@@ -321,7 +310,7 @@ For failed publication checks, responses should avoid distinguishing:
 - Token invalid.
 - Repository not found.
 - Repository is private.
-- Badge URL is absent from the accepted README files.
+- Badge URL is absent from the preferred README.
 
 A generic `404` is preferable to a badge that says `disabled`, because `disabled` is the privileged information.
 
@@ -347,7 +336,7 @@ The README-presence proposal does not require a snippet generator for authorizat
 - Should PolicyChecks eventually support explicit revocation through stored per-repository salt values?
 - Should old non-tokenized badge endpoints return `404`, `410`, or a badge explaining that tokenized URLs are required?
 - Should PolicyChecks support private repository badges at all?
-- Should README publication checks inspect only GitHub's primary README, or root-level `README*` files?
+- Should a later version support additional README locations if the preferred README endpoint proves insufficient?
 - What cache duration should README publication checks use?
 - Should Marketplace launch wait for a selective-publication model, or should launch be deferred while the product scope is narrowed?
 - How should this affect README examples, Marketplace copy, privacy policy language, and operations docs?

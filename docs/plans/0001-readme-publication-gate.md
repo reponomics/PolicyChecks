@@ -8,12 +8,12 @@ Planned
 
 ADR 0001 accepts a narrower product model for PolicyChecks: public badges for public repositories, authorized by the maintainer's decision to place the badge URL in a public README. This keeps PolicyChecks aligned with its intended role as a small badge service rather than a private dashboard, public audit product, or customer-account system.
 
-GitHub documents three repository README locations that it recognizes and surfaces to repository visitors: `.github`, the repository root, and `docs`. If multiple README files exist, GitHub chooses the displayed README in that order. PolicyChecks should support those same three top-level locations and should not search arbitrary subdirectories.
+GitHub documents three repository README locations that it recognizes and surfaces to repository visitors: `.github`, the repository root, and `docs`. If multiple README files exist, GitHub chooses the displayed README in that order. The REST API also exposes `GET /repos/{owner}/{repo}/readme`, which returns the repository's preferred README and defaults to the repository's default branch. PolicyChecks should use that endpoint as the publication source instead of reimplementing README precedence.
 
 ## Goals
 
 - Remove or disable the public aggregate `info.json` endpoint.
-- Serve a per-claim badge only when the repository is public and an accepted README contains the canonical badge URL for that claim.
+- Serve a per-claim badge only when the repository is public and its preferred README contains the canonical badge URL for that claim.
 - Apply the same publication rule to SVG badge, Shields JSON, and proof JSON endpoints.
 - Avoid durable customer configuration, setup dashboards, tokenized badge URLs, and private repository content access.
 - Keep caching conservative enough for a quiet side project, while leaving clear escalation points if traffic grows.
@@ -21,8 +21,8 @@ GitHub documents three repository README locations that it recognizes and surfac
 ## Non-Goals
 
 - Do not support private repository badges in the initial model.
-- Do not read repository source code outside accepted README files.
-- Do not search arbitrary documentation folders or nested README files.
+- Do not read repository source code outside the preferred README.
+- Do not manually search arbitrary documentation folders or nested README files.
 - Do not add a publication database or per-repository allowlist.
 - Do not add tokenized badge URLs unless the README model proves insufficient.
 - Do not keep `info.json` as a public all-claims endpoint.
@@ -34,17 +34,15 @@ A claim is published for a repository if all of the following are true:
 1. The requested claim is supported.
 2. The GitHub App is installed on the repository.
 3. The repository is public.
-4. At least one accepted README candidate on the default branch contains a canonical public PolicyChecks URL for that repository and claim.
+4. The repository's preferred README on the default branch contains a canonical public PolicyChecks URL for that repository and claim.
 
-Accepted README candidates are README files directly inside:
+PolicyChecks should resolve the preferred README by calling:
 
 ```text
-.github/
-/
-docs/
+GET /repos/{owner}/{repo}/readme
 ```
 
-The first implementation should support files whose names match `README` or `README.*`, case-insensitively, in those three locations only.
+Do not pass a `ref` parameter in the publication check unless a future use case requires branch-specific behavior. The default branch is the intended publication authority.
 
 ## Canonical URL Matching
 
@@ -57,7 +55,7 @@ https://policychecks.reponomics.org/github/{owner}/{repo}/{claim}.svg
 https://policychecks.reponomics.org/github/{owner}/{repo}/{claim}.json
 ```
 
-The proof endpoint should not have its own independent publication rule. It should be available only when the corresponding badge or Shields JSON URL is present in an accepted README.
+The proof endpoint should not have its own independent publication rule. It should be available only when the corresponding badge or Shields JSON URL is present in the preferred README.
 
 Matching should operate on raw README text, not rendered HTML. This keeps the implementation simple and avoids depending on GitHub's Markdown rendering details. The initial implementation should use exact canonical URL containment after normalizing the repository owner/name casing from GitHub's repository response. If case-insensitive owner/repo matching becomes necessary, add it deliberately with tests.
 
@@ -97,16 +95,16 @@ The implementation should first use the existing repository lookup to resolve:
 - default branch
 - whether the repository is private
 
-For README lookup, prefer a small publication client that fetches public repository contents only for accepted README locations. The implementation should avoid requesting repository `Contents: Read` permission unless a spike proves it is unavoidable.
+For README lookup, prefer a small publication client that fetches only the preferred README. The implementation should avoid requesting repository `Contents: Read` permission unless a spike proves it is unavoidable.
 
 Candidate implementation sequence:
 
-1. List the contents of `.github`, root, and `docs` for the default branch.
-2. Filter each directory listing to files matching `README` or `README.*`.
-3. Fetch raw content for matching README files.
-4. Stop as soon as a candidate contains a canonical URL for the requested claim.
+1. Call `GET /repos/{owner}/{repo}/readme` without a `ref` parameter.
+2. Request raw README content where possible, using the raw media type.
+3. If the endpoint returns metadata instead of raw content, decode the returned Base64 `content` field or fetch the returned `download_url`.
+4. Check the preferred README text for the canonical URL for the requested claim.
 
-The first implementation should include a short spike or test fixture to confirm whether the existing GitHub App installation token can read public README content without adding `Contents: Read`. If it cannot, use unauthenticated public content requests for README lookup and document the rate-limit tradeoff. If neither path is acceptable, pause and reassess before expanding permissions.
+GitHub documents that repository contents endpoints can be used without authentication for public resources, even though authenticated GitHub App access to the same endpoint requires `Contents: Read`. The first implementation should include a short spike or test fixture to confirm the preferred README request path. If unauthenticated public README lookup is insufficient, pause and reassess before expanding permissions.
 
 ## Cache Strategy
 
@@ -170,7 +168,7 @@ This keeps the quiet-path implementation small while preserving a clear path for
 
 3. Add an in-memory publication cache with separate positive, negative, and error TTL handling.
 4. Extend the GitHub repository model to include `private`, repository id, canonical owner/name, and default branch if any of those are missing.
-5. Add README discovery and raw-content fetching for `.github`, root, and `docs` on the default branch.
+5. Add preferred README raw-content fetching for the default branch.
 6. Gate `.svg`, `.json`, and `/proof.json` routes before evaluating claims.
 7. Remove or disable `/github/{owner}/{repo}/info.json`.
 8. Update README examples and endpoint documentation.
@@ -185,17 +183,17 @@ Add focused tests for:
 - Unsupported claim routes still return `404`.
 - Private repositories do not serve badges.
 - Public repositories without a matching README URL do not serve badges.
-- A matching SVG URL in `.github/README.md`, root `README.md`, or `docs/README.md` authorizes the claim.
+- A matching SVG URL in the preferred README authorizes the claim.
 - A matching Shields JSON URL authorizes the claim.
 - A proof JSON request is authorized only when the corresponding badge or Shields JSON URL is present.
-- README files outside `.github`, root, and `docs` do not authorize badges.
+- Non-preferred README files do not authorize badges.
 - Negative publication decisions use the shorter negative TTL.
 - Positive publication decisions use the longer positive TTL and avoid repeated README fetches.
 - Transient README lookup failures use the error TTL.
 
 ## Documentation Updates
 
-The README should stop presenting PolicyChecks as a current-state endpoint for any installed repository. It should instead describe it as a cached badge service for public repositories where maintainers publish selected badges by placing the badge URL in an accepted README.
+The README should stop presenting PolicyChecks as a current-state endpoint for any installed repository. It should instead describe it as a cached badge service for public repositories where maintainers publish selected badges by placing the badge URL in the repository's preferred README.
 
 The operations guide should document:
 
@@ -206,7 +204,7 @@ The operations guide should document:
 
 The privacy policy should document:
 
-- PolicyChecks reads public README files in `.github`, root, and `docs` to determine whether a badge has been published.
+- PolicyChecks reads the repository's public preferred README to determine whether a badge has been published.
 - PolicyChecks does not support private repository badges in the initial model.
 - PolicyChecks still does not read repository source code generally.
 
@@ -215,5 +213,5 @@ The privacy policy should document:
 - Should the initial route return a JSON `404` for all unpublished outputs, or should SVG requests return an empty 404 body?
 - Should publication matching accept both `https://policychecks.reponomics.org` and any configured custom service origin?
 - Should preview deployments disable publication checks against production URLs, or allow a configured origin override for testing?
-- Should README lookup use GitHub REST contents endpoints, raw `download_url` values from directory listings, or `raw.githubusercontent.com` directly?
+- Should README lookup use the raw media type response, decoded `content`, or the returned `download_url`?
 - Should operations expose a diagnostic endpoint for maintainers, or would that recreate the unwanted audit surface?
