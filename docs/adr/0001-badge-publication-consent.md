@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Date
 
@@ -43,9 +43,15 @@ PolicyChecks is not intended to become a private compliance dashboard. The core 
 - The implementation should avoid broad new GitHub permissions unless there is a strong product reason.
 - The design should remain proportionate to a small, public badge service rather than assuming product-market fit or enterprise dashboard requirements.
 
-## Proposals Under Consideration
+## Decision
 
-Two launchable proposals are currently under consideration:
+PolicyChecks will restrict public badge publication to public repositories and use README presence as the publication authority. The public aggregate `info.json` endpoint will be removed or disabled.
+
+Tokenized public badge URLs remain a documented alternative if PolicyChecks later needs to support private repository badges or publication locations outside the repository README. That expansion is intentionally deferred unless adoption justifies the extra setup, authorization, and infrastructure surface.
+
+## Proposals Considered
+
+Two launchable proposals were considered:
 
 1. Restrict PolicyChecks to public repositories and use README presence as publication authority.
 2. Keep broader repository support and use tokenized public badge URLs.
@@ -110,7 +116,7 @@ Negative:
 - README publication checks introduce another cache layer and weaken strict "current status" messaging.
 - Users who remove a badge from the README may still see it served until the publication cache expires.
 
-This proposal is currently attractive because it keeps the project small and keeps the publication act inside the public repository where the badge is displayed.
+This proposal is accepted because it keeps the project small and keeps the publication act inside the public repository where the badge is displayed.
 
 ## Proposal 2: Tokenized public badge URLs
 
@@ -348,9 +354,9 @@ The README-presence proposal does not require a snippet generator for authorizat
 
 ## Recommendation Summary
 
-Before launch, remove the public `info.json` endpoint and adopt a selective-publication model for badge, Shields JSON, and proof JSON endpoints.
+Before launch, remove the public `info.json` endpoint and adopt the public-repository README-presence model for badge, Shields JSON, and proof JSON endpoints.
 
-The current lean is toward the public-repository README-presence model because it keeps PolicyChecks closest to its core value: a small public badge service that gives maintainers recognition for selected public repository policy choices without adding a dashboard, database, token-management system, or private repository content access.
+This keeps PolicyChecks closest to its core value: a small public badge service that gives maintainers recognition for selected public repository policy choices without adding a dashboard, database, token-management system, or private repository content access.
 
 Tokenized badge URLs remain the leading alternative if private repository support or non-README publication becomes important enough to justify the extra setup and authorization surface.
 
