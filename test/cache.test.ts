@@ -5,7 +5,7 @@ import { shaPinningRequiredClaim } from "../src/claims/sha-pinning-required.js";
 import type { ClaimResult } from "../src/claims/types.js";
 
 describe("in-memory claim cache", () => {
-  it("returns the cached proof with the original checked_at timestamp", () => {
+  it("returns the cached result with the original checked_at timestamp", () => {
     const cache = new InMemoryClaimCache();
     const result = makeResult("2026-05-30T00:00:00.000Z");
 
