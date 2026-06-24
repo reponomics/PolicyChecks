@@ -13,7 +13,7 @@ GitHub documents three repository README locations that it recognizes and surfac
 ## Goals
 
 - Remove or disable the public aggregate `info.json` endpoint.
-- Serve a per-claim badge only when the repository is public and its preferred README contains the canonical badge URL for that claim.
+- Serve a badge only when the repository is public and its preferred README contains the canonical badge URL for that badge ID.
 - Apply the same publication rule to SVG badge, Shields JSON, and details JSON endpoints.
 - Couple live badge service responses to maintainer-controlled placement in the target repository's preferred README, reducing casual badge misrepresentation without claiming cryptographic anti-forgery.
 - Avoid durable customer configuration, setup dashboards, tokenized badge URLs, and private repository content access.
@@ -26,18 +26,18 @@ GitHub documents three repository README locations that it recognizes and surfac
 - Do not manually search arbitrary documentation folders or nested README files.
 - Do not add a publication database or per-repository allowlist.
 - Do not add tokenized badge URLs unless the README model proves insufficient.
-- Do not keep `info.json` as a public all-claims endpoint.
+- Do not keep `info.json` as a public all-badges endpoint.
 
 ## Publication Rule
 
-A claim is published for a repository if all of the following are true:
+A badge is published for a repository if all of the following are true:
 
-1. The requested claim is supported.
+1. The requested badge ID is supported.
 2. The GitHub App is installed on the repository.
 3. The repository is public.
-4. The repository's preferred README on the default branch contains a canonical public PolicyChecks URL for that repository and claim.
+4. The repository's preferred README on the default branch contains a canonical public PolicyChecks URL for that repository and badge ID.
 
-Publication is claim-specific. A README containing the canonical URL for claim A authorizes claim A only. It must not authorize claim B, even when both claims are supported for the same repository and even if README fetch or parse work is cached at repository granularity.
+Publication is badge-specific. A README containing the canonical URL for badge ID A authorizes badge ID A only. It must not authorize badge ID B, even when both badges are supported for the same repository and even if README fetch or parse work is cached at repository granularity.
 
 PolicyChecks should resolve the preferred README by calling:
 
@@ -49,16 +49,16 @@ Do not pass a `ref` parameter in the publication check unless a future use case 
 
 ## Canonical URL Matching
 
-PolicyChecks should derive canonical URLs from the configured public service origin, repository owner/name, and claim id.
+PolicyChecks should derive canonical URLs from the configured public service origin, repository owner/name, and badge ID.
 
-For claim publication, a README match should be accepted if it contains either of these canonical URLs for the same claim:
+For badge publication, a README match should be accepted if it contains either of these canonical URLs for the same badge ID:
 
 ```text
-https://policychecks.reponomics.org/github/{owner}/{repo}/{claim}.svg
-https://policychecks.reponomics.org/github/{owner}/{repo}/{claim}.json
+https://policychecks.reponomics.org/github/{owner}/{repo}/{badge-id}.svg
+https://policychecks.reponomics.org/github/{owner}/{repo}/{badge-id}.json
 ```
 
-The details endpoint should not have its own independent publication rule. It should be available only when the corresponding badge or Shields JSON URL is present in the preferred README. The endpoint returns the cached PolicyChecks evaluation record for the published claim, including the GitHub API route and selected response-derived fields used to produce the badge. It is supporting context for the badge, not an audit report, guarantee, or independent compliance attestation.
+The details endpoint should not have its own independent publication rule. It should be available only when the corresponding badge or Shields JSON URL is present in the preferred README. The endpoint returns the cached PolicyChecks evaluation record for the published badge ID, including the GitHub API route and selected response-derived fields used to produce the badge. It identifies the badge as `badgeId` and does not expose internal classification fields. It is supporting context for the badge, not an audit report, guarantee, or independent compliance attestation.
 
 Matching should operate on raw README text, not rendered HTML. This keeps the implementation simple and avoids depending on GitHub's Markdown rendering details. The initial implementation should use exact canonical URL containment after normalizing the repository owner/name casing from GitHub's repository response. If case-insensitive owner/repo matching becomes necessary, add it deliberately with tests.
 
@@ -70,12 +70,12 @@ Matching should operate on raw README text, not rendered HTML. This keeps the im
 GET /github/{owner}/{repo}/info.json
 ```
 
-Per-claim endpoints remain:
+Per-badge endpoints remain:
 
 ```text
-GET /github/{owner}/{repo}/{claim}.svg
-GET /github/{owner}/{repo}/{claim}.json
-GET /github/{owner}/{repo}/{claim}/details.json
+GET /github/{owner}/{repo}/{badge-id}.svg
+GET /github/{owner}/{repo}/{badge-id}.json
+GET /github/{owner}/{repo}/{badge-id}/details.json
 ```
 
 For any failed publication check, return a generic `404`. Do not distinguish:
@@ -85,9 +85,9 @@ For any failed publication check, return a generic `404`. Do not distinguish:
 - Repository is private.
 - README not found.
 - Badge URL not present.
-- Claim not published.
+- Badge not published.
 
-Do not return an `unknown` or `disabled` badge for unpublished claims. Those values disclose information the publication gate is meant to protect.
+Do not return an `unknown` or `disabled` badge for unpublished badges. Those values disclose information the publication gate is meant to protect.
 
 ## GitHub API Approach
 
@@ -105,33 +105,33 @@ Candidate implementation sequence:
 1. Call `GET /repos/{owner}/{repo}/readme` without a `ref` parameter.
 2. Request raw README content where possible, using the raw media type.
 3. If the endpoint returns metadata instead of raw content, decode the returned Base64 `content` field or fetch the returned `download_url`.
-4. Check the preferred README text for the canonical URL for the requested claim.
+4. Check the preferred README text for the canonical URL for the requested badge ID.
 
 GitHub documents that repository contents endpoints can be used without authentication for public resources, even though authenticated GitHub App access to the same endpoint requires `Contents: Read`. The first implementation should include a short spike or test fixture to confirm the preferred README request path. If unauthenticated public README lookup is insufficient, pause and reassess before expanding permissions.
 
 ## Cache Strategy
 
-Use a separate publication cache from the existing claim-result cache. Publication and claim results answer different questions:
+Use a separate publication cache from the existing badge-result cache. Publication and badge results answer different questions:
 
 - Publication cache: "Has the maintainer publicly embedded this badge URL?"
-- Claim cache: "What did the GitHub API report for this repository setting?"
+- Badge-result cache: "What did the GitHub API report for this repository setting?"
 
-The implementation may cache the preferred README content or parsed published-claim set at repository granularity to avoid fetching the same README once per supported claim. That optimization must not change the authorization rule: the final publication decision remains claim-specific.
+The implementation may cache the preferred README content or parsed published-badge-ID set at repository granularity to avoid fetching the same README once per supported badge. That optimization must not change the authorization rule: the final publication decision remains badge-specific.
 
 ### Cache Keys
 
-Claim-specific publication decision cache keys should include:
+Badge-specific publication decision cache keys should include:
 
 ```text
 repository_id
 default_branch
-claim_id
+badge_id
 service_origin
 ```
 
 Including `default_branch` avoids reusing publication checks after a default branch change. Including `service_origin` avoids stale authorization if production and preview origins differ.
 
-If the implementation also caches repository-level README snapshots or parsed published-claim sets, those cache keys should omit `claim_id` and include:
+If the implementation also caches repository-level README snapshots or parsed published-badge-ID sets, those cache keys should omit `badge_id` and include:
 
 ```text
 repository_id
@@ -161,15 +161,15 @@ Do not start with a 24-hour default. Keep 24 hours as an operational ceiling for
 
 Publication revocation is eventually consistent. Removing a badge URL from the preferred README, making a repository private, uninstalling the GitHub App, or removing repository access should revoke publication, but PolicyChecks may continue serving a cached positive publication decision until the publication cache expires.
 
-PolicyChecks should use GitHub webhook events for repository visibility and installation lifecycle changes to invalidate affected publication and claim caches on a best-effort basis. Webhook invalidation is an acceleration path, not a hard correctness boundary. The configured positive publication TTL is the maximum expected stale-publication window.
+PolicyChecks should use GitHub webhook events for repository visibility and installation lifecycle changes to invalidate affected publication and badge-result caches on a best-effort basis. Webhook invalidation is an acceleration path, not a hard correctness boundary. The configured positive publication TTL is the maximum expected stale-publication window.
 
 PolicyChecks badges are cached maintainer-selected public signals, not real-time audits or authoritative compliance assertions.
 
 ### Forged Badge Traffic
 
-An unrelated repository can embed an unofficial PolicyChecks badge URL for a target repository and claim. Under the README-presence model, that request should return the same generic `404` as any other unpublished claim, but repeated forged requests can still create negative publication checks.
+An unrelated repository can embed an unofficial PolicyChecks badge URL for a target repository and badge ID. Under the README-presence model, that request should return the same generic `404` as any other unpublished badge, but repeated forged requests can still create negative publication checks.
 
-For launch, PolicyChecks accepts this risk with a 5-minute negative publication TTL and no adaptive negative-cache backoff. Repository-level README snapshot caching may reduce repeated README fetches across claims while preserving claim-specific authorization. If forged-badge traffic creates meaningful GitHub API pressure, escalate by adding edge caching for negative responses, then shared cache storage if needed.
+For launch, PolicyChecks accepts this risk with a 5-minute negative publication TTL and no adaptive negative-cache backoff. Repository-level README snapshot caching may reduce repeated README fetches across badge IDs while preserving badge-specific authorization. If forged-badge traffic creates meaningful GitHub API pressure, escalate by adding edge caching for negative responses, then shared cache storage if needed.
 
 ### Demand Scaling
 
@@ -178,7 +178,7 @@ Do not add durable caching or adaptive TTLs in the initial implementation. Start
 If traffic creates GitHub API pressure, escalate in this order:
 
 1. Increase positive publication TTL toward 24 hours through configuration.
-2. Increase claim-result TTL for low-volatility settings.
+2. Increase badge-result TTL for low-volatility settings.
 3. Add Cloudflare Cache API caching for public README publication decisions.
 4. Add durable shared cache storage, such as KV, only if the Cache API is insufficient.
 
@@ -190,13 +190,13 @@ This keeps the quiet-path implementation small while preserving a clear path for
 2. Add a publication gate abstraction, for example `PublicationGate`, with a method like:
 
    ```ts
-   isPublished(owner: string, repo: string, claim: string): Promise<PublicationDecision>
+   isPublished(owner: string, repo: string, badgeId: string): Promise<PublicationDecision>
    ```
 
 3. Add an in-memory publication cache with separate positive, negative, and error TTL handling.
 4. Extend the GitHub repository model to include `private`, repository id, canonical owner/name, and default branch if any of those are missing.
 5. Add preferred README raw-content fetching for the default branch.
-6. Gate `.svg`, `.json`, and `/details.json` routes before evaluating claims.
+6. Gate `.svg`, `.json`, and `/details.json` routes before evaluating badges.
 7. Remove or disable `/github/{owner}/{repo}/info.json`.
 8. Update README examples and endpoint documentation.
 9. Add best-effort webhook invalidation for repository visibility and installation lifecycle changes.
@@ -208,13 +208,13 @@ This keeps the quiet-path implementation small while preserving a clear path for
 Add focused tests for:
 
 - `info.json` returns `404` or is otherwise unavailable.
-- Unsupported claim routes still return `404`.
+- Unsupported badge routes still return `404`.
 - Private repositories do not serve badges.
 - Public repositories without a matching README URL do not serve badges.
-- A matching SVG URL in the preferred README authorizes the claim.
-- A matching Shields JSON URL authorizes the claim.
+- A matching SVG URL in the preferred README authorizes the badge ID.
+- A matching Shields JSON URL authorizes the badge ID.
 - A details JSON request is authorized only when the corresponding badge or Shields JSON URL is present.
-- A README containing only claim A's canonical URL does not authorize claim B.
+- A README containing only badge ID A's canonical URL does not authorize badge ID B.
 - Non-preferred README files do not authorize badges.
 - Negative publication decisions use the shorter negative TTL.
 - Positive publication decisions use the longer positive TTL and avoid repeated README fetches.

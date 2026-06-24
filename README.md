@@ -58,16 +58,16 @@ If the GitHub API provides an endpoint that reliably tracks a specific repo sett
 
 ## Endpoints
 
-Each claim supports the same endpoint shape:
+Each supported badge has a stable badge ID, such as `sha-pinning-required` or `community-health`, and supports the same endpoint shape:
 
 ```text
-GET /github/{owner}/{repo}/{setting}.svg  # Returns an SVG badge with status `enabled`, `disabled`, or `unknown` for a given setting
-GET /github/{owner}/{repo}/{setting}.json  # Returns a Shields-compatible JSON result for use in custom badge tooling
-GET /github/{owner}/{repo}/{setting}/details.json  # Returns the PolicyChecks evaluation record and selected response-derived details for a given setting
+GET /github/{owner}/{repo}/{badge-id}.svg  # Returns an SVG badge with status `enabled`, `disabled`, or `unknown`
+GET /github/{owner}/{repo}/{badge-id}.json  # Returns a Shields-compatible JSON result for use in custom badge tooling
+GET /github/{owner}/{repo}/{badge-id}/details.json  # Returns the PolicyChecks evaluation record and selected response-derived details
 GET /github/{owner}/{repo}/info.json  # A general JSON response that provides collective information about multiple different settings
 ```
 
-Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge tooling, and the details endpoint for the underlying PolicyChecks evaluation record. README badges can link directly to their details JSON:
+Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge tooling, and the details endpoint for the underlying PolicyChecks evaluation record. Details JSON identifies the badge as `badgeId` and omits internal classification fields. README badges can link directly to their details JSON:
 
 ```markdown
 [![Immutable releases](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases/details.json)
@@ -102,7 +102,7 @@ Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge 
 
 </details>
 
-The aggregate endpoint returns all currently supported claims for a repository:
+The aggregate endpoint returns all currently supported badge results for a repository:
 
 ```text
 https://policychecks.reponomics.org/github/OWNER/REPO/info.json

@@ -6,7 +6,7 @@ PolicyChecks is a current-state badge and details service. Operational safety de
 
 ## Cache Policy
 
-The internal claim-result cache defaults to `CACHE_TTL_SECONDS=3600`. This is intentionally conservative because the checked settings are low-volatility repository administration/security settings, not fast-changing CI state.
+The internal badge-result cache defaults to `CACHE_TTL_SECONDS=3600`. This is intentionally conservative because the checked settings are low-volatility repository administration/security settings, not fast-changing CI state.
 
 Public badge, Shields JSON, details JSON, and `info.json` responses use `Cache-Control: public, max-age=300, stale-while-revalidate=300`. This keeps externally visible badge staleness modest while allowing the Worker to serve repeated requests from its longer internal cache when the same isolate remains warm.
 
@@ -16,7 +16,7 @@ Tune cache settings with this policy:
 - Keep `CACHE_TTL_SECONDS` at least as large as the public `max-age` value, otherwise external clients can revalidate faster than the Worker cache can absorb.
 - Use `3600` seconds as the default.
 - Consider `21600` seconds for high-traffic public badges if rate-limit logs show repeated cache misses for the same repositories.
-- Do not lower below `300` seconds unless actively debugging a claim mapping.
+- Do not lower below `300` seconds unless actively debugging a badge mapping.
 
 Current limitation: the cache is in-memory per Worker isolate. It is a quota reducer, not durable storage. Cold starts and separate isolates may still call GitHub for the same repository.
 
