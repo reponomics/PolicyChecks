@@ -5,18 +5,18 @@
 </picture>
 
 <!-- prettier-ignore-start -->
-[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/proof.json)
-[![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/proof.json)
-[![Web signoff](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required/proof.json)
-[![Community health](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health/proof.json)
-[![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/proof.json)
-[![Secret push protection](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled/proof.json)
-[![Force pushes blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked/proof.json)
-[![Signed commits](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required/proof.json)
-[![Linear history](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required/proof.json)
-[![Deletion blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked/proof.json)
-[![Pull request required](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required/proof.json)
-[![Status checks](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required/proof.json)
+[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/details.json)
+[![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/details.json)
+[![Web signoff](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required/details.json)
+[![Community health](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health/details.json)
+[![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/details.json)
+[![Secret push protection](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled/details.json)
+[![Force pushes blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked/details.json)
+[![Signed commits](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required/details.json)
+[![Linear history](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required/details.json)
+[![Deletion blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked/details.json)
+[![Pull request required](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required/details.json)
+[![Status checks](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required/details.json)
 <!-- prettier-ignore-end -->
 
 PolicyChecks is a badge service and validation endpoint that checks the current status of a repository's administrative settings, giving maintainers a convenient way to show that OSS best practices are a matter of policy.
@@ -63,41 +63,41 @@ Each claim supports the same endpoint shape:
 ```text
 GET /github/{owner}/{repo}/{setting}.svg  # Returns an SVG badge with status `enabled`, `disabled`, or `unknown` for a given setting
 GET /github/{owner}/{repo}/{setting}.json  # Returns a Shields-compatible JSON result for use in custom badge tooling
-GET /github/{owner}/{repo}/{setting}/proof.json  # Returns metadata and additional contextual information that the GitHub API returns regarding each reported setting
+GET /github/{owner}/{repo}/{setting}/details.json  # Returns the PolicyChecks evaluation record and selected response-derived details for a given setting
 GET /github/{owner}/{repo}/info.json  # A general JSON response that provides collective information about multiple different settings
 ```
 
-Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge tooling, and the proof endpoint for the underlying PolicyChecks result. README badges can link directly to their proof JSON:
+Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge tooling, and the details endpoint for the underlying PolicyChecks evaluation record. README badges can link directly to their details JSON:
 
 ```markdown
-[![Immutable releases](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases/proof.json)
+[![Immutable releases](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases/details.json)
 ```
 
 <details>
 <summary><h3>More examples</h3></summary>
 
 ```markdown
-[![SHA pinning](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/proof.json)
+[![SHA pinning](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/details.json)
 
-[![Web signoff](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required/proof.json)
+[![Web signoff](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required/details.json)
 
-[![Community health](https://policychecks.reponomics.org/github/OWNER/REPO/community-health.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/community-health/proof.json)
+[![Community health](https://policychecks.reponomics.org/github/OWNER/REPO/community-health.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/community-health/details.json)
 
-[![Secret scanning](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled/proof.json)
+[![Secret scanning](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled/details.json)
 
-[![Secret push protection](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled/proof.json)
+[![Secret push protection](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled/details.json)
 
-[![Force pushes blocked](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked/proof.json)
+[![Force pushes blocked](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked/details.json)
 
-[![Signed commits](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-signed-commits-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-signed-commits-required/proof.json)
+[![Signed commits](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-signed-commits-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-signed-commits-required/details.json)
 
-[![Linear history](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-linear-history-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-linear-history-required/proof.json)
+[![Linear history](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-linear-history-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-linear-history-required/details.json)
 
-[![Deletion blocked](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-deletion-blocked.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-deletion-blocked/proof.json)
+[![Deletion blocked](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-deletion-blocked.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-deletion-blocked/details.json)
 
-[![Pull request required](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-pull-request-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-pull-request-required/proof.json)
+[![Pull request required](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-pull-request-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-pull-request-required/details.json)
 
-[![Status checks](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required/proof.json)
+[![Status checks](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required/details.json)
 ```
 
 </details>
@@ -126,7 +126,7 @@ Inversely, a repository could follow strict adherence to SHA-pinned actions in t
 
 These explanations are only intended to make clear to potential users exactly what PolicyChecks is, and what it does and does not claim to establish. Although Reponomics may refer to some of these settings as enforcing _best practices_, PolicyChecks does not take any strong stance on whether a particular setting is any sort of requirement or expectation for the reliability or trustworthiness of a particular software project.
 
-Nevertheless, maintainers often go to great lengths to ensure that their repositories meet the highest standards of excellence and security. And while enabling a checkbox does not _in itself_ provide proof that those standards have been followed over the lifetime of a project, they still represent a strong commitment on behalf of repository and organization administrators. So, since making such a commitment is something that a maintainer ought to feel proud of, PolicyChecks is simply a way to provide a public signal of that commitment - nothing more, and nothing less.
+Nevertheless, maintainers often go to great lengths to ensure that their repositories meet the highest standards of excellence and security. And while enabling a checkbox does not _in itself_ establish that those standards have been followed over the lifetime of a project, they still represent a strong commitment on behalf of repository and organization administrators. So, since making such a commitment is something that a maintainer ought to feel proud of, PolicyChecks is simply a way to provide a public signal of that commitment - nothing more, and nothing less.
 
 ## Permissions
 

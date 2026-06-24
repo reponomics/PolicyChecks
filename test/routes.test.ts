@@ -77,11 +77,11 @@ describe("badge routes", () => {
     });
   });
 
-  it("returns proof JSON for a supported claim", async () => {
+  it("returns details JSON for a supported claim", async () => {
     const app = createHttpApp(serviceReturning("disabled"));
 
     const response = await request(app)
-      .get("/github/OWNER/REPO/immutable-releases/proof.json")
+      .get("/github/OWNER/REPO/immutable-releases/details.json")
       .expect(200);
 
     expect(response.body).toMatchObject({
@@ -126,11 +126,17 @@ describe("badge routes", () => {
     await request(app).get("/github/OWNER/REPO/dependabot-alerts-enabled.json").expect(404);
   });
 
-  it("returns 404 for unsupported SVG and proof claim routes", async () => {
+  it("returns 404 for unsupported SVG and details claim routes", async () => {
     const app = createHttpApp(serviceReturning("enabled"));
 
     await request(app).get("/github/OWNER/REPO/not-a-claim.svg").expect(404);
-    await request(app).get("/github/OWNER/REPO/not-a-claim/proof.json").expect(404);
+    await request(app).get("/github/OWNER/REPO/not-a-claim/details.json").expect(404);
+  });
+
+  it("does not serve the pre-release legacy endpoint name", async () => {
+    const app = createHttpApp(serviceReturning("enabled"));
+
+    await request(app).get("/github/OWNER/REPO/immutable-releases/proof.json").expect(404);
   });
 
   it("falls back to individual evaluation when evaluateMany is unavailable", async () => {

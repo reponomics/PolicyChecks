@@ -58,7 +58,7 @@ export function createBadgeRouter(claimService: ClaimEvaluator): Router {
   );
 
   router.get(
-    "/github/:owner/:repo/:claim/proof.json",
+    "/github/:owner/:repo/:claim/details.json",
     asyncHandler(async (request, response) => {
       const route = parseClaimRoute(request, response);
 

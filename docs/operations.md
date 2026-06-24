@@ -2,13 +2,13 @@
 
 This document is for PolicyChecks service maintainers and production operators. It is not setup guidance for badge users, and it does not describe credentials that users installing the GitHub App should ever receive.
 
-PolicyChecks is a current-state badge and proof service. Operational safety depends on keeping GitHub API use narrow, cached, observable, and easy to shut down before GitHub imposes primary or secondary rate limits.
+PolicyChecks is a current-state badge and details service. Operational safety depends on keeping GitHub API use narrow, cached, observable, and easy to shut down before GitHub imposes primary or secondary rate limits.
 
 ## Cache Policy
 
 The internal claim-result cache defaults to `CACHE_TTL_SECONDS=3600`. This is intentionally conservative because the checked settings are low-volatility repository administration/security settings, not fast-changing CI state.
 
-Public badge, Shields JSON, proof JSON, and `info.json` responses use `Cache-Control: public, max-age=300, stale-while-revalidate=300`. This keeps externally visible badge staleness modest while allowing the Worker to serve repeated requests from its longer internal cache when the same isolate remains warm.
+Public badge, Shields JSON, details JSON, and `info.json` responses use `Cache-Control: public, max-age=300, stale-while-revalidate=300`. This keeps externally visible badge staleness modest while allowing the Worker to serve repeated requests from its longer internal cache when the same isolate remains warm.
 
 Tune cache settings with this policy:
 
@@ -26,7 +26,7 @@ Marketplace webhook handling must not call GitHub, mutate repository state, or i
 
 Production GitHub REST usage is restricted by `test/github/api-usage-policy.test.ts`. The allowed request surface is intentionally small and does not include repository enumeration, search, GraphQL, pagination helpers, or mutating repository routes.
 
-Expected cold-cache request cost for one repository is bounded: installation lookup, installation-token creation, repository metadata, immutable releases, and Actions permissions. Warm-cache badge/proof requests should make zero GitHub API calls.
+Expected cold-cache request cost for one repository is bounded: installation lookup, installation-token creation, repository metadata, immutable releases, and Actions permissions. Warm-cache badge/details requests should make zero GitHub API calls.
 
 ## Rate-Limit Logs
 

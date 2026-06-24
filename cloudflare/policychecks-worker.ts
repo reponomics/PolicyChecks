@@ -119,7 +119,7 @@ export default {
         });
       }
 
-      if (route.kind === "proof") {
+      if (route.kind === "details") {
         return json(result, 200, {
           "Cache-Control": cacheControl
         });
@@ -153,7 +153,7 @@ type ParsedPath =
       repo: string;
     }
   | {
-      kind: "json" | "svg" | "proof";
+      kind: "json" | "svg" | "details";
       owner: string;
       repo: string;
       claim: string;
@@ -202,9 +202,9 @@ function parsePath(pathname: string): ParsedPath {
     };
   }
 
-  if (parts.length === 5 && parts[4] === "proof.json") {
+  if (parts.length === 5 && parts[4] === "details.json") {
     return {
-      kind: "proof",
+      kind: "details",
       owner,
       repo,
       claim: parts[3] ?? ""

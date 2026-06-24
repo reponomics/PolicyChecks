@@ -4,7 +4,7 @@ PolicyChecks is a free, read-only GitHub App that reports selected repository se
 
 ## Data We Process
 
-When someone requests a badge, Shields JSON response, proof JSON response, or repository `info.json` response, PolicyChecks uses the requested repository owner/name to query GitHub for the supported repository settings. PolicyChecks does not request repository write permissions and does not read repository source code.
+When someone requests a badge, Shields JSON response, details JSON response, or repository `info.json` response, PolicyChecks uses the requested repository owner/name to query GitHub for the supported repository settings. PolicyChecks does not request repository write permissions and does not read repository source code.
 
 PolicyChecks may temporarily cache API-derived claim results in memory for up to the configured cache TTL, currently one hour by default. This cache is used only to reduce repeated GitHub API requests.
 
