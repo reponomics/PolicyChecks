@@ -1,12 +1,6 @@
-import { publicMessage, toPublicClaimError } from "../github/errors.js";
-import {
-  communityProfileEvidence,
-  isRecord,
-  makeClaimResult,
-  makeUnknownResult,
-  resultInput
-} from "./result.js";
-import type { ClaimDefinition, ClaimEvaluationInput, ClaimResult } from "./types.js";
+import { publicMessage, toPublicBadgeError } from "../github/errors.js";
+import { isRecord, makeBadgeResult, makeUnknownResult, resultInput } from "./result.js";
+import type { BadgeDefinition, BadgeEvaluationInput, BadgeResult } from "./types.js";
 
 const communityFileFields = [
   "code_of_conduct",
@@ -18,7 +12,7 @@ const communityFileFields = [
   "readme"
 ] as const;
 
-export const communityHealthClaim: ClaimDefinition = {
+export const communityHealthBadge: BadgeDefinition = {
   id: "community-health",
   label: "community health",
   source: {
@@ -27,23 +21,22 @@ export const communityHealthClaim: ClaimDefinition = {
     endpoint: "GET /repos/{owner}/{repo}/community/profile",
     fields: ["health_percentage", "files"]
   },
-  evidence: communityProfileEvidence,
-  badgeMessage(result: ClaimResult): string {
+  badgeMessage(result: BadgeResult): string {
     const score = healthScoreFromDetails(result.details);
     return score === undefined ? "unknown" : `${score}/100`;
   },
-  badgeColor(result: ClaimResult): string {
+  badgeColor(result: BadgeResult): string {
     const score = healthScoreFromDetails(result.details);
     return score === undefined ? "lightgrey" : colorForScore(score);
   },
-  async evaluate(input: ClaimEvaluationInput) {
+  async evaluate(input: BadgeEvaluationInput) {
     try {
       const profile = await input.github.getCommunityProfile(input.owner, input.repo);
       const score = profile.health_percentage;
 
       if (!isValidScore(score)) {
         return makeUnknownResult(
-          communityHealthClaim,
+          communityHealthBadge,
           resultInput(input),
           {
             kind: "unexpected_response",
@@ -55,7 +48,7 @@ export const communityHealthClaim: ClaimDefinition = {
         );
       }
 
-      return makeClaimResult(communityHealthClaim, resultInput(input), `${score}/100`, {
+      return makeBadgeResult(communityHealthBadge, resultInput(input), `${score}/100`, {
         health_percentage: score,
         score: {
           numerator: score,
@@ -72,7 +65,7 @@ export const communityHealthClaim: ClaimDefinition = {
         }
       });
     } catch (error) {
-      return makeUnknownResult(communityHealthClaim, resultInput(input), toPublicClaimError(error));
+      return makeUnknownResult(communityHealthBadge, resultInput(input), toPublicBadgeError(error));
     }
   }
 };

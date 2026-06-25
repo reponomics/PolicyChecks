@@ -1,14 +1,8 @@
-import { publicMessage, toPublicClaimError } from "../github/errors.js";
-import {
-  isRecord,
-  makeClaimResult,
-  makeUnknownResult,
-  repositorySettingEvidence,
-  resultInput
-} from "./result.js";
-import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
+import { publicMessage, toPublicBadgeError } from "../github/errors.js";
+import { isRecord, makeBadgeResult, makeUnknownResult, resultInput } from "./result.js";
+import type { BadgeDefinition, BadgeEvaluationInput } from "./types.js";
 
-export const shaPinningRequiredClaim: ClaimDefinition = {
+export const shaPinningRequiredBadge: BadgeDefinition = {
   id: "sha-pinning-required",
   label: "SHA pinning",
   source: {
@@ -17,13 +11,12 @@ export const shaPinningRequiredClaim: ClaimDefinition = {
     endpoint: "GET /repos/{owner}/{repo}/actions/permissions",
     fields: ["sha_pinning_required"]
   },
-  evidence: repositorySettingEvidence,
-  async evaluate(input: ClaimEvaluationInput) {
+  async evaluate(input: BadgeEvaluationInput) {
     try {
       const data = await input.github.getActionsPermissions(input.owner, input.repo);
 
       if (!isRecord(data) || typeof data.sha_pinning_required !== "boolean") {
-        return makeUnknownResult(shaPinningRequiredClaim, resultInput(input), {
+        return makeUnknownResult(shaPinningRequiredBadge, resultInput(input), {
           kind: "unexpected_response",
           message: publicMessage("unexpected_response")
         });
@@ -31,8 +24,8 @@ export const shaPinningRequiredClaim: ClaimDefinition = {
 
       const required = data.sha_pinning_required;
 
-      return makeClaimResult(
-        shaPinningRequiredClaim,
+      return makeBadgeResult(
+        shaPinningRequiredBadge,
         resultInput(input),
         required ? "enabled" : "disabled",
         {
@@ -41,9 +34,9 @@ export const shaPinningRequiredClaim: ClaimDefinition = {
       );
     } catch (error) {
       return makeUnknownResult(
-        shaPinningRequiredClaim,
+        shaPinningRequiredBadge,
         resultInput(input),
-        toPublicClaimError(error)
+        toPublicBadgeError(error)
       );
     }
   }

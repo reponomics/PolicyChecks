@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  secretPushProtectionEnabledClaim,
-  secretScanningEnabledClaim
-} from "../../src/claims/secret-protection.js";
-import { GitHubApiError } from "../../src/github/errors.js";
-import { evaluateWithMock, mockGitHub } from "../support/mock-github.js";
+  secretPushProtectionEnabledBadge,
+  secretScanningEnabledBadge
+} from "../../../src/badges/secret-protection.js";
+import { GitHubApiError } from "../../../src/github/errors.js";
+import { evaluateWithMock, mockGitHub } from "../../support/mock-github.js";
 
-describe("secret protection claims", () => {
+describe("secret protection badges", () => {
   it("passes when secret scanning is enabled", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningEnabledBadge,
       mockGitHub({
         getRepository: async () => ({
           id: 1,
@@ -37,7 +37,7 @@ describe("secret protection claims", () => {
 
   it("fails when secret scanning is disabled", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningEnabledBadge,
       mockGitHub({
         getRepository: async () => ({
           id: 1,
@@ -64,7 +64,7 @@ describe("secret protection claims", () => {
 
   it("passes when secret scanning push protection is enabled", async () => {
     const result = await evaluateWithMock(
-      secretPushProtectionEnabledClaim,
+      secretPushProtectionEnabledBadge,
       mockGitHub({
         getRepository: async () => ({
           id: 1,
@@ -99,7 +99,7 @@ describe("secret protection claims", () => {
 
   it("fails when secret scanning push protection is disabled", async () => {
     const result = await evaluateWithMock(
-      secretPushProtectionEnabledClaim,
+      secretPushProtectionEnabledBadge,
       mockGitHub({
         getRepository: async () => ({
           id: 1,
@@ -126,7 +126,7 @@ describe("secret protection claims", () => {
 
   it("returns unknown when repository metadata does not include the requested field", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningEnabledBadge,
       mockGitHub({
         getRepository: async () => ({
           id: 1,
@@ -148,7 +148,7 @@ describe("secret protection claims", () => {
 
   it("returns unknown when security analysis metadata is absent", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningEnabledBadge,
       mockGitHub({
         getRepository: async () => ({
           id: 1
@@ -167,7 +167,7 @@ describe("secret protection claims", () => {
 
   it("returns unknown on authorization failure", async () => {
     const result = await evaluateWithMock(
-      secretScanningEnabledClaim,
+      secretScanningEnabledBadge,
       mockGitHub({
         getRepository: async () => {
           throw new GitHubApiError("Forbidden", {

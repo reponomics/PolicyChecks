@@ -1,4 +1,4 @@
-import type { ClaimError, ClaimErrorKind } from "../claims/types.js";
+import type { BadgeError, BadgeErrorKind } from "../badges/types.js";
 
 interface ErrorWithStatus {
   status?: unknown;
@@ -10,9 +10,9 @@ interface ErrorWithStatus {
 
 export class GitHubApiError extends Error {
   readonly status?: number;
-  readonly kind: ClaimErrorKind;
+  readonly kind: BadgeErrorKind;
 
-  constructor(message: string, options: { status?: number; kind: ClaimErrorKind }) {
+  constructor(message: string, options: { status?: number; kind: BadgeErrorKind }) {
     super(message);
     this.name = "GitHubApiError";
     this.status = options.status;
@@ -34,7 +34,7 @@ export function toGitHubApiError(error: unknown): GitHubApiError {
   return new GitHubApiError(publicMessage(kind, status, rawMessage), { status, kind });
 }
 
-export function toPublicClaimError(error: unknown): ClaimError {
+export function toPublicBadgeError(error: unknown): BadgeError {
   const githubError = toGitHubApiError(error);
 
   return {
@@ -47,7 +47,7 @@ export function classifyStatus(
   status: number | undefined,
   headers?: Record<string, unknown>,
   rawMessage?: string
-): ClaimErrorKind {
+): BadgeErrorKind {
   if (
     status === 429 ||
     isPrimaryRateLimit(status, headers) ||
@@ -94,7 +94,7 @@ function isSecondaryRateLimit(rawMessage: string | undefined): boolean {
   );
 }
 
-export function publicMessage(kind: ClaimErrorKind, status?: number, rawMessage?: string): string {
+export function publicMessage(kind: BadgeErrorKind, status?: number, rawMessage?: string): string {
   switch (kind) {
     case "not_installed":
       return "GitHub App installation was not found for this repository.";
@@ -112,10 +112,10 @@ export function publicMessage(kind: ClaimErrorKind, status?: number, rawMessage?
       }
 
       if (looksLikeNetworkError(rawMessage)) {
-        return "The service could not reach GitHub API before the claim could be verified.";
+        return "The service could not reach GitHub API before the badge could be evaluated.";
       }
 
-      return "GitHub API request failed before the claim could be verified.";
+      return "GitHub API request failed before the badge could be evaluated.";
   }
 }
 

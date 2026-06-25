@@ -1,4 +1,4 @@
-import type { ClaimDefinition, RepositoryAccess } from "../../src/claims/types.js";
+import type { BadgeDefinition, RepositoryAccess } from "../../src/badges/types.js";
 import type { GitHubClient } from "../../src/github/client.js";
 
 export const owner = "OWNER";
@@ -21,7 +21,7 @@ export function mockGitHub(overrides: Partial<GitHubClient>): GitHubClient {
 }
 
 export async function evaluateWithMock(
-  definition: ClaimDefinition,
+  definition: BadgeDefinition,
   github: GitHubClient,
   repositoryAccess: RepositoryAccess = "verified"
 ) {

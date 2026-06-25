@@ -5,9 +5,9 @@ import {
   classifyStatus,
   publicMessage,
   toGitHubApiError,
-  toPublicClaimError
+  toPublicBadgeError
 } from "../../src/github/errors.js";
-import type { ClaimErrorKind } from "../../src/claims/types.js";
+import type { BadgeErrorKind } from "../../src/badges/types.js";
 
 describe("classifyStatus", () => {
   it.each([
@@ -39,7 +39,7 @@ describe("classifyStatus", () => {
 });
 
 describe("publicMessage", () => {
-  it.each<[ClaimErrorKind, number | undefined, RegExp]>([
+  it.each<[BadgeErrorKind, number | undefined, RegExp]>([
     ["not_installed", undefined, /installation was not found/],
     ["not_found", undefined, /not found/],
     ["forbidden", 401, /authentication failed/],
@@ -95,9 +95,9 @@ describe("toGitHubApiError", () => {
   });
 });
 
-describe("toPublicClaimError", () => {
+describe("toPublicBadgeError", () => {
   it("reduces an error to its public kind and message", () => {
-    const publicError = toPublicClaimError(
+    const publicError = toPublicBadgeError(
       new GitHubApiError("hidden detail", { status: 404, kind: "not_found" })
     );
 

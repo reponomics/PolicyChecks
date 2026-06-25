@@ -7,62 +7,61 @@ import {
   messageForResult,
   toShieldsJson
 } from "../src/badges/shields-json.js";
-import { communityHealthClaim } from "../src/claims/community-health.js";
-import { shaPinningRequiredClaim } from "../src/claims/sha-pinning-required.js";
-import type { ClaimResult } from "../src/claims/types.js";
+import { communityHealthBadge } from "../src/badges/community-health.js";
+import { shaPinningRequiredBadge } from "../src/badges/sha-pinning-required.js";
+import type { BadgeResult } from "../src/badges/types.js";
 
 describe("badge renderers", () => {
   it("renders Shields-compatible JSON", () => {
-    expect(toShieldsJson(shaPinningRequiredClaim, result("enabled"))).toEqual({
+    expect(toShieldsJson(shaPinningRequiredBadge, result("enabled"))).toEqual({
       schemaVersion: 1,
       label: "SHA pinning",
       message: "enabled",
       color: "brightgreen"
     });
 
-    expect(toShieldsJson(shaPinningRequiredClaim, result("unknown"))).toMatchObject({
+    expect(toShieldsJson(shaPinningRequiredBadge, result("unknown"))).toMatchObject({
       message: "unknown",
       color: "lightgrey"
     });
   });
 
-  it("maps default Shields colors from claim results", () => {
+  it("maps default Shields colors from badge results", () => {
     expect(colorForResultText("enabled")).toBe("brightgreen");
     expect(colorForResultText("disabled")).toBe("red");
     expect(colorForResultText("unknown")).toBe("lightgrey");
     expect(colorForResultText("custom")).toBe("brightgreen");
   });
 
-  it("uses default badge message and color when claims do not customize them", () => {
+  it("uses default badge message and color when badges do not customize them", () => {
     const disabledResult = result("disabled");
 
-    expect(messageForResult(shaPinningRequiredClaim, disabledResult)).toBe("disabled");
-    expect(colorForResult(shaPinningRequiredClaim, disabledResult)).toBe("red");
+    expect(messageForResult(shaPinningRequiredBadge, disabledResult)).toBe("disabled");
+    expect(colorForResult(shaPinningRequiredBadge, disabledResult)).toBe("red");
   });
 
   it("renders custom metric badge message and color", () => {
-    const communityResult: ClaimResult = {
+    const communityResult: BadgeResult = {
       ...result("enabled"),
-      claim: communityHealthClaim.id,
-      source: communityHealthClaim.source,
-      evidence: communityHealthClaim.evidence ?? { scope: "unknown", source: "unavailable" },
+      badgeId: communityHealthBadge.id,
+      source: communityHealthBadge.source,
       details: {
         health_percentage: 87
       }
     };
 
-    expect(toShieldsJson(communityHealthClaim, communityResult)).toEqual({
+    expect(toShieldsJson(communityHealthBadge, communityResult)).toEqual({
       schemaVersion: 1,
       label: "community health",
       message: "87/100",
       color: "#6cc613"
     });
 
-    expect(renderBadgeSvg(communityHealthClaim, communityResult)).toContain("#6cc613");
+    expect(renderBadgeSvg(communityHealthBadge, communityResult)).toContain("#6cc613");
   });
 
   it("renders unknown community health when no valid score is available", () => {
-    expect(toShieldsJson(communityHealthClaim, result("unknown"))).toMatchObject({
+    expect(toShieldsJson(communityHealthBadge, result("unknown"))).toMatchObject({
       message: "unknown",
       color: "lightgrey"
     });
@@ -70,7 +69,7 @@ describe("badge renderers", () => {
 
   it("escapes SVG label and message text", () => {
     const definition = {
-      ...shaPinningRequiredClaim,
+      ...shaPinningRequiredBadge,
       label: "SHA <actions>"
     };
     const svg = renderBadgeSvg(definition, {
@@ -86,9 +85,9 @@ describe("badge renderers", () => {
   });
 });
 
-function result(result: ClaimResult["result"]): ClaimResult {
+function result(result: BadgeResult["result"]): BadgeResult {
   return {
-    claim: shaPinningRequiredClaim.id,
+    badgeId: shaPinningRequiredBadge.id,
     owner: "OWNER",
     repo: "REPO",
     repository: {
@@ -97,8 +96,7 @@ function result(result: ClaimResult["result"]): ClaimResult {
       full_name: "OWNER/REPO"
     },
     result,
-    source: shaPinningRequiredClaim.source,
-    evidence: shaPinningRequiredClaim.evidence ?? { scope: "unknown", source: "unavailable" },
+    source: shaPinningRequiredBadge.source,
     checked_at: "2026-05-30T00:00:00.000Z",
     details: {}
   };

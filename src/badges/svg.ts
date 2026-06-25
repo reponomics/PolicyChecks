@@ -1,4 +1,4 @@
-import type { ClaimDefinition, ClaimResult } from "../claims/types.js";
+import type { BadgeDefinition, BadgeResult } from "./types.js";
 import { colorForResult, messageForResult } from "./shields-json.js";
 
 const colorHex = {
@@ -7,7 +7,7 @@ const colorHex = {
   lightgrey: "#9f9f9f"
 } as const;
 
-export function renderBadgeSvg(definition: ClaimDefinition, result: ClaimResult): string {
+export function renderBadgeSvg(definition: BadgeDefinition, result: BadgeResult): string {
   const label = definition.label;
   const message = messageForResult(definition, result);
   const labelWidth = textWidth(label);

@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  defaultBranchDeletionBlockedClaim,
-  defaultBranchForcePushesBlockedClaim,
-  defaultBranchLinearHistoryRequiredClaim,
-  defaultBranchPullRequestRequiredClaim,
-  defaultBranchSignedCommitsRequiredClaim,
-  defaultBranchStatusChecksRequiredClaim
-} from "../../src/claims/default-branch-rules.js";
-import type { ClaimDefinition } from "../../src/claims/types.js";
-import { GitHubApiError } from "../../src/github/errors.js";
-import { evaluateWithMock, mockGitHub } from "../support/mock-github.js";
+  defaultBranchDeletionBlockedBadge,
+  defaultBranchForcePushesBlockedBadge,
+  defaultBranchLinearHistoryRequiredBadge,
+  defaultBranchPullRequestRequiredBadge,
+  defaultBranchSignedCommitsRequiredBadge,
+  defaultBranchStatusChecksRequiredBadge
+} from "../../../src/badges/default-branch-rules.js";
+import type { BadgeDefinition } from "../../../src/badges/types.js";
+import { GitHubApiError } from "../../../src/github/errors.js";
+import { evaluateWithMock, mockGitHub } from "../../support/mock-github.js";
 
 const activeRules = [
   { type: "deletion" },
@@ -21,37 +21,37 @@ const activeRules = [
   { type: "required_status_checks", parameters: { required_status_checks: [{ context: "ci" }] } }
 ];
 
-const claimCases = [
+const badgeCases = [
   {
-    definition: defaultBranchForcePushesBlockedClaim,
+    definition: defaultBranchForcePushesBlockedBadge,
     ruleType: "non_fast_forward"
   },
   {
-    definition: defaultBranchSignedCommitsRequiredClaim,
+    definition: defaultBranchSignedCommitsRequiredBadge,
     ruleType: "required_signatures"
   },
   {
-    definition: defaultBranchLinearHistoryRequiredClaim,
+    definition: defaultBranchLinearHistoryRequiredBadge,
     ruleType: "required_linear_history"
   },
   {
-    definition: defaultBranchDeletionBlockedClaim,
+    definition: defaultBranchDeletionBlockedBadge,
     ruleType: "deletion"
   },
   {
-    definition: defaultBranchPullRequestRequiredClaim,
+    definition: defaultBranchPullRequestRequiredBadge,
     ruleType: "pull_request"
   },
   {
-    definition: defaultBranchStatusChecksRequiredClaim,
+    definition: defaultBranchStatusChecksRequiredBadge,
     ruleType: "required_status_checks"
   }
-] satisfies { definition: ClaimDefinition; ruleType: string }[];
+] satisfies { definition: BadgeDefinition; ruleType: string }[];
 
-describe("default branch ruleset claims", () => {
-  it.each(claimCases)("passes for $definition.id when its active rule applies", async (claim) => {
+describe("default branch ruleset badges", () => {
+  it.each(badgeCases)("passes for $definition.id when its active rule applies", async (badge) => {
     const result = await evaluateWithMock(
-      claim.definition,
+      badge.definition,
       mockGitHub({
         getRepository: async () => ({ id: 1, default_branch: "main" }),
         getBranchRules: async () => activeRules
@@ -60,13 +60,9 @@ describe("default branch ruleset claims", () => {
 
     expect(result).toMatchObject({
       result: "enabled",
-      evidence: {
-        scope: "repository",
-        source: "active_branch_rules"
-      },
       details: {
         default_branch: "main",
-        required_rule_type: claim.ruleType,
+        required_rule_type: badge.ruleType,
         active_rule_types: [
           "deletion",
           "non_fast_forward",
@@ -75,7 +71,7 @@ describe("default branch ruleset claims", () => {
           "required_signatures",
           "required_status_checks"
         ],
-        matching_rules: [expect.objectContaining({ type: claim.ruleType })],
+        matching_rules: [expect.objectContaining({ type: badge.ruleType })],
         limitations: {
           classic_branch_protection_evaluated: false,
           bypass_actors_evaluated: false
@@ -86,7 +82,7 @@ describe("default branch ruleset claims", () => {
 
   it("fails when active rules do not include the required rule type", async () => {
     const result = await evaluateWithMock(
-      defaultBranchForcePushesBlockedClaim,
+      defaultBranchForcePushesBlockedBadge,
       mockGitHub({
         getRepository: async () => ({ id: 1, default_branch: "main" }),
         getBranchRules: async () => [{ type: "required_linear_history" }]
@@ -107,7 +103,7 @@ describe("default branch ruleset claims", () => {
 
   it("fails when no active rules apply to the default branch", async () => {
     const result = await evaluateWithMock(
-      defaultBranchForcePushesBlockedClaim,
+      defaultBranchForcePushesBlockedBadge,
       mockGitHub({
         getRepository: async () => ({ id: 1, default_branch: "main" }),
         getBranchRules: async () => []
@@ -125,7 +121,7 @@ describe("default branch ruleset claims", () => {
 
   it("returns unknown when the repository does not report a default branch", async () => {
     const result = await evaluateWithMock(
-      defaultBranchForcePushesBlockedClaim,
+      defaultBranchForcePushesBlockedBadge,
       mockGitHub({
         getRepository: async () => ({ id: 1 })
       })
@@ -144,7 +140,7 @@ describe("default branch ruleset claims", () => {
 
   it("returns unknown when the rules response is not an array", async () => {
     const result = await evaluateWithMock(
-      defaultBranchForcePushesBlockedClaim,
+      defaultBranchForcePushesBlockedBadge,
       mockGitHub({
         getRepository: async () => ({ id: 1, default_branch: "main" }),
         getBranchRules: async () => ({ rules: [] })
@@ -165,7 +161,7 @@ describe("default branch ruleset claims", () => {
 
   it("returns unknown when a rule is missing a type", async () => {
     const result = await evaluateWithMock(
-      defaultBranchForcePushesBlockedClaim,
+      defaultBranchForcePushesBlockedBadge,
       mockGitHub({
         getRepository: async () => ({ id: 1, default_branch: "main" }),
         getBranchRules: async () => [{ parameters: {} }]
@@ -180,7 +176,7 @@ describe("default branch ruleset claims", () => {
 
   it("returns unknown on authorization failure", async () => {
     const result = await evaluateWithMock(
-      defaultBranchForcePushesBlockedClaim,
+      defaultBranchForcePushesBlockedBadge,
       mockGitHub({
         getRepository: async () => ({ id: 1, default_branch: "main" }),
         getBranchRules: async () => {

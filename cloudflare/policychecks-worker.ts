@@ -1,17 +1,17 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-import { InMemoryClaimCache } from "../src/cache/cache.js";
+import { InMemoryBadgeCache } from "../src/cache/cache.js";
 import { toDetailsJson } from "../src/badges/details-json.js";
 import { renderBadgeSvg } from "../src/badges/svg.js";
 import { toShieldsJson } from "../src/badges/shields-json.js";
-import { claimDefinitions, getClaimDefinition } from "../src/claims/registry.js";
-import type { ClaimDefinition } from "../src/claims/types.js";
+import { badgeDefinitions, getBadgeDefinition } from "../src/badges/registry.js";
+import type { BadgeDefinition } from "../src/badges/types.js";
 import { GitHubAppTokenFactory } from "../src/github/app-auth.js";
 import {
   GitHubInstallationResolver,
   InMemoryRepositoryStore
 } from "../src/github/installations.js";
-import { ClaimService } from "../src/server/claim-service.js";
+import { BadgeService } from "../src/server/badge-service.js";
 
 interface WorkerEnv {
   GITHUB_APP_ID: string;
@@ -24,7 +24,7 @@ interface WorkerEnv {
 }
 
 interface Runtime {
-  claimService: ClaimService;
+  badgeService: BadgeService;
 }
 
 interface RuntimeConfig {
@@ -80,8 +80,8 @@ export default {
 
       if (route.kind === "info") {
         const runtime = getRuntime(env);
-        const claims = await runtime.claimService.evaluateMany(
-          claimDefinitions,
+        const badges = await runtime.badgeService.evaluateMany(
+          badgeDefinitions,
           route.owner,
           route.repo
         );
@@ -90,7 +90,7 @@ export default {
           {
             owner: route.owner,
             repo: route.repo,
-            claims
+            badges
           },
           200,
           {
@@ -99,20 +99,20 @@ export default {
         );
       }
 
-      const definition = getClaimDefinition(route.claim);
+      const definition = getBadgeDefinition(route.badgeId);
 
       if (definition === undefined) {
         return json(
           {
-            error: "unsupported_claim",
-            claim: route.claim
+            error: "unsupported_badge",
+            badgeId: route.badgeId
           },
           404
         );
       }
 
       const runtime = getRuntime(env);
-      const result = await runtime.claimService.evaluate(definition, route.owner, route.repo);
+      const result = await runtime.badgeService.evaluate(definition, route.owner, route.repo);
 
       if (route.kind === "json") {
         return json(toShieldsJson(definition, result), 200, {
@@ -139,7 +139,7 @@ export default {
       return json(
         {
           error: "internal_error",
-          message: "The request failed before the claim could be verified."
+          message: "The request failed before the badge could be evaluated."
         },
         500
       );
@@ -157,7 +157,7 @@ type ParsedPath =
       kind: "json" | "svg" | "details";
       owner: string;
       repo: string;
-      claim: string;
+      badgeId: string;
     }
   | {
       kind: "not_found";
@@ -190,7 +190,7 @@ function parsePath(pathname: string): ParsedPath {
       kind: "json",
       owner,
       repo,
-      claim: parts[3].slice(0, -".json".length)
+      badgeId: parts[3].slice(0, -".json".length)
     };
   }
 
@@ -199,7 +199,7 @@ function parsePath(pathname: string): ParsedPath {
       kind: "svg",
       owner,
       repo,
-      claim: parts[3].slice(0, -".svg".length)
+      badgeId: parts[3].slice(0, -".svg".length)
     };
   }
 
@@ -208,7 +208,7 @@ function parsePath(pathname: string): ParsedPath {
       kind: "details",
       owner,
       repo,
-      claim: parts[3] ?? ""
+      badgeId: parts[3] ?? ""
     };
   }
 
@@ -319,7 +319,7 @@ function getRuntime(env: WorkerEnv): Runtime {
   }
 
   const repositoryStore = new InMemoryRepositoryStore();
-  const claimCache = new InMemoryClaimCache();
+  const badgeCache = new InMemoryBadgeCache();
   const tokenFactory = new GitHubAppTokenFactory({
     appId: config.github.appId,
     privateKey: config.github.privateKey,
@@ -327,14 +327,14 @@ function getRuntime(env: WorkerEnv): Runtime {
     apiVersion: config.github.apiVersion
   });
   const installationResolver = new GitHubInstallationResolver(tokenFactory, repositoryStore);
-  const claimService = new ClaimService({
-    cache: claimCache,
+  const badgeService = new BadgeService({
+    cache: badgeCache,
     installationResolver,
     cacheTtlMs: config.cacheTtlMs
   });
 
   runtimeCache = {
-    claimService
+    badgeService
   };
   runtimeKey = key;
   return runtimeCache;

@@ -1,26 +1,26 @@
 import "dotenv/config";
 
-import { InMemoryClaimCache } from "./cache/cache.js";
+import { InMemoryBadgeCache } from "./cache/cache.js";
 import { loadConfig } from "./config/env.js";
 import { GitHubAppTokenFactory } from "./github/app-auth.js";
 import { GitHubInstallationResolver, InMemoryRepositoryStore } from "./github/installations.js";
 import { createWebhookRouter } from "./routes/webhook-routes.js";
-import { ClaimService } from "./server/claim-service.js";
+import { BadgeService } from "./server/badge-service.js";
 import { createHttpApp } from "./server/http-app.js";
 
 const config = loadConfig();
 const tokenFactory = new GitHubAppTokenFactory(config.github);
 const repositoryStore = new InMemoryRepositoryStore();
-const claimCache = new InMemoryClaimCache();
+const badgeCache = new InMemoryBadgeCache();
 const installationResolver = new GitHubInstallationResolver(tokenFactory, repositoryStore);
-const claimService = new ClaimService({
-  cache: claimCache,
+const badgeService = new BadgeService({
+  cache: badgeCache,
   installationResolver,
   cacheTtlMs: config.cacheTtlMs
 });
 
 const app = createHttpApp(
-  claimService,
+  badgeService,
   createWebhookRouter({
     webhookSecret: config.github.webhookSecret
   })

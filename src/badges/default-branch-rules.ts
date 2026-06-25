@@ -1,57 +1,51 @@
-import { publicMessage, toPublicClaimError } from "../github/errors.js";
-import {
-  activeBranchRulesEvidence,
-  isRecord,
-  makeClaimResult,
-  makeUnknownResult,
-  resultInput
-} from "./result.js";
-import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
+import { publicMessage, toPublicBadgeError } from "../github/errors.js";
+import { isRecord, makeBadgeResult, makeUnknownResult, resultInput } from "./result.js";
+import type { BadgeDefinition, BadgeEvaluationInput } from "./types.js";
 
-interface DefaultBranchRuleClaimOptions {
+interface DefaultBranchRuleBadgeOptions {
   id: string;
   label: string;
   ruleType: string;
 }
 
-export const defaultBranchForcePushesBlockedClaim = defaultBranchRuleClaim({
+export const defaultBranchForcePushesBlockedBadge = defaultBranchRuleBadge({
   id: "default-branch-force-pushes-blocked",
   label: "force pushes blocked",
   ruleType: "non_fast_forward"
 });
 
-export const defaultBranchSignedCommitsRequiredClaim = defaultBranchRuleClaim({
+export const defaultBranchSignedCommitsRequiredBadge = defaultBranchRuleBadge({
   id: "default-branch-signed-commits-required",
   label: "signed commits",
   ruleType: "required_signatures"
 });
 
-export const defaultBranchLinearHistoryRequiredClaim = defaultBranchRuleClaim({
+export const defaultBranchLinearHistoryRequiredBadge = defaultBranchRuleBadge({
   id: "default-branch-linear-history-required",
   label: "linear history",
   ruleType: "required_linear_history"
 });
 
-export const defaultBranchDeletionBlockedClaim = defaultBranchRuleClaim({
+export const defaultBranchDeletionBlockedBadge = defaultBranchRuleBadge({
   id: "default-branch-deletion-blocked",
   label: "deletion blocked",
   ruleType: "deletion"
 });
 
-export const defaultBranchPullRequestRequiredClaim = defaultBranchRuleClaim({
+export const defaultBranchPullRequestRequiredBadge = defaultBranchRuleBadge({
   id: "default-branch-pull-request-required",
   label: "pull request required",
   ruleType: "pull_request"
 });
 
-export const defaultBranchStatusChecksRequiredClaim = defaultBranchRuleClaim({
+export const defaultBranchStatusChecksRequiredBadge = defaultBranchRuleBadge({
   id: "default-branch-status-checks-required",
   label: "status checks",
   ruleType: "required_status_checks"
 });
 
-function defaultBranchRuleClaim(options: DefaultBranchRuleClaimOptions): ClaimDefinition {
-  const definition: ClaimDefinition = {
+function defaultBranchRuleBadge(options: DefaultBranchRuleBadgeOptions): BadgeDefinition {
+  const definition: BadgeDefinition = {
     id: options.id,
     label: options.label,
     source: {
@@ -60,8 +54,7 @@ function defaultBranchRuleClaim(options: DefaultBranchRuleClaimOptions): ClaimDe
       endpoint: "GET /repos/{owner}/{repo}/rules/branches/{branch}",
       fields: ["type"]
     },
-    evidence: activeBranchRulesEvidence,
-    async evaluate(input: ClaimEvaluationInput) {
+    async evaluate(input: BadgeEvaluationInput) {
       try {
         const repository = await input.github.getRepository(input.owner, input.repo);
         const defaultBranch = repository.default_branch;
@@ -83,7 +76,7 @@ function defaultBranchRuleClaim(options: DefaultBranchRuleClaimOptions): ClaimDe
         const rules = await input.github.getBranchRules(input.owner, input.repo, defaultBranch);
         return evaluateRules(definition, options.ruleType, input, defaultBranch, rules);
       } catch (error) {
-        return makeUnknownResult(definition, resultInput(input), toPublicClaimError(error));
+        return makeUnknownResult(definition, resultInput(input), toPublicBadgeError(error));
       }
     }
   };
@@ -92,9 +85,9 @@ function defaultBranchRuleClaim(options: DefaultBranchRuleClaimOptions): ClaimDe
 }
 
 function evaluateRules(
-  definition: ClaimDefinition,
+  definition: BadgeDefinition,
   requiredRuleType: string,
-  input: ClaimEvaluationInput,
+  input: BadgeEvaluationInput,
   defaultBranch: string,
   rules: unknown
 ) {
@@ -112,7 +105,7 @@ function evaluateRules(
   const matchingRules = rules.filter((rule) => ruleTypeFrom(rule) === requiredRuleType);
   const enabled = matchingRules.length > 0;
 
-  return makeClaimResult(definition, resultInput(input), enabled ? "enabled" : "disabled", {
+  return makeBadgeResult(definition, resultInput(input), enabled ? "enabled" : "disabled", {
     default_branch: defaultBranch,
     required_rule_type: requiredRuleType,
     active_rule_types: activeRuleTypes,
@@ -144,9 +137,9 @@ function selectedRuleDetails(rule: unknown) {
 }
 
 function unexpectedRules(
-  definition: ClaimDefinition,
+  definition: BadgeDefinition,
   requiredRuleType: string,
-  input: ClaimEvaluationInput,
+  input: BadgeEvaluationInput,
   defaultBranch: string
 ) {
   return makeUnknownResult(

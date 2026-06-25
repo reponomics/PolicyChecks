@@ -1,31 +1,31 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { InMemoryClaimCache } from "../../src/cache/cache.js";
-import type { ClaimDefinition, ClaimResult } from "../../src/claims/types.js";
+import { InMemoryBadgeCache } from "../../src/cache/cache.js";
+import type { BadgeDefinition, BadgeResult } from "../../src/badges/types.js";
 import type { InstallationResolution } from "../../src/github/installations.js";
 import type { GitHubClient } from "../../src/github/client.js";
-import { ClaimService, type InstallationResolver } from "../../src/server/claim-service.js";
+import { BadgeService, type InstallationResolver } from "../../src/server/badge-service.js";
 
-const definition: ClaimDefinition = {
-  id: "demo-claim",
+const definition: BadgeDefinition = {
+  id: "demo-badge",
   label: "Demo",
   source: { provider: "github", api: "REST", endpoint: "/demo", fields: ["x"] },
   evaluate: vi.fn(async ({ owner, repo }) => passResult(owner, repo))
 };
 
-const secondDefinition: ClaimDefinition = {
+const secondDefinition: BadgeDefinition = {
   ...definition,
-  id: "second-claim",
+  id: "second-badge",
   evaluate: vi.fn(async ({ owner, repo }) => ({
     ...passResult(owner, repo),
-    claim: "second-claim",
+    badgeId: "second-badge",
     source: secondDefinition.source
   }))
 };
 
-function passResult(owner: string, repo: string): ClaimResult {
+function passResult(owner: string, repo: string): BadgeResult {
   return {
-    claim: definition.id,
+    badgeId: definition.id,
     owner,
     repo,
     repository: {
@@ -35,7 +35,6 @@ function passResult(owner: string, repo: string): ClaimResult {
     },
     result: "enabled",
     source: definition.source,
-    evidence: definition.evidence ?? { scope: "unknown", source: "unavailable" },
     checked_at: "2026-05-30T00:00:00.000Z",
     details: {}
   };
@@ -49,15 +48,15 @@ function makeResolver(resolution: InstallationResolution): InstallationResolver 
 
 function makeService(
   resolver: InstallationResolver,
-  cache = new InMemoryClaimCache()
-): ClaimService {
-  return new ClaimService({ cache, installationResolver: resolver, cacheTtlMs: 60_000 });
+  cache = new InMemoryBadgeCache()
+): BadgeService {
+  return new BadgeService({ cache, installationResolver: resolver, cacheTtlMs: 60_000 });
 }
 
-describe("ClaimService.evaluate", () => {
+describe("BadgeService.evaluate", () => {
   it("returns a cached result without resolving the installation", async () => {
     vi.clearAllMocks();
-    const cache = new InMemoryClaimCache();
+    const cache = new InMemoryBadgeCache();
     const cached = passResult("owner", "repo");
     cache.set(cached, 60_000);
     const resolver = makeResolver({ status: "error", error: { kind: "not_found", message: "x" } });
@@ -70,7 +69,7 @@ describe("ClaimService.evaluate", () => {
 
   it("evaluates the definition on a cache miss and stores the result", async () => {
     vi.clearAllMocks();
-    const cache = new InMemoryClaimCache();
+    const cache = new InMemoryBadgeCache();
     const resolver = makeResolver({
       status: "ok",
       github: stubGitHub,
@@ -102,7 +101,7 @@ describe("ClaimService.evaluate", () => {
 
   it("produces an unknown result when installation resolution fails", async () => {
     vi.clearAllMocks();
-    const cache = new InMemoryClaimCache();
+    const cache = new InMemoryBadgeCache();
     const resolver = makeResolver({
       status: "error",
       error: { kind: "not_installed", message: "no install" }
@@ -117,7 +116,7 @@ describe("ClaimService.evaluate", () => {
     expect(cache.get("owner", "repo", definition.id)).toBe(result);
   });
 
-  it("coalesces concurrent evaluations for the same claim", async () => {
+  it("coalesces concurrent evaluations for the same badge", async () => {
     vi.clearAllMocks();
     const resolverReady = deferred<InstallationResolution>();
     const resolver: InstallationResolver = {
@@ -147,9 +146,9 @@ describe("ClaimService.evaluate", () => {
     expect(definition.evaluate).toHaveBeenCalledOnce();
   });
 
-  it("resolves installation once when evaluating many claims for one repository", async () => {
+  it("resolves installation once when evaluating many badges for one repository", async () => {
     vi.clearAllMocks();
-    const cache = new InMemoryClaimCache();
+    const cache = new InMemoryBadgeCache();
     const resolver = makeResolver({
       status: "ok",
       github: stubGitHub,
@@ -167,21 +166,21 @@ describe("ClaimService.evaluate", () => {
 
     const results = await service.evaluateMany([definition, secondDefinition], "owner", "repo");
 
-    expect(results.map((result) => result.claim)).toEqual(["demo-claim", "second-claim"]);
+    expect(results.map((result) => result.badgeId)).toEqual(["demo-badge", "second-badge"]);
     expect(resolver.resolve).toHaveBeenCalledOnce();
     expect(definition.evaluate).toHaveBeenCalledOnce();
     expect(secondDefinition.evaluate).toHaveBeenCalledOnce();
-    expect(cache.get("owner", "repo", "demo-claim")).toBe(results[0]);
-    expect(cache.get("owner", "repo", "second-claim")).toBe(results[1]);
+    expect(cache.get("owner", "repo", "demo-badge")).toBe(results[0]);
+    expect(cache.get("owner", "repo", "second-badge")).toBe(results[1]);
   });
 
-  it("returns cached results when evaluating many claims without resolving installation", async () => {
+  it("returns cached results when evaluating many badges without resolving installation", async () => {
     vi.clearAllMocks();
-    const cache = new InMemoryClaimCache();
+    const cache = new InMemoryBadgeCache();
     const first = passResult("owner", "repo");
     const second = {
       ...passResult("owner", "repo"),
-      claim: "second-claim",
+      badgeId: "second-badge",
       source: secondDefinition.source
     };
     cache.set(first, 60_000);
@@ -201,9 +200,9 @@ describe("ClaimService.evaluate", () => {
     expect(resolver.resolve).not.toHaveBeenCalled();
   });
 
-  it("produces unknown results for missing claims when evaluateMany cannot resolve installation", async () => {
+  it("produces unknown results for missing badges when evaluateMany cannot resolve installation", async () => {
     vi.clearAllMocks();
-    const cache = new InMemoryClaimCache();
+    const cache = new InMemoryBadgeCache();
     const cached = passResult("owner", "repo");
     cache.set(cached, 60_000);
     const resolver = makeResolver({
@@ -219,15 +218,15 @@ describe("ClaimService.evaluate", () => {
 
     expect(results[0]).toBe(cached);
     expect(results[1]).toMatchObject({
-      claim: "second-claim",
+      badgeId: "second-badge",
       result: "unknown",
       error: { kind: "not_installed", message: "no install" }
     });
     expect(resolver.resolve).toHaveBeenCalledOnce();
-    expect(cache.get("owner", "repo", "second-claim")).toBe(results[1]);
+    expect(cache.get("owner", "repo", "second-badge")).toBe(results[1]);
   });
 
-  it("shares each GitHub endpoint response while evaluating many claims", async () => {
+  it("shares each GitHub endpoint response while evaluating many badges", async () => {
     const getRepository = vi.fn(async () => ({ id: 1, default_branch: "main" }));
     const getImmutableReleases = vi.fn(async () => ({ enabled: true }));
     const getActionsPermissions = vi.fn(async () => ({ sha_pinning_required: true }));
@@ -253,9 +252,9 @@ describe("ClaimService.evaluate", () => {
         updatedAt: ""
       }
     });
-    const firstDefinition: ClaimDefinition = {
+    const firstDefinition: BadgeDefinition = {
       ...definition,
-      id: "first-github-claim",
+      id: "first-github-badge",
       evaluate: vi.fn(async ({ owner, repo, github: memoizedGitHub }) => {
         await memoizedGitHub.getRepository(owner, repo);
         await memoizedGitHub.getImmutableReleases(owner, repo);
@@ -264,13 +263,13 @@ describe("ClaimService.evaluate", () => {
         await memoizedGitHub.getCommunityProfile(owner, repo);
         return {
           ...passResult(owner, repo),
-          claim: "first-github-claim"
+          badgeId: "first-github-badge"
         };
       })
     };
-    const secondSharedDefinition: ClaimDefinition = {
+    const secondSharedDefinition: BadgeDefinition = {
       ...definition,
-      id: "second-github-claim",
+      id: "second-github-badge",
       evaluate: vi.fn(async ({ owner, repo, github: memoizedGitHub }) => {
         await memoizedGitHub.getRepository(owner, repo);
         await memoizedGitHub.getImmutableReleases(owner, repo);
@@ -279,7 +278,7 @@ describe("ClaimService.evaluate", () => {
         await memoizedGitHub.getCommunityProfile(owner, repo);
         return {
           ...passResult(owner, repo),
-          claim: "second-github-claim"
+          badgeId: "second-github-badge"
         };
       })
     };
@@ -290,9 +289,9 @@ describe("ClaimService.evaluate", () => {
       "repo"
     );
 
-    expect(results.map((result) => result.claim)).toEqual([
-      "first-github-claim",
-      "second-github-claim"
+    expect(results.map((result) => result.badgeId)).toEqual([
+      "first-github-badge",
+      "second-github-badge"
     ]);
     expect(getRepository).toHaveBeenCalledOnce();
     expect(getImmutableReleases).toHaveBeenCalledOnce();

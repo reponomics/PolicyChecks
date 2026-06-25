@@ -2,9 +2,9 @@ import express, { type ErrorRequestHandler } from "express";
 import type { Router } from "express";
 
 import { createBadgeRouter } from "../routes/badge-routes.js";
-import type { ClaimEvaluator } from "./claim-service.js";
+import type { BadgeEvaluator } from "./badge-service.js";
 
-export function createHttpApp(claimService: ClaimEvaluator, webhookRouter?: Router) {
+export function createHttpApp(badgeService: BadgeEvaluator, webhookRouter?: Router) {
   const app = express();
   app.disable("x-powered-by");
 
@@ -18,7 +18,7 @@ export function createHttpApp(claimService: ClaimEvaluator, webhookRouter?: Rout
     app.use(webhookRouter);
   }
 
-  app.use(createBadgeRouter(claimService));
+  app.use(createBadgeRouter(badgeService));
   app.use(notFoundHandler);
   app.use(errorHandler);
 
@@ -35,6 +35,6 @@ const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => 
   console.error(error);
   response.status(500).json({
     error: "internal_error",
-    message: "The request failed before the claim could be verified."
+    message: "The request failed before the badge could be evaluated."
   });
 };

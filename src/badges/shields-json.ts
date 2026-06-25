@@ -1,4 +1,4 @@
-import type { ClaimDefinition, ClaimResult } from "../claims/types.js";
+import type { BadgeDefinition, BadgeResult } from "./types.js";
 
 export interface ShieldsJson {
   schemaVersion: 1;
@@ -7,7 +7,7 @@ export interface ShieldsJson {
   color: string;
 }
 
-export function toShieldsJson(definition: ClaimDefinition, result: ClaimResult): ShieldsJson {
+export function toShieldsJson(definition: BadgeDefinition, result: BadgeResult): ShieldsJson {
   return {
     schemaVersion: 1,
     label: definition.label,
@@ -16,11 +16,11 @@ export function toShieldsJson(definition: ClaimDefinition, result: ClaimResult):
   };
 }
 
-export function messageForResult(definition: ClaimDefinition, result: ClaimResult): string {
+export function messageForResult(definition: BadgeDefinition, result: BadgeResult): string {
   return definition.badgeMessage?.(result) ?? result.result;
 }
 
-export function colorForResult(definition: ClaimDefinition, result: ClaimResult): string {
+export function colorForResult(definition: BadgeDefinition, result: BadgeResult): string {
   return definition.badgeColor?.(result) ?? colorForResultText(result.result);
 }
 

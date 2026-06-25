@@ -1,35 +1,29 @@
-import { publicMessage, toPublicClaimError } from "../github/errors.js";
-import {
-  isRecord,
-  makeClaimResult,
-  makeUnknownResult,
-  repositorySettingEvidence,
-  resultInput
-} from "./result.js";
-import type { ClaimDefinition, ClaimEvaluationInput } from "./types.js";
+import { publicMessage, toPublicBadgeError } from "../github/errors.js";
+import { isRecord, makeBadgeResult, makeUnknownResult, resultInput } from "./result.js";
+import type { BadgeDefinition, BadgeEvaluationInput } from "./types.js";
 
 type SecretProtectionField = "secret_scanning" | "secret_scanning_push_protection";
 
-interface SecretProtectionClaimOptions {
+interface SecretProtectionBadgeOptions {
   id: string;
   label: string;
   field: SecretProtectionField;
 }
 
-export const secretScanningEnabledClaim = secretProtectionClaim({
+export const secretScanningEnabledBadge = secretProtectionBadge({
   id: "secret-scanning-enabled",
   label: "secret scanning",
   field: "secret_scanning"
 });
 
-export const secretPushProtectionEnabledClaim = secretProtectionClaim({
+export const secretPushProtectionEnabledBadge = secretProtectionBadge({
   id: "secret-push-protection-enabled",
   label: "secret push protection",
   field: "secret_scanning_push_protection"
 });
 
-function secretProtectionClaim(options: SecretProtectionClaimOptions): ClaimDefinition {
-  const definition: ClaimDefinition = {
+function secretProtectionBadge(options: SecretProtectionBadgeOptions): BadgeDefinition {
+  const definition: BadgeDefinition = {
     id: options.id,
     label: options.label,
     source: {
@@ -38,8 +32,7 @@ function secretProtectionClaim(options: SecretProtectionClaimOptions): ClaimDefi
       endpoint: "GET /repos/{owner}/{repo}",
       fields: [`security_and_analysis.${options.field}.status`]
     },
-    evidence: repositorySettingEvidence,
-    async evaluate(input: ClaimEvaluationInput) {
+    async evaluate(input: BadgeEvaluationInput) {
       try {
         const repository = await input.github.getRepository(input.owner, input.repo);
         return evaluateSecretProtection(
@@ -49,7 +42,7 @@ function secretProtectionClaim(options: SecretProtectionClaimOptions): ClaimDefi
           options.field
         );
       } catch (error) {
-        return makeUnknownResult(definition, resultInput(input), toPublicClaimError(error));
+        return makeUnknownResult(definition, resultInput(input), toPublicBadgeError(error));
       }
     }
   };
@@ -58,8 +51,8 @@ function secretProtectionClaim(options: SecretProtectionClaimOptions): ClaimDefi
 }
 
 function evaluateSecretProtection(
-  definition: ClaimDefinition,
-  input: ClaimEvaluationInput,
+  definition: BadgeDefinition,
+  input: BadgeEvaluationInput,
   securityAndAnalysis: unknown,
   field: SecretProtectionField
 ) {
@@ -81,7 +74,7 @@ function evaluateSecretProtection(
 
   const enabled = feature.status === "enabled";
 
-  return makeClaimResult(definition, resultInput(input), enabled ? "enabled" : "disabled", {
+  return makeBadgeResult(definition, resultInput(input), enabled ? "enabled" : "disabled", {
     security_and_analysis: selectedSecurityDetails(securityAndAnalysis, detailFieldsFor(field))
   });
 }
@@ -104,8 +97,8 @@ function selectedSecurityDetails(
 }
 
 function unexpected(
-  definition: ClaimDefinition,
-  input: ClaimEvaluationInput,
+  definition: BadgeDefinition,
+  input: BadgeEvaluationInput,
   details: Record<string, unknown> = {}
 ) {
   return makeUnknownResult(

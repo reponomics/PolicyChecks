@@ -6,12 +6,12 @@ const productionSources = [
   "src/github/app-auth.ts",
   "src/github/client.ts",
   "src/github/installations.ts",
-  "src/claims/community-health.ts",
-  "src/claims/default-branch-rules.ts",
-  "src/claims/immutable-releases.ts",
-  "src/claims/secret-protection.ts",
-  "src/claims/sha-pinning-required.ts",
-  "src/claims/web-commit-signoff.ts"
+  "src/badges/community-health.ts",
+  "src/badges/default-branch-rules.ts",
+  "src/badges/immutable-releases.ts",
+  "src/badges/secret-protection.ts",
+  "src/badges/sha-pinning-required.ts",
+  "src/badges/web-commit-signoff.ts"
 ];
 
 const allowedRoutes = new Set([
