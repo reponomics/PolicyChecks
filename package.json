@@ -41,7 +41,7 @@
   "license": "MIT",
   "dependencies": {
     "@octokit/auth-app": "^8.2.0",
-    "@octokit/request": "^10.0.10",
+    "@octokit/request": "^10.0.11",
     "dotenv": "^17.4.2",
     "express": "^5.2.1"
   },
