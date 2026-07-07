@@ -1,6 +1,6 @@
 {
   "name": "policychecks",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A badge service for reporting selected GitHub repository administration settings from GitHub API responses",
   "private": true,
   "type": "module",

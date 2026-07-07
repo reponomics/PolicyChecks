@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/reponomics/PolicyChecks/compare/v0.6.0...v0.6.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* healthz endpoint return 200 for HEAD ([#50](https://github.com/reponomics/PolicyChecks/issues/50)) ([3f457f6](https://github.com/reponomics/PolicyChecks/commit/3f457f6e4352912d87df804054b255fc1d0ebd12))
+
 ## [0.6.0](https://github.com/reponomics/PolicyChecks/compare/v0.5.1...v0.6.0) (2026-06-24)
 
 
