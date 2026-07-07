@@ -48,7 +48,16 @@ export default {
       const url = new URL(request.url);
       const { pathname } = url;
 
-      if (request.method === "GET" && pathname === "/healthz") {
+      if (pathname === "/healthz" && request.method === "HEAD") {
+        return new Response(null, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8"
+          }
+        });
+      }
+
+      if (pathname === "/healthz" && request.method === "GET") {
         return json({
           ok: true
         });
