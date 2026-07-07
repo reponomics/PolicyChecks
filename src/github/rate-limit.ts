@@ -57,10 +57,7 @@ export interface GitHubRateLimitSnapshot {
 }
 
 type CircuitOpenReason =
-  | "primary_exhausted"
-  | "secondary_rate_limit"
-  | "retry_after"
-  | "rate_limited";
+  "primary_exhausted" | "secondary_rate_limit" | "retry_after" | "rate_limited";
 
 interface BucketState {
   chain: Promise<void>;
