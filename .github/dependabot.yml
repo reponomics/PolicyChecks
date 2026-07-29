@@ -27,11 +27,12 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      github-actions-minor-patch:
+      github-actions-updates:
         applies-to: "version-updates"
         patterns:
           - "*"
         update-types:
+          - "major"
           - "minor"
           - "patch"
       github-actions-security-fixes:
