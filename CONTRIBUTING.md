@@ -10,19 +10,33 @@ Thank you for contributing to this project.
 
 ## Types of Contributions
 
-Besides contributing targeted bug fixes and enhancements, PolicyChecks is also open to expanding the set of badges that we provide, on condition that doing so (a) does not require any additional permissions beyond repository `Administration: Read`, and (b) the badge status can be reported on the basis of a single GitHub API endpoint, and does not require any non-trivial inference.
+Besides contributing targeted bug fixes and enhancements, PolicyChecks is also open to expanding the set of badges that we provide, on condition that doing so (a) does not require any additional permissions beyond repository `Administration: Read`, and (b) the badge status can be reported on the basis of a deterministic query to one or more (preferably one) GitHub REST API endpoints, and that no non-trivial inference is involved in deriving the status from the API. PolicyChecks _reports_ what the GitHub API tells us objectively, and we do not attempt to make any inferences about any repository's settings.
+
+## Repository Policies
+
+Although we do not claim that the PolicyChecks badges pertain to policies that every good OSS project must uphold, we try to keep our own badges green for good measure. This means:
+
+(a) Commits must be signed. If you submit a PR, make that sure that you are signing your commits. For more information about commit signing, see the [GitHub documentation on the topic](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+
+(b) All code changes to `main` must come from a Pull Request.
+
+(c) Pull Requests must be _named in the style of a conventional commit_. This is enforced in CI. Additionally, the type of the conventional commit prefix determines the release protocol when that PR is merged (major, minor, patch, or no release). That being said, although we strongly encourage contributors to follow conventional commit practices, the release workflow (in our case, Release Please) is sensitive only to the PR title itself, and does not process the prefixes of any of the commits in the PR.
+
+(d) If you open a PR and notice that checks are failing, please review the failing checks and try to determine the root cause, and then resolve it whenever possible.
+
+(e) We currently have a very strong level of test coverage; if your PR introduces new functionality, make sure that you include tests as appropriate, and you should compare coverage before and after your change.
 
 ## Local Development
 
 PolicyChecks is a Node.js project. Use Node.js 24 or newer - or simply refer to the `.nvmrc` file.
 
-Install dependencies from the lockfile:
+Install dependencies from the [lockfile](./package-lock.json):
 
 ```bash
 npm ci
 ```
 
-Use `npm install` only when intentionally updating dependencies and committing the resulting lockfile change.
+Use `npm install` only when intentionally updating dependencies and committing the resulting lockfile change. (Don't mix dependency updates with feature changes unless otherwise necessary.)
 
 Run the development server:
 
