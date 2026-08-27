@@ -22,9 +22,11 @@ Although we do not claim that the PolicyChecks badges pertain to policies that e
 
 (c) Pull Request titles must follow [conventional commit style](https://www.conventionalcommits.org/en/v1.0.0/#summary). This is enforced in CI. Additionally, the type of the conventional commit prefix determines the release protocol when that PR is merged (major, minor, patch, or no release). That being said, although we strongly encourage contributors to follow conventional commit practices, the release workflow (in our case, Release Please) is sensitive only to the PR title itself, and does not process the prefixes of any of the commits in the PR.
 
-(d) If you open a PR and notice that checks are failing, please review the failing checks and try to determine the root cause, and then resolve it whenever possible.
+(d) Before submitting a PR, be sure to run `npm run check` and resolve any errors.
 
-(e) We currently have a very strong level of test coverage; if your PR introduces new functionality, make sure that you include tests as appropriate, and you should compare coverage before and after your change.
+(e) If you open a PR and notice that checks are failing, please review the failing checks and try to determine the root cause, and then resolve it whenever possible.
+
+(f) We currently have a very strong level of test coverage; if your PR introduces new functionality, make sure that you include tests as appropriate, and you should compare coverage before and after your change.
 
 ## Local Development
 
