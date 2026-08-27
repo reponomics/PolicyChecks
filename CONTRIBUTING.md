@@ -16,11 +16,11 @@ Besides contributing targeted bug fixes and enhancements, PolicyChecks is also o
 
 Although we do not claim that the PolicyChecks badges pertain to policies that every good OSS project must uphold, we try to keep our own badges green for good measure. This means:
 
-(a) Commits must be signed. If you submit a PR, make that sure that you are signing your commits. For more information about commit signing, see the [GitHub documentation on the topic](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+(a) Commits must be signed. If you submit a PR, make sure that you are signing your commits. For more information about commit signing, see the [GitHub documentation on the topic](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
 
 (b) All code changes to `main` must come from a Pull Request.
 
-(c) Pull Requests must be _named in the style of a conventional commit_. This is enforced in CI. Additionally, the type of the conventional commit prefix determines the release protocol when that PR is merged (major, minor, patch, or no release). That being said, although we strongly encourage contributors to follow conventional commit practices, the release workflow (in our case, Release Please) is sensitive only to the PR title itself, and does not process the prefixes of any of the commits in the PR.
+(c) Pull Request titles must follow [conventional commit style](https://www.conventionalcommits.org/en/v1.0.0/#summary). This is enforced in CI. Additionally, the type of the conventional commit prefix determines the release protocol when that PR is merged (major, minor, patch, or no release). That being said, although we strongly encourage contributors to follow conventional commit practices, the release workflow (in our case, Release Please) is sensitive only to the PR title itself, and does not process the prefixes of any of the commits in the PR.
 
 (d) If you open a PR and notice that checks are failing, please review the failing checks and try to determine the root cause, and then resolve it whenever possible.
 
