@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded in part (2026-08-29) — see Addendum. The reframing away from audit language was adopted; the README-presence publication check and the removal of the aggregate endpoint were not implemented and will not be.
 
 ## Date
 
@@ -353,3 +353,13 @@ This keeps PolicyChecks closest to its core value: a small public badge service 
 Tokenized badge URLs remain the leading alternative if private repository support or non-README publication becomes important enough to justify the extra setup and authorization surface.
 
 If schedule pressure requires a smaller immediate change, remove `info.json` first. The current all-badges-public posture should not be treated as the intended long-term model.
+
+## Addendum (2026-08-29)
+
+This decision was adopted in part and deliberately descoped in part. The record above is preserved as written; this addendum states what actually happened.
+
+Adopted: the reframing away from audit and security language. The aggregate endpoint is presented as `info.json` — a neutral informational surface — rather than as an audit or compliance report, and product language follows that model.
+
+Not implemented, and no longer planned: the README-presence publication check and the removal of the public aggregate `info.json` endpoint. The README verification model was judged too complex for a v1 service without users — clever, but an overcomplication at current scale.
+
+The operating model is therefore: installing the GitHub App constitutes the maintainer's consent to public disclosure of all supported badge results for that repository, including the aggregate `info.json` endpoint (see the "explicit disclosure" framing in the read-only surface decision). Ambiguous, unauthorized, and failed evaluations collapse to `unknown`. Selective publication (README-presence or tokenized URLs) remains a documented alternative if adoption ever justifies it.
