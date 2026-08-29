@@ -7,12 +7,10 @@
 <!-- prettier-ignore-start -->
 [![CI](https://github.com/reponomics/PolicyChecks/actions/workflows/ci.yml/badge.svg)](https://github.com/reponomics/PolicyChecks/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/reponomics/PolicyChecks/badge)](https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D24-brightgreen.svg)](.nvmrc)
 [![Install the GitHub App](https://img.shields.io/badge/GitHub%20App-install-blue?logo=github)](https://github.com/apps/policychecks)
 <!-- prettier-ignore-end -->
 
-**Badges for GitHub repository settings that public APIs don't expose.**
+**Badges for GitHub repository settings that other badge services can't see.**
 
 ## What is PolicyChecks?
 
