@@ -42,119 +42,133 @@ const maxWebhookBodyBytes = 256 * 1024;
 let runtimeCache: Runtime | undefined;
 let runtimeKey: string | undefined;
 
+// Raise max-age to 31536000 after a burn-in period on the live service.
+const securityHeaders: Record<string, string> = {
+  "Strict-Transport-Security": "max-age=86400",
+  "X-Content-Type-Options": "nosniff"
+};
+
 export default {
   async fetch(request: Request, env: WorkerEnv): Promise<Response> {
-    try {
-      const url = new URL(request.url);
-      const { pathname } = url;
+    // HEAD mirrors GET (RFC 9110): evaluate as GET, respond without a body.
+    // See docs/adr/0002-http-method-allowlist-and-head.md.
+    const isHead = request.method === "HEAD";
+    const effectiveRequest = isHead
+      ? new Request(request.url, { method: "GET", headers: request.headers })
+      : request;
+    const response = await handleRequest(effectiveRequest, env);
+    const decorated = new Response(isHead ? null : response.body, response);
 
-      if (pathname === "/healthz" && request.method === "HEAD") {
-        return new Response(null, {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8"
-          }
-        });
-      }
-
-      if (pathname === "/healthz" && request.method === "GET") {
-        return json({
-          ok: true
-        });
-      }
-
-      if (request.method === "POST" && pathname === "/github/webhook") {
-        return handleWebhook(request, getWebhookSecret(env));
-      }
-
-      if (request.method !== "GET") {
-        return json(
-          {
-            error: "not_found"
-          },
-          404
-        );
-      }
-
-      const route = parsePath(pathname);
-
-      if (route.kind === "not_found") {
-        return json(
-          {
-            error: "not_found"
-          },
-          404
-        );
-      }
-
-      if (route.kind === "info") {
-        const runtime = getRuntime(env);
-        const badges = await runtime.badgeService.evaluateMany(
-          badgeDefinitions,
-          route.owner,
-          route.repo
-        );
-
-        return json(
-          {
-            owner: route.owner,
-            repo: route.repo,
-            badges
-          },
-          200,
-          {
-            "Cache-Control": cacheControl
-          }
-        );
-      }
-
-      const definition = getBadgeDefinition(route.badgeId);
-
-      if (definition === undefined) {
-        return json(
-          {
-            error: "unsupported_badge",
-            badgeId: route.badgeId
-          },
-          404
-        );
-      }
-
-      const runtime = getRuntime(env);
-      const result = await runtime.badgeService.evaluate(definition, route.owner, route.repo);
-
-      if (route.kind === "json") {
-        return json(toShieldsJson(definition, result), 200, {
-          "Cache-Control": cacheControl
-        });
-      }
-
-      if (route.kind === "details") {
-        return json(toDetailsJson(result), 200, {
-          "Cache-Control": cacheControl
-        });
-      }
-
-      const svg = renderBadgeSvg(definition, result);
-      return new Response(svg, {
-        status: 200,
-        headers: {
-          "Content-Type": "image/svg+xml; charset=utf-8",
-          "Cache-Control": cacheControl
-        }
-      });
-    } catch (error) {
-      console.error(error);
-      return json(
-        {
-          error: "internal_error",
-          message: "The request failed before the badge could be evaluated."
-        },
-        500
-      );
+    for (const [name, value] of Object.entries(securityHeaders)) {
+      decorated.headers.set(name, value);
     }
+
+    return decorated;
   }
 };
+
+async function handleRequest(request: Request, env: WorkerEnv): Promise<Response> {
+  try {
+    const url = new URL(request.url);
+    const { pathname } = url;
+
+    if (pathname === "/healthz" && request.method === "GET") {
+      return json({
+        ok: true
+      });
+    }
+
+    if (request.method === "POST" && pathname === "/github/webhook") {
+      return handleWebhook(request, getWebhookSecret(env));
+    }
+
+    if (request.method !== "GET") {
+      return json(
+        {
+          error: "not_found"
+        },
+        404
+      );
+    }
+
+    const route = parsePath(pathname);
+
+    if (route.kind === "not_found") {
+      return json(
+        {
+          error: "not_found"
+        },
+        404
+      );
+    }
+
+    if (route.kind === "info") {
+      const runtime = getRuntime(env);
+      const badges = await runtime.badgeService.evaluateMany(
+        badgeDefinitions,
+        route.owner,
+        route.repo
+      );
+
+      return json(
+        {
+          owner: route.owner,
+          repo: route.repo,
+          badges
+        },
+        200,
+        {
+          "Cache-Control": cacheControl
+        }
+      );
+    }
+
+    const definition = getBadgeDefinition(route.badgeId);
+
+    if (definition === undefined) {
+      return json(
+        {
+          error: "unsupported_badge",
+          badgeId: route.badgeId
+        },
+        404
+      );
+    }
+
+    const runtime = getRuntime(env);
+    const result = await runtime.badgeService.evaluate(definition, route.owner, route.repo);
+
+    if (route.kind === "json") {
+      return json(toShieldsJson(definition, result), 200, {
+        "Cache-Control": cacheControl
+      });
+    }
+
+    if (route.kind === "details") {
+      return json(toDetailsJson(result), 200, {
+        "Cache-Control": cacheControl
+      });
+    }
+
+    const svg = renderBadgeSvg(definition, result);
+    return new Response(svg, {
+      status: 200,
+      headers: {
+        "Content-Type": "image/svg+xml; charset=utf-8",
+        "Cache-Control": cacheControl
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return json(
+      {
+        error: "internal_error",
+        message: "The request failed before the badge could be evaluated."
+      },
+      500
+    );
+  }
+}
 
 type ParsedPath =
   | {

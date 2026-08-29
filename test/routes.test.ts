@@ -18,6 +18,24 @@ describe("badge routes", () => {
       });
   });
 
+  it("answers HEAD requests on GET routes without a body", async () => {
+    const app = createHttpApp(serviceReturning("enabled"));
+
+    const response = await request(app).head("/healthz").expect(200);
+
+    expect(response.text).toBeFalsy();
+  });
+
+  it("sets security headers on responses", async () => {
+    const app = createHttpApp(serviceReturning("enabled"));
+
+    await request(app)
+      .get("/healthz")
+      .expect(200)
+      .expect("Strict-Transport-Security", "max-age=86400")
+      .expect("X-Content-Type-Options", "nosniff");
+  });
+
   it("mounts an optional webhook router before badge routes", async () => {
     const webhookRouter = Router();
     webhookRouter.get("/github/webhook-test", (_request, response) => {

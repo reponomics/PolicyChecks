@@ -8,6 +8,13 @@ export function createHttpApp(badgeService: BadgeEvaluator, webhookRouter?: Rout
   const app = express();
   app.disable("x-powered-by");
 
+  app.use((_request, response, next) => {
+    // Raise max-age to 31536000 after a burn-in period on the live service.
+    response.setHeader("Strict-Transport-Security", "max-age=86400");
+    response.setHeader("X-Content-Type-Options", "nosniff");
+    next();
+  });
+
   app.get("/healthz", (_request, response) => {
     response.json({
       ok: true
