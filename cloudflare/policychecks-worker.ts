@@ -51,7 +51,6 @@ const securityHeaders: Record<string, string> = {
 export default {
   async fetch(request: Request, env: WorkerEnv): Promise<Response> {
     // HEAD mirrors GET (RFC 9110): evaluate as GET, respond without a body.
-    // See docs/adr/0002-http-method-allowlist-and-head.md.
     const isHead = request.method === "HEAD";
     const effectiveRequest = isHead
       ? new Request(request.url, { method: "GET", headers: request.headers })
