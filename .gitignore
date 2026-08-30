@@ -95,10 +95,9 @@ pids/
 
 # Environment variables
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+*.private-key.pem
 
 # Build outputs
 dist/

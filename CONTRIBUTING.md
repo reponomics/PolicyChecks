@@ -40,11 +40,37 @@ npm ci
 
 Use `npm install` only when intentionally updating dependencies and committing the resulting lockfile change. (Don't mix dependency updates with feature changes unless otherwise necessary.)
 
-Run the development server:
+Run the credential-free fixture server:
 
 ```bash
+npm run dev:fixtures
+```
+
+This starts the real HTTP routes, cache, badge evaluators, and response renderers against deterministic in-process GitHub responses. It never contacts GitHub, does not mount the webhook route, and does not require access to the PolicyChecks GitHub App. You can use any owner and repository names in local URLs, for example:
+
+```text
+http://localhost:3000/github/example/project/info.json
+http://localhost:3000/github/example/project/sha-pinning-required.svg
+```
+
+Tests are also credential-free and mock GitHub at the application boundaries.
+
+Maintainers who need to exercise live GitHub App authentication can copy the environment template, populate the ignored file with credentials from their credentials manager, and run the authenticated server:
+
+```bash
+cp .env.example .env
 npm run dev
 ```
+
+`GITHUB_APP_ID`, either `GITHUB_PRIVATE_KEY_BASE64` or `GITHUB_PRIVATE_KEY`, and `GITHUB_WEBHOOK_SECRET` are required. The repository used in a request must have the corresponding GitHub App installed. Never give the hosted PolicyChecks private key or webhook secret to outside contributors, and never commit `.env`.
+
+Base64 is the least error-prone representation for a private key in `.env`. For example, this prints a PEM file as a single line that can be pasted after `GITHUB_PRIVATE_KEY_BASE64=`:
+
+```bash
+openssl base64 -A -in /path/to/github-app.private-key.pem
+```
+
+An outside contributor who needs to test live installation and authentication behavior should create and install their own development GitHub App with repository `Administration: Read` permission. A personal access token does not exercise PolicyChecks' App installation lookup and is not supported as a substitute.
 
 Run the standard verification commands:
 
@@ -60,4 +86,4 @@ The full local check used by CI is:
 npm run check
 ```
 
-`.env.example` contains non-secret local defaults only. Tests do not require GitHub credentials. If authenticated local development is needed, copy `.env.example` to the ignored `.env` file and populate credentials from your own credentials manager. Do not commit credentials.
+`.env.example` contains blank credential placeholders and non-secret local defaults. It does not contain usable credentials.

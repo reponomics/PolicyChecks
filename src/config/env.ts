@@ -10,14 +10,19 @@ export interface RuntimeConfig {
   };
 }
 
+export interface ServerConfig {
+  port: number;
+  cacheTtlMs: number;
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig {
+  const server = loadServerConfig(env);
   const appId = parseRequiredInteger(env.GITHUB_APP_ID, "GITHUB_APP_ID");
   const privateKey = readPrivateKey(env);
   const webhookSecret = parseRequiredString(env.GITHUB_WEBHOOK_SECRET, "GITHUB_WEBHOOK_SECRET");
 
   return {
-    port: parseOptionalInteger(env.PORT, 3000, "PORT"),
-    cacheTtlMs: parseOptionalInteger(env.CACHE_TTL_SECONDS, 3600, "CACHE_TTL_SECONDS") * 1000,
+    ...server,
     github: {
       appId,
       privateKey,
@@ -28,9 +33,22 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig 
   };
 }
 
+export function loadServerConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
+  return {
+    port: parseOptionalInteger(env.PORT, 3000, "PORT"),
+    cacheTtlMs: parseOptionalInteger(env.CACHE_TTL_SECONDS, 3600, "CACHE_TTL_SECONDS") * 1000
+  };
+}
+
 function readPrivateKey(env: NodeJS.ProcessEnv): string {
-  if (env.GITHUB_PRIVATE_KEY_BASE64 !== undefined) {
-    return Buffer.from(env.GITHUB_PRIVATE_KEY_BASE64, "base64").toString("utf8");
+  if (env.GITHUB_PRIVATE_KEY_BASE64 !== undefined && env.GITHUB_PRIVATE_KEY_BASE64.trim() !== "") {
+    const decoded = Buffer.from(env.GITHUB_PRIVATE_KEY_BASE64, "base64").toString("utf8");
+
+    if (decoded.trim() === "") {
+      throw new Error("GITHUB_PRIVATE_KEY_BASE64 must decode to a non-empty private key.");
+    }
+
+    return decoded;
   }
 
   if (env.GITHUB_PRIVATE_KEY === undefined || env.GITHUB_PRIVATE_KEY.trim() === "") {

@@ -168,7 +168,7 @@ The reintroduced processor must still verify signatures before parsing, avoid Gi
 
 ## Credential Storage
 
-Production credentials are Cloudflare Worker secrets, backed by the operator's credentials manager and the GitHub App settings UI. Do not put GitHub App credentials or webhook secrets in `.env.example`, committed Markdown files, GitHub Actions variables, or repository files.
+Production credentials are Cloudflare Worker secrets, backed by the operator's credentials manager and the GitHub App settings UI. Do not put credential values or webhook secrets in `.env.example`, committed Markdown files, GitHub Actions variables, or repository files.
 
 Badge users and GitHub App installers do not need access to these credentials. The private key and webhook secret belong to the hosted PolicyChecks GitHub App and are only for the maintainers operating the service.
 
@@ -180,6 +180,6 @@ GITHUB_PRIVATE_KEY_BASE64
 GITHUB_WEBHOOK_SECRET
 ```
 
-`.env.example` contains non-secret local defaults only. It documents runtime configuration shape; it is not a secret template and should not be filled with production values.
+`.env.example` documents the runtime configuration shape with blank credential placeholders and non-secret local defaults. Copy it to the ignored `.env` file only when authenticated local development is needed, then populate `.env` from the operator's credentials manager.
 
-`GITHUB_PRIVATE_KEY` is supported for local development, but `GITHUB_PRIVATE_KEY_BASE64` is preferred for Cloudflare because it avoids newline transport issues. Local `.env` files are ignored and optional. They should only be populated from the operator's credentials manager when a maintainer intentionally needs to exercise authenticated GitHub paths locally. Ordinary tests and contributor setup do not require GitHub credentials.
+`GITHUB_PRIVATE_KEY` is supported for local development, but `GITHUB_PRIVATE_KEY_BASE64` is preferred because it avoids newline transport issues both locally and in Cloudflare. Local `.env` files are ignored and optional. They should only be populated from the operator's credentials manager when a maintainer intentionally needs to exercise authenticated GitHub paths locally. Ordinary tests and `npm run dev:fixtures` do not require GitHub credentials.

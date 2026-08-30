@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { loadConfig } from "../../src/config/env.js";
+import { loadConfig, loadServerConfig } from "../../src/config/env.js";
 
 const baseEnv = {
   GITHUB_APP_ID: "12345",
@@ -58,9 +58,16 @@ describe("loadConfig", () => {
     expect(config.github.privateKey).toBe("a\nb\nc");
   });
 
+  it("uses the raw private key when the base64 placeholder is empty", () => {
+    const config = loadConfig({ ...baseEnv, GITHUB_PRIVATE_KEY_BASE64: "" });
+
+    expect(config.github.privateKey).toBe("line-1\nline-2");
+  });
+
   it.each([
     ["missing", { GITHUB_APP_ID: "1" }],
-    ["empty", { GITHUB_APP_ID: "1", GITHUB_PRIVATE_KEY: "   " }]
+    ["empty", { GITHUB_APP_ID: "1", GITHUB_PRIVATE_KEY: "   " }],
+    ["empty base64", { GITHUB_APP_ID: "1", GITHUB_PRIVATE_KEY_BASE64: "   " }]
   ])("throws when the private key is %s", (_label, env) => {
     expect(() => loadConfig(env as NodeJS.ProcessEnv)).toThrow(/GITHUB_PRIVATE_KEY/);
   });
@@ -101,5 +108,14 @@ describe("loadConfig", () => {
     expect(() => loadConfig({ ...baseEnv, ...override })).toThrow(
       new RegExp(`${name} must be a positive integer`)
     );
+  });
+});
+
+describe("loadServerConfig", () => {
+  it("does not require GitHub credentials", () => {
+    expect(loadServerConfig({})).toEqual({
+      port: 3000,
+      cacheTtlMs: 3_600_000
+    });
   });
 });
