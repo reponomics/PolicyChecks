@@ -64,6 +64,15 @@ describe("loadConfig", () => {
     expect(config.github.privateKey).toBe("line-1\nline-2");
   });
 
+  it("throws when the base64 private key decodes to whitespace", () => {
+    expect(() =>
+      loadConfig({
+        ...baseEnv,
+        GITHUB_PRIVATE_KEY_BASE64: Buffer.from(" ", "utf8").toString("base64")
+      })
+    ).toThrow("GITHUB_PRIVATE_KEY_BASE64 must decode to a non-empty private key.");
+  });
+
   it.each([
     ["missing", { GITHUB_APP_ID: "1" }],
     ["empty", { GITHUB_APP_ID: "1", GITHUB_PRIVATE_KEY: "   " }],
