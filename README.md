@@ -14,61 +14,25 @@
 
 ## What is PolicyChecks?
 
-Several repository settings aren't exposed to unauthenticated callers through the GitHub API, which prevents public badge services from reporting them: whether Actions must be pinned to a full-length commit SHA, whether secret push protection is on, whether the default branch blocks force pushes.
+Maintaining an open source project can be a lot work, and it's nice to have something to show for all the effort that goes into it. One of the best ways to do that is with badges. But public badge services can only see what public APIs report. The git history shows whether a project uses signed commits - but there's no public API to check whether signed commits are required by a project's settings. That's why we created PolicyChecks: a badge service backed by a GitHub app that requests permission to read administrative settings; by installing the PolicyChecks app, maintainers can show that their project follows best practices, not only as a matter of habit, but as a matter of policy.
 
-PolicyChecks is a GitHub App and a badge service. Install the App on a repository, grant it repository `Administration: Read`, and each of those settings becomes a badge. It reports what the GitHub API says about a setting and nothing more: no code is scanned, and no value is inferred that the API didn't give.
-
-## See it in action
-
-The badges below are live, and they belong to this repository. They come from the public instance at `policychecks.reponomics.org`.
-
-**Actions and releases**
-
-<!-- prettier-ignore-start -->
-[![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/details.json)
-[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/details.json)
-<!-- prettier-ignore-end -->
-
-**Secret protection**
-
-<!-- prettier-ignore-start -->
-[![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/details.json)
-[![Secret push protection](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled/details.json)
-<!-- prettier-ignore-end -->
-
-**Default branch rules**
-
-<!-- prettier-ignore-start -->
-[![Force pushes blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked/details.json)
-[![Signed commits](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required/details.json)
-[![Linear history](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required/details.json)
-[![Deletion blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked/details.json)
-[![Pull request required](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required/details.json)
-[![Status checks](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required/details.json)
-<!-- prettier-ignore-end -->
-
-**Repository and community**
-
-<!-- prettier-ignore-start -->
-[![Web signoff](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required/details.json)
-[![Community health](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health/details.json)
-<!-- prettier-ignore-end -->
-
-Every badge links to its `details.json`, which names the GitHub endpoint and the fields the result came from.
-
-## Quick start
+## Quickstart
 
 **1. Install the GitHub App**
 
-Install [PolicyChecks](https://github.com/apps/policychecks) on the repositories you want badges for. The App asks for repository `Administration: Read` and nothing else.
+Install [PolicyChecks](https://github.com/apps/policychecks) on your account, and grant it access to the repositories where you wish to display a badge. The App asks for one elevated permission: repository `Administration: Read`. This is the minimum access necessary to serve the badges. We recommend you grant it access only to those repos where you wish to show a badge.
 
 **2. Add a badge to your README**
 
-Pick a badge ID from [Supported checks](#supported-checks) and substitute your own `OWNER` and `REPO`:
+Once you've installed the app, the badge service will be able to query the GitHub API for the data necessary to display a PolicyChecks badge.
+
+Simply select from our list of [Supported checks](#supported-checks) and substitute your own `OWNER` and `REPO`:
 
 ```markdown
 [![SHA pinning](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/details.json)
 ```
+
+The service supports both personal accounts and organizations; as long as the app is installed on the relevant repository, it can report on its policies, whether those are configured at the repo level or the org level.
 
 The URL pattern is the same for every badge:
 
@@ -76,9 +40,16 @@ The URL pattern is the same for every badge:
 https://policychecks.reponomics.org/github/OWNER/REPO/BADGE_ID.svg
 ```
 
-**3. Commit and push**
+Besides the SVG, the service also exposes an endpoint for each badge that returns a JSON object containing metadata about what GitHub API endpoint was used to derive the status displayed on the badge:
 
-The badge should appear after the service evaluates the repository. If it shows `unknown`, see [Status semantics](#status-semantics) — the most common cause is that the App is not installed on that repository yet.
+```text
+https://policychecks.reponomics.org/github/OWNER/REPO/BADGE_ID/details.json
+```
+
+> [!TIP] \
+> Viewing the `details.json` endpoint can be useful when trying to understand why a particular badge is displaying a specific status.
+
+The badge service reports that a setting is `enabled` when the GitHub API responds with data that clearly shows the setting is enabled, and displays `disabled` only if the API clearly reports a setting is not enabled - if the API's response is inconclusive, or the API is unreachable, the badge simply reports `unknown`.
 
 ## Supported checks
 
@@ -103,7 +74,7 @@ Rule-based checks are evaluated against the repository's default branch.
 
 ```mermaid
 flowchart LR
-    A[README badge request] --> B[PolicyChecks]
+    A[README badge request] --> B[PolicyChecks server]
     B -->|cached result| F[SVG or JSON response]
     B --> C[GitHub App installation token]
     C --> D[GitHub repository REST API]
