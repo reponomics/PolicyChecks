@@ -14,7 +14,7 @@
 
 ## What is PolicyChecks?
 
-Maintaining an open source project can be a lot work, and it's nice to have something to show for all the effort that goes into it. One of the best ways to do that is with badges. But public badge services can only see what public APIs report. The git history shows whether a project uses signed commits - but there's no public API to check whether signed commits are required by a project's settings. That's why we created PolicyChecks: a badge service backed by a GitHub app that requests permission to read administrative settings; by installing the PolicyChecks app, maintainers can show that their project follows best practices, not only as a matter of habit, but as a matter of policy.
+Public badge services are great - but they can only see what public APIs report. A repo's git history shows whether a project uses signed commits - but there's no public API to check whether signed commits are required by a project's settings. That's why we created PolicyChecks: a badge service backed by a GitHub app that requests permission to read administrative settings; by installing the PolicyChecks app, maintainers can show that their project follows best practices, not only as a matter of habit, but as a matter of policy.
 
 ## Quickstart
 
@@ -26,7 +26,7 @@ Install [PolicyChecks](https://github.com/apps/policychecks) on your account, an
 
 Once you've installed the app, the badge service will be able to query the GitHub API for the data necessary to display a PolicyChecks badge.
 
-Simply select from our list of [Supported checks](#supported-checks) and substitute your own `OWNER` and `REPO`:
+Simply select from the list of [Supported checks](#supported-checks) and substitute your own `OWNER` and `REPO`:
 
 ```markdown
 [![SHA pinning](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/details.json)
@@ -82,7 +82,7 @@ flowchart LR
     E --> F
 ```
 
-Each badge maps one GitHub API field to one status. Take SHA pinning: GitHub lets an administrator require that every Action in a workflow is pinned to a full-length commit SHA, and reports that as `sha_pinning_required` on the Actions permissions endpoint.
+Each badge maps one GitHub API field to one recognizable repository setting. We don't try to make sophisticated inferences, and we don't audit whether that setting has ever changed. The badge shows the status of a particular setting, as reported by GitHub at the time of evaluation. For example, there is a setting that allows maintainers to enforce that all repo workflows use full-length SHA-pinned actions. In the Settings UI, it looks like this:
 
 <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/full-sha-pinned-setting-dark.png">
@@ -90,7 +90,7 @@ Each badge maps one GitHub API field to one status. Take SHA pinning: GitHub let
     <img alt="The GitHub repository setting that requires Actions to be pinned to a full-length commit SHA" src="docs/assets/full-sha-pinned-setting-light.png" width="100%">
 </picture>
 
-PolicyChecks reads that field and renders the result. It never opens a workflow file to see whether the Actions in the repository are _actually_ pinned — that's a different question, and a different kind of tool answers it. See [Scope](#scope).
+Github's `/repo/actions/permissions` endpoint reports whether that checkbox is checked or not. PolicyChecks queries that endpoint (which requires repository `Administration: Read` permissions), and renders a badge based the response.
 
 ### Status semantics
 
@@ -100,11 +100,11 @@ PolicyChecks reads that field and renders the result. It never opens a workflow 
 | `disabled` | The API clearly reported the setting as off. |
 | `unknown`  | Everything else.                             |
 
-`unknown` covers the App not being installed on the repository, authorization failures, rate limiting, failed requests, and any response that doesn't clearly answer the question. If the answer is ambiguous, the badge says so rather than guessing. Community health works the same way, except that a conclusive result is a score instead of `enabled`/`disabled`.
+`unknown` covers the App not being installed on the repository, authorization failures, rate limiting, failed requests, and any response that doesn't clearly answer the question. If the answer is ambiguous, the badge says so rather than guessing. Community health works the same way, except that the response is a percentage, instead of `enabled`/`disabled`.
 
 ### Caching
 
-Results are cached in memory for up to about an hour, and responses go out with `Cache-Control: public, max-age=300, stale-while-revalidate=300`. A settings change can take a while to reach a badge, so treat badges as cached signals rather than real-time audits.
+Results are cached in memory for up to about an hour, and responses go out with `Cache-Control: public, max-age=300, stale-while-revalidate=300`. It can take a little bit of time for a settings change to be picked up by the GitHub API, so treat badges as cached signals rather than real-time data.
 
 ## API
 
@@ -119,7 +119,7 @@ GET /github/{owner}/{repo}/info.json                 # All supported checks for 
 
 A request for an unrecognized badge ID returns `404` with `{"error": "unsupported_badge"}`.
 
-`details.json` is the one worth knowing about. It names the endpoint and fields behind the result, so anyone can check a badge against its source:
+`details.json` names the endpoint and fields behind the result, so anyone can check a badge against its source:
 
 ```console
 $ curl https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/details.json
@@ -146,24 +146,17 @@ $ curl https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pi
 }
 ```
 
-<!-- prettier-ignore-start -->
-> [!NOTE]
-> `info.json` returns every supported check for a repository today, but treat it as unstable. [ADR 0001](docs/adr/0001-badge-publication-consent.md) proposes removing it and letting maintainers choose which checks are published instead. That direction is accepted but not implemented.
-<!-- prettier-ignore-end -->
-
 ## Permissions and data access
 
 - PolicyChecks asks for repository `Administration: Read`, and no other permission.
 - It holds no write permission, so it can't modify anything in your repository.
 - It doesn't read repository source code.
-- It doesn't call organization APIs.
-- The GitHub calls it makes itself are `GET`s against six repository routes. [`test/github/api-usage-policy.test.ts`](test/github/api-usage-policy.test.ts) pins that list and fails the build if a write verb, GraphQL query, pagination, search, or organization/user repository listing shows up in the source. (Installation tokens are minted separately by `@octokit/auth-app`, which posts to GitHub's token endpoint.)
-- Only the fields listed under [Supported checks](#supported-checks) go into a result. GitHub returns whole objects; PolicyChecks reads what the check needs and ignores the rest.
+- It doesn't call organization APIs (but it can still report whether a policy is enforced by repo settings even if those settings are inherited from organization policies).
+- The service makes only `GET` requests to the GitHu API. [`test/github/api-usage-policy.test.ts`](test/github/api-usage-policy.test.ts) pins the list of endpoints that it queries and CI fails if a write verb, GraphQL query, pagination, search, or organization/user repository listing shows up in the source.
+- Only the fields listed under [Supported checks](#supported-checks) go into a result. Any additional data in the API response is ignored.
 - When a response is inconclusive, the badge says `unknown` instead of working the answer out some other way.
 
-The App works on public and private repositories where it has been installed. Settings an organization applies to a repository show up on these repository endpoints too.
-
-[PRIVACY.md](PRIVACY.md) covers what the service processes and stores.
+See [PRIVACY.md](PRIVACY.md) for additional details about how the service handles data.
 
 ## Scope
 
