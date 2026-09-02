@@ -19,6 +19,8 @@
 [![Status checks](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required/details.json)
 <!-- prettier-ignore-end -->
 
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14356/badge)](https://www.bestpractices.dev/projects/14356) [![OSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/reponomics/PolicyChecks?label=openssf+scorecard&style=flat)](https://api.scorecard.dev/projects/github.com/reponomics/PolicyChecks)
+
 PolicyChecks is a badge service and validation endpoint that checks the current status of a repository's administrative settings, giving maintainers a convenient way to show that OSS best practices are a matter of policy.
 
 ## How it Works
