@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0](https://github.com/reponomics/PolicyChecks/compare/v0.6.1...v0.7.0) (2026-09-03)
+
+
+### Features
+
+* add credential-free fixture dev server ([#87](https://github.com/reponomics/PolicyChecks/issues/87)) ([30528da](https://github.com/reponomics/PolicyChecks/commit/30528dacb7f08a72e3186cb6363600b68ec9a4b4))
+* normalize typography spacing ([#91](https://github.com/reponomics/PolicyChecks/issues/91)) ([31008c8](https://github.com/reponomics/PolicyChecks/commit/31008c847f2dfb1e2c55ee7c9c7d75881094cac0))
+
+
+### Bug Fixes
+
+* mirror GET for HEAD requests and add security headers ([#85](https://github.com/reponomics/PolicyChecks/issues/85)) ([eb373ff](https://github.com/reponomics/PolicyChecks/commit/eb373ff8dbf29c92e56c65ee26276bb0061e208d))
+
 ## [0.6.1](https://github.com/reponomics/PolicyChecks/compare/v0.6.0...v0.6.1) (2026-07-07)
 
 
