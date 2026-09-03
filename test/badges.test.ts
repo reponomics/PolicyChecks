@@ -60,6 +60,32 @@ describe("badge renderers", () => {
     expect(renderBadgeSvg(communityHealthBadge, communityResult)).toContain("#6cc613");
   });
 
+  it("uses proportional text metrics with consistent horizontal padding", () => {
+    const definition = {
+      ...shaPinningRequiredBadge,
+      label: "secret push protection"
+    };
+    const svg = renderBadgeSvg(definition, result("enabled"));
+
+    expect(svg).toContain('width="188" height="20"');
+    expect(svg).toContain('width="134" height="20" fill="#555"');
+    expect(svg).toContain('x="67" y="14" textLength="124" lengthAdjust="spacing"');
+    expect(svg).toContain('x="161" y="14" textLength="44" lengthAdjust="spacing"');
+  });
+
+  it("allocates more width to wider glyphs in equal-length labels", () => {
+    const narrowSvg = renderBadgeSvg(
+      { ...shaPinningRequiredBadge, label: "iiiiiiii" },
+      result("enabled")
+    );
+    const wideSvg = renderBadgeSvg(
+      { ...shaPinningRequiredBadge, label: "WWWWWWWW" },
+      result("enabled")
+    );
+
+    expect(svgWidth(wideSvg)).toBeGreaterThan(svgWidth(narrowSvg));
+  });
+
   it("renders unknown community health when no valid score is available", () => {
     expect(toShieldsJson(communityHealthBadge, result("unknown"))).toMatchObject({
       message: "unknown",
@@ -100,4 +126,8 @@ function result(result: BadgeResult["result"]): BadgeResult {
     checked_at: "2026-05-30T00:00:00.000Z",
     details: {}
   };
+}
+
+function svgWidth(svg: string): number {
+  return Number(svg.match(/^<svg[^>]+ width="(\d+)"/)?.[1]);
 }
