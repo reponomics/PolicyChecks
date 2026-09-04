@@ -9,11 +9,28 @@
 <!-- prettier-ignore-start -->
 [![CI](https://github.com/reponomics/PolicyChecks/actions/workflows/ci.yml/badge.svg)](https://github.com/reponomics/PolicyChecks/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/reponomics/PolicyChecks/badge)](https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14356/badge)](https://www.bestpractices.dev/projects/14356) [![OSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/reponomics/PolicyChecks?label=openssf+scorecard&style=flat)](https://api.scorecard.dev/projects/github.com/reponomics/PolicyChecks)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14356/badge)](https://www.bestpractices.dev/projects/14356)
 [![Install the GitHub App](https://img.shields.io/badge/GitHub%20App-install-blue?logo=github)](https://github.com/apps/policychecks)
 <!-- prettier-ignore-end -->
 
 <div align="center"><h2><strong>Badges for GitHub repository settings that other badge services can't see.</strong></h2></div>
+
+<!-- prettier-ignore-start -->
+<p align="center">
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled/details.json"><img alt="Secret push protection" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required/details.json"><img alt="Web signoff" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/details.json"><img alt="SHA pinning" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required/details.json"><img alt="Pull request required" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required.svg"></a><br>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked/details.json"><img alt="Force pushes blocked" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required/details.json"><img alt="Status checks" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/details.json"><img alt="Immutable releases" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required/details.json"><img alt="Linear history" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required.svg"></a><br>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health/details.json"><img alt="Community health" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked/details.json"><img alt="Deletion blocked" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/details.json"><img alt="Secret scanning" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required/details.json"><img alt="Signed commits" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required.svg"></a>
+</p>
+<!-- prettier-ignore-end -->
 
 ## About PolicyChecks
 
