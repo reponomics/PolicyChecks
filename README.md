@@ -9,6 +9,7 @@
 <!-- prettier-ignore-start -->
 [![CI](https://github.com/reponomics/PolicyChecks/actions/workflows/ci.yml/badge.svg)](https://github.com/reponomics/PolicyChecks/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/reponomics/PolicyChecks/badge)](https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14356/badge)](https://www.bestpractices.dev/projects/14356) [![OSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/reponomics/PolicyChecks?label=openssf+scorecard&style=flat)](https://api.scorecard.dev/projects/github.com/reponomics/PolicyChecks)
 [![Install the GitHub App](https://img.shields.io/badge/GitHub%20App-install-blue?logo=github)](https://github.com/apps/policychecks)
 <!-- prettier-ignore-end -->
 
