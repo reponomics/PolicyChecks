@@ -203,6 +203,8 @@ In addition, we do _not_ report anything about the presence or absence of _bypas
 
 Rather than excluding branch ruleset conditions from the range of supported badges, we prefer to include them on the basis of the information that is available with `Administration: Read` permissions, and make it clear that the existence of bypass actors is not taken into account for ruleset-based badges. These limitations should be taken into account before making any claims on the basis of a PolicyChecks badge.
 
+In addition, we do not assert that all of the PolicyChecks badge settings are essential, or appropriate, for every OSS project.
+
 ## Contributing
 
 Contributions are welcome: bug reports, fixes, documentation, and new badges. Please open an issue before starting on a feature so we can talk it through. Setup and local development commands are in [CONTRIBUTING.md](CONTRIBUTING.md).
