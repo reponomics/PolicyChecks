@@ -9,12 +9,8 @@
 <!-- prettier-ignore-start -->
 <div align="center"><a href="https://github.com/apps/policychecks"><img alt="Install the GitHub App" src="https://img.shields.io/badge/GitHub%20App-install-blue?logo=github"></a></div>
 <div align="center">
-  <a href="https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks">
-    <img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/reponomics/PolicyChecks/badge">
-  </a>
-  <a href="https://www.bestpractices.dev/projects/14356">
-    <img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/14356/badge">
-  </a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/reponomics/PolicyChecks/badge"></a>
+  <a href="https://www.bestpractices.dev/projects/14356"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/14356/badge"></a>
 </div>
 <!-- prettier-ignore-end -->
 
