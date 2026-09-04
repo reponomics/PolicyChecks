@@ -66,8 +66,10 @@ Besides the SVG, the service also exposes an endpoint for each badge that return
 https://policychecks.reponomics.org/github/OWNER/REPO/BADGE_ID/details.json
 ```
 
-> [!TIP] \
+<!-- prettier-ignore-start -->
+> [!TIP]
 > Viewing the `details.json` endpoint can be useful when trying to understand why a particular badge is displaying a specific status.
+<!-- prettier-ignore-end -->
 
 The badge service reports that a setting is `enabled` when the GitHub API responds with data that clearly shows the setting is enabled, and displays `disabled` only if the API clearly reports a setting is not enabled - if the API's response is inconclusive, or the API is unreachable, the badge simply reports `unknown`.
 
