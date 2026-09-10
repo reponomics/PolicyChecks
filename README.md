@@ -95,15 +95,13 @@ Rule-based checks are evaluated against the repository's default branch.
 
 ## How it works
 
-```mermaid
-flowchart LR
-    A[README badge request] --> B[PolicyChecks server]
-    B -->|cached result| F[SVG or JSON response]
-    B --> C[GitHub App installation token]
-    C --> D[GitHub repository REST API]
-    D --> E["enabled / disabled / unknown"]
-    E --> F
-```
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/how-it-works-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/how-it-works-light.png">
+    <img alt="Flow of a badge request: the README loads the badge URL; PolicyChecks checks its cache and serves a cache hit directly; on a miss it authenticates as the GitHub App, then queries one GitHub REST endpoint and renders enabled or disabled. If the App is not installed, authorization is rejected, the request is rate limited, or the response is inconclusive, the badge is unknown." src="docs/assets/how-it-works-light.png" width="100%">
+</picture>
+
+On a cache miss, PolicyChecks authenticates as the GitHub App, finds the App installation for the repository, and queries a single REST endpoint with an installation token. If the App isn't installed, authorization is rejected, or GitHub rate-limits the request, the badge reports `unknown` without guessing. Every result, including `unknown`, is cached for about an hour.
 
 Each badge maps one GitHub API field to one recognizable repository setting. We don't try to make sophisticated inferences, and we don't audit whether that setting has ever changed. The badge shows the status of a particular setting, as reported by GitHub at the time of evaluation. For example, there is a setting that allows maintainers to enforce that all repo workflows use full-length SHA-pinned actions. Only repository admins can see that checkbox. PolicyChecks turns it into a badge that anyone can see:
 
