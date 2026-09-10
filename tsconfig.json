@@ -14,5 +14,11 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["cloudflare/**/*.ts", "src/**/*.ts", "test/**/*.ts", "vitest.config.ts"]
+  "include": [
+    "cloudflare/**/*.ts",
+    "docs/**/*.ts",
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "vitest.config.ts"
+  ]
 }

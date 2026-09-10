@@ -11,7 +11,7 @@
 <div align="center"><a href="https://github.com/apps/policychecks"><img width="150" alt="Install the GitHub App" src="https://img.shields.io/badge/GitHub%20App-install-blue?logo=github"></a></div>
 <br>
 <div align="center">
-  <a href="https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/reponomics/PolicyChecks/badge"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/reponomics/PolicyChecks/badge"></a>
   <a href="https://www.bestpractices.dev/projects/14356"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/14356/badge"></a>
 </div>
 <!-- prettier-ignore-end -->
@@ -115,7 +115,7 @@ Each badge maps one GitHub API field to one recognizable repository setting. We 
     <img alt="Left: the admin-only GitHub repository setting that requires Actions to be pinned to a full-length commit SHA. Right: the public PolicyChecks badge that mirrors it." src="docs/assets/setting-vs-badge-light.png" width="100%">
 </picture>
 
-Github's repository `/actions/permissions` endpoint reports whether that checkbox is checked or not. PolicyChecks queries that endpoint (which requires repository `Administration: Read` permissions), and renders a badge based on the response.
+GitHub's repository `/actions/permissions` endpoint reports whether that checkbox is checked or not. PolicyChecks queries that endpoint (which requires repository `Administration: Read` permissions), and renders a badge based on the response.
 
 ### Status semantics
 
@@ -142,7 +142,7 @@ GET /github/{owner}/{repo}/{badge-id}/details.json   # The evaluation record beh
 GET /github/{owner}/{repo}/info.json                 # All supported checks for one repository
 ```
 
-A request for an unrecognized badge ID returns `404` with `{"error": "unsupported_badge"}`.
+A request for an unrecognized badge ID returns `404` with `{"error": "unsupported_badge", "badgeId": "..."}`.
 
 `details.json` names the endpoint and fields behind the result, so anyone can check a badge against its source:
 
@@ -187,7 +187,7 @@ See [PRIVACY.md](PRIVACY.md) for additional details about how the service handle
 
 PolicyChecks fills a modest gap in the OSS tooling ecosystem.
 
-While trusted services, such as [OSSF Scorecard](https://scorecard.dev/), provide reliable ways to "assess open source projects for security risks through a series of auomated checks", they do not provide single-endpoint badges that represent _specific_ best practices or administrative policies. Meanwhile, other invaluable services like [Shields.io](https://github.com/badges/shields) offer a wide range of badges that report on the health and security posture of a GitHub repository, but they are limited to providing GitHub data that is publicly accessible.
+While trusted services, such as [OSSF Scorecard](https://scorecard.dev/), provide reliable ways to "assess open source projects for security risks through a series of automated checks", they do not provide single-endpoint badges that represent _specific_ best practices or administrative policies. Meanwhile, other invaluable services like [Shields.io](https://github.com/badges/shields) offer a wide range of badges that report on the health and security posture of a GitHub repository, but they are limited to providing GitHub data that is publicly accessible.
 
 PolicyChecks expands the scope of available badges that relay data provided by GitHub's API. By installing the PolicyChecks app, the badge service is able to access data that public endpoints do not expose.
 
@@ -201,11 +201,13 @@ It is not a security audit, not a historical compliance record, and not a codeba
 
 (ii) Inversely, a repository can fully satisfy a condition without that condition being set as an administrative requirement.
 
-In addition, we do _not_ report anything about the presence or absence of _bypass actors_ (users or roles that are allowed to bypass branch rulesets). This is for two reasons: (i) we cannot conlusively establish the presence or absence of bypass actors solely on the basis of `Administration: Read` permissions, and we do not deem that this information would justify an expansion in requested permissions; (ii) making claims about bypass actors could imply unwarranted assurances about a repository's real practices. In reality, any administrator can temporarily disable a setting or ruleset, force some change into the codebase, and then reenable the setting. Without historical tracking, PolicyChecks cannot report on this sort of activity, which is qualitatively similar to the activity of a bypass actor.
+In addition, we do _not_ report anything about the presence or absence of _bypass actors_ (users or roles that are allowed to bypass branch rulesets). This is for two reasons: (i) we cannot conclusively establish the presence or absence of bypass actors solely on the basis of `Administration: Read` permissions, and we do not deem that this information would justify an expansion in requested permissions; (ii) making claims about bypass actors could imply unwarranted assurances about a repository's real practices. In reality, any administrator can temporarily disable a setting or ruleset, force some change into the codebase, and then reenable the setting. Without historical tracking, PolicyChecks cannot report on this sort of activity, which is qualitatively similar to the activity of a bypass actor.
 
 Rather than excluding branch ruleset conditions from the range of supported badges, we prefer to include them on the basis of the information that is available with `Administration: Read` permissions, and make it clear that the existence of bypass actors is not taken into account for ruleset-based badges. These limitations should be taken into account before making any claims on the basis of a PolicyChecks badge.
 
 In addition, we do not assert that all of the PolicyChecks badge settings are essential, or appropriate, for every OSS project.
+
+Finally, we do not evaluate classic branch protection rules. Although this excludes coverage for a certain class of repositories, it follows GitHub's own recommendation to use rulesets rather than classic branch protection going forward.
 
 ## Contributing
 
@@ -226,4 +228,4 @@ All contributors are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md
 
 See [LICENSE](LICENSE)
 
-MIT (c) 2026 Reponomics
+MIT (c) 2026 Reponomics Contributors
