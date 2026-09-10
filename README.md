@@ -4,163 +4,226 @@
     <img alt="PolicyChecks Banner" src="docs/assets/banner-light-1.png" width="100%">
 </picture>
 
+<br>
+<br>
+
 <!-- prettier-ignore-start -->
-[![Immutable releases](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/details.json)
-[![SHA pinning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/details.json)
-[![Web signoff](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required/details.json)
-[![Community health](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health/details.json)
-[![Secret scanning](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/details.json)
-[![Secret push protection](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled/details.json)
-[![Force pushes blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked/details.json)
-[![Signed commits](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required/details.json)
-[![Linear history](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required/details.json)
-[![Deletion blocked](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked/details.json)
-[![Pull request required](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required/details.json)
-[![Status checks](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required/details.json)
+<div align="center"><a href="https://github.com/apps/policychecks"><img width="150" alt="Install the GitHub App" src="https://img.shields.io/badge/GitHub%20App-install-blue?logo=github"></a></div>
+<br>
+<div align="center">
+  <a href="https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/reponomics/PolicyChecks/badge"></a>
+  <a href="https://www.bestpractices.dev/projects/14356"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/14356/badge"></a>
+</div>
 <!-- prettier-ignore-end -->
 
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14356/badge)](https://www.bestpractices.dev/projects/14356) [![OSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/reponomics/PolicyChecks?label=openssf+scorecard&style=flat)](https://api.scorecard.dev/projects/github.com/reponomics/PolicyChecks)
+<div align="center"><h2>Badges for GitHub repository settings that other badge services can't see</h2></div>
 
-PolicyChecks is a badge service and validation endpoint that checks the current status of a repository's administrative settings, giving maintainers a convenient way to show that OSS best practices are a matter of policy.
+<!-- prettier-ignore-start -->
+<p align="center">
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled/details.json"><img alt="Secret push protection" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-push-protection-enabled.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required/details.json"><img alt="Web signoff" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/web-commit-signoff-required.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/details.json"><img alt="SHA pinning" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required/details.json"><img alt="Pull request required" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-pull-request-required.svg"></a><br>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked/details.json"><img alt="Force pushes blocked" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-force-pushes-blocked.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required/details.json"><img alt="Status checks" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-status-checks-required.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases/details.json"><img alt="Immutable releases" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/immutable-releases.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required/details.json"><img alt="Linear history" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-linear-history-required.svg"></a><br>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health/details.json"><img alt="Community health" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/community-health.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked/details.json"><img alt="Deletion blocked" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-deletion-blocked.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled/details.json"><img alt="Secret scanning" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/secret-scanning-enabled.svg"></a>
+  <a href="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required/details.json"><img alt="Signed commits" src="https://policychecks.reponomics.org/github/reponomics/PolicyChecks/default-branch-signed-commits-required.svg"></a>
+</p>
+<!-- prettier-ignore-end -->
 
-## How it Works
+## About PolicyChecks
 
-PolicyChecks uses a GitHub app that requests repository `Administration: Read` permissions so that it can query the GitHub REST API for information about repo settings that public badge services are otherwise unable to provide.
+Public badge services can only see what public APIs report. A repo's git history shows whether a project uses signed commits - but there's no public API to check whether signed commits are required by a project's settings. That's why we created PolicyChecks: a badge service backed by a GitHub app that requests permission to read administrative settings; by installing the PolicyChecks app, maintainers can show that their project follows best practices, not only as a matter of habit, but as a matter of policy.
 
-For example, in its documentation about the [secure use](https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions) of GitHub Actions, GitHub recommends pinning actions to a full-length commit SHA. Administrators of repositories and organizations are able to configure repositories so that full-SHA-pinned actions are required (when enabled, workflows with actions that do not satisfy this criterion will fail). By installing PolicyChecks, a repo can display a badge that shows whether that setting is enabled or not.
+## Quickstart
 
-<picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/full-sha-pinned-setting-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/full-sha-pinned-setting-light.png">
-    <img alt="PolicyChecks Banner" src="docs/assets/full-sha-pinned-setting-light.png" width="100%">
-</picture>
+**1. Install the GitHub App**
 
-<div align="center"><picture><img src="docs/assets/SHA-pinning-enabled.png" /></picture></div>
+Install [PolicyChecks](https://github.com/apps/policychecks) on your account, and grant it access to the repositories where you wish to display a badge. The App asks for one elevated permission: repository `Administration: Read`. This is the minimum access necessary to serve the badges. We recommend you grant it access only to those repos where you wish to show a badge.
 
-## PolicyChecks Badges
+**2. Add a badge to your README**
 
-The following table describes the set of badges that PolicyChecks currently supports. PolicyChecks queries repository-based API endpoints. Some of the settings reported on have their own unique endpoint; some are included in responses returned by a general `repos/OWNER/REPO` endpoint; others are included on the basis of `branch ruleset` endpoints evaluated relative to the default branch; and, for good measure, we also include the response from GitHub's public community profile health score endpoint (`repos/OWNER/REPO/community/profile`). Although we only request _repository_ `Administration: Read` permission, and query repository endpoints, our internal probes indicate that the repository endpoints queried will return positive results for settings that are enabled at the _organization_ level as well, so long as they are configured by the organization to apply to the repository. Note that for any ruleset-based settings, or those that pertain to a specific _ref_, PolicyChecks evaluates the setting with respect to the repository's default branch.
+Once you've installed the app, the badge service will be able to query the GitHub API for the data necessary to display a PolicyChecks badge.
 
-If the GitHub API provides an endpoint that reliably tracks a specific repo setting, and the response from that API contains a field that clearly establishes whether a given setting is enabled or disabled, then when the PolicyChecks service identifies a positive response, the badge will indicate that the setting is `enabled`. If a response clearly indicates that a particular setting is _not_ enabled for that setting and repository, the badge will show `disabled`. If it receives any other response, including authorization failure, general API request failure, rate-limit throttling, or if the response is in any way ambiguous, the badge will instead simply show `unknown`. Similar rules are applied when reporting on the repository's community health profile score, except instead of `enabled`/`disabled`, a non-`unknown` response will be a percentage expressed as a fraction, in the following shape: `NN / 100`.
-
-| Check | Repo Setting Description | API endpoint |
-| --- | --- | --- |
-| Immutable releases | Disallow assets and tags from being modified once a release is published | `/repos/{owner}/{repo}/immutable-releases` |
-| SHA pinning | Require actions to be pinned to a full-length commit SHA | `/repos/{owner}/{repo}/actions/permissions` |
-| Web signoff | Require contributors to sign off on web-based commits | `/repos/{owner}/{repo}` |
-| Secret scanning | Get notified when a secret is pushed to a repository | `/repos/{owner}/{repo}` |
-| Secret push protection | Block commits that contain supported secrets | `/repos/{owner}/{repo}` |
-| Force pushes blocked | Prevent users with push access from force pushing to refs | `/repos/{owner}/{repo}/rules/branches/{branch}` |
-| Signed commits | Commits pushed to matching refs must have verified signatures | `/repos/{owner}/{repo}/rules/branches/{branch}` |
-| Linear history | Prevent merge commits from being pushed to matching refs | `/repos/{owner}/{repo}/rules/branches/{branch}` |
-| Deletion blocked | Only allow users with bypass permissions to delete matching refs | `/repos/{owner}/{repo}/rules/branches/{branch}` |
-| Pull request required | Require all commits to be made to a non-target branch and submitted via a pull request before they can be merged | `/repos/{owner}/{repo}/rules/branches/{branch}` |
-| Status checks | Require status checks to pass before the default branch is updated | `/repos/{owner}/{repo}/rules/branches/{branch}` |
-| Community health | A percentage of how many of GitHub's recommended community health files are present | `/repos/{owner}/{repo}/community/profile` |
-
-## Endpoints
-
-Each supported badge has a stable badge ID, such as `sha-pinning-required` or `community-health`, and supports the same endpoint shape:
-
-```text
-GET /github/{owner}/{repo}/{badge-id}.svg  # Returns an SVG badge with status `enabled`, `disabled`, or `unknown`
-GET /github/{owner}/{repo}/{badge-id}.json  # Returns a Shields-compatible JSON result for use in custom badge tooling
-GET /github/{owner}/{repo}/{badge-id}/details.json  # Returns the PolicyChecks evaluation record and selected response-derived details
-GET /github/{owner}/{repo}/info.json  # A general JSON response that provides collective information about multiple different settings
-```
-
-Use the SVG endpoint for badges, the Shields-compatible JSON endpoint for badge tooling, and the details endpoint for the underlying PolicyChecks evaluation record. Details JSON identifies the badge as `badgeId` and omits internal classification fields. README badges can link directly to their details JSON:
-
-```markdown
-[![Immutable releases](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/immutable-releases/details.json)
-```
-
-<details>
-<summary><h3>More examples</h3></summary>
+Simply select from the list of [Supported checks](#supported-checks) and substitute your own `OWNER` and `REPO`:
 
 ```markdown
 [![SHA pinning](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/sha-pinning-required/details.json)
-
-[![Web signoff](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/web-commit-signoff-required/details.json)
-
-[![Community health](https://policychecks.reponomics.org/github/OWNER/REPO/community-health.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/community-health/details.json)
-
-[![Secret scanning](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-scanning-enabled/details.json)
-
-[![Secret push protection](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/secret-push-protection-enabled/details.json)
-
-[![Force pushes blocked](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-force-pushes-blocked/details.json)
-
-[![Signed commits](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-signed-commits-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-signed-commits-required/details.json)
-
-[![Linear history](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-linear-history-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-linear-history-required/details.json)
-
-[![Deletion blocked](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-deletion-blocked.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-deletion-blocked/details.json)
-
-[![Pull request required](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-pull-request-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-pull-request-required/details.json)
-
-[![Status checks](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required.svg)](https://policychecks.reponomics.org/github/OWNER/REPO/default-branch-status-checks-required/details.json)
 ```
 
-</details>
+The service supports both personal accounts and organizations; as long as the app is installed on the relevant repository, it can report on its policies, whether those are configured at the repo level or the org level.
 
-The aggregate endpoint returns all currently supported badge results for a repository:
+The URL pattern is the same for every badge:
 
 ```text
-https://policychecks.reponomics.org/github/OWNER/REPO/info.json
+https://policychecks.reponomics.org/github/OWNER/REPO/BADGE_ID.svg
 ```
 
-## Why Another Badge Service?
+Besides the SVG, the service also exposes an endpoint for each badge that returns a JSON object containing metadata about what GitHub API endpoint was used to derive the status displayed on the badge:
 
-While trusted services, such as [OSSF Scorecard](https://github.com/ossf/scorecard-action), provide reliable ways to verify that a repository is only using full-SHA-pinned actions, and maintainers can proudly display an OSSF Scorecard badge demonstrating their compliance with the high standards set by the [Open Source Security Foundation](https://openssf.org/), they do not provide badges that represent _specific_ best practices, such as the one mentioned above.
+```text
+https://policychecks.reponomics.org/github/OWNER/REPO/BADGE_ID/details.json
+```
 
-At the same time, while other invaluable services like [Shields.io](https://github.com/badges/shields) offer a wide range of badges that report information that is critical to understanding the maintenance health and security posture of a GitHub repository, they are limited to providing GitHub data that is publicly accessible.
+<!-- prettier-ignore-start -->
+> [!TIP]
+> Viewing the `details.json` endpoint can be useful when trying to understand why a particular badge is displaying a specific status.
+<!-- prettier-ignore-end -->
 
-By installing the PolicyChecks app, and granting it read-only permissions to repository administration data, PolicyChecks is able to fill a modest gap in the badge ecosystem by querying GitHub API endpoints that require repository `Administration: Read` permissions, and then providing an endpoint that serves badges for specific administrative settings.
+The badge service reports that a setting is `enabled` when the GitHub API responds with data that clearly shows the setting is enabled, and displays `disabled` only if the API clearly reports a setting is not enabled - if the API's response is inconclusive, or the API is unreachable, the badge simply reports `unknown`.
 
-## A Window Into the Current State of a Repository's Settings
+## Supported checks
 
-PolicyChecks can be thought of as nothing more, and nothing less, than a transparent window into the _current_ status of selective repository settings. It does not offer a detailed security audit of any kind; it does not check whether the relevant settings have been applied consistently in the past; it does not even report whether the codebase as a whole currently conforms to the requirements that the settings are meant to enforce. For instance, a repository could include workflow actions that are not pinned to full-length commit SHAs, and still show a PolicyChecks badge showing that the `SHA-pinning` setting is enabled (since the actions could very well have been added while the setting was _not_ enabled) - that's because the badge service does not analyze the codebase, but merely reports on the status of specific settings, as reported by the GitHub API, at the time of evaluation - and those settings themselves provide no information about the codebase either.
+| Check | What it reports | Badge ID | GitHub REST source |
+| --- | --- | --- | --- |
+| SHA pinning | Actions must be pinned to a full-length commit SHA | `sha-pinning-required` | `/repos/{owner}/{repo}/actions/permissions` |
+| Immutable releases | Assets and tags cannot be modified once a release is published | `immutable-releases` | `/repos/{owner}/{repo}/immutable-releases` |
+| Secret scanning | Secret scanning is enabled | `secret-scanning-enabled` | `/repos/{owner}/{repo}` |
+| Secret push protection | Pushes containing supported secrets are blocked | `secret-push-protection-enabled` | `/repos/{owner}/{repo}` |
+| Web signoff | Web-based commits require a sign-off | `web-commit-signoff-required` | `/repos/{owner}/{repo}` |
+| Force pushes blocked | Force pushes to the default branch are blocked | `default-branch-force-pushes-blocked` | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Signed commits | Commits to the default branch need verified signatures | `default-branch-signed-commits-required` | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Linear history | Merge commits are blocked on the default branch | `default-branch-linear-history-required` | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Deletion blocked | Only bypass actors may delete the default branch | `default-branch-deletion-blocked` | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Pull request required | Changes must reach the default branch through a pull request | `default-branch-pull-request-required` | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Status checks | Status checks must pass before the default branch updates | `default-branch-status-checks-required` | `/repos/{owner}/{repo}/rules/branches/{branch}` |
+| Community health | GitHub's community profile score, rendered as `NN/100` | `community-health` | `/repos/{owner}/{repo}/community/profile` |
 
-Inversely, a repository could follow strict adherence to SHA-pinned actions in their codebase - but unless that checkbox is enabled in the admin settings page, PolicyChecks will report that that policy setting is currently `disabled`. This is a crucial difference between PolicyChecks and a service like OSSF Scorecard - the latter is a far more rigorous and in-depth source of information for things relating to supply-chain security, because it _does_ actually read and report on the workflow files themselves. (The Scorecard API even provides detailed information about each of the criteria that it uses to evaluate a repository when assigning a score - including, for example, whether or not that repository's workflow files use SHA-pinned actions. The difference is: (i) Scorecard does not expose the data that their JSON endpoint reports in an individual-check-level badge-friendly way; (ii) Scorecard reports on the repository's _actual_ codebase and CI/CD practices, regardless of whether those practices are backed by administrative settings.)
+Rule-based checks are evaluated against the repository's default branch.
 
-## What PolicyChecks _Is_ - And What It Is _Not_
+## How it works
 
-These explanations are only intended to make clear to potential users exactly what PolicyChecks is, and what it does and does not establish. Although Reponomics may refer to some of these settings as enforcing _best practices_, PolicyChecks does not take any strong stance on whether a particular setting is any sort of requirement or expectation for the reliability or trustworthiness of a particular software project.
+<div align="center">
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/how-it-works-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/how-it-works-light.png">
+    <img alt="Flow of a badge request: the README loads the badge URL; PolicyChecks checks its cache and serves a cache hit directly; on a miss it authenticates as the GitHub App, then queries one GitHub REST endpoint and renders enabled or disabled. If the App is not installed, authorization is rejected, the request is rate limited, or the response is inconclusive, the badge is unknown." src="docs/assets/how-it-works-light.png" width="600">
+</picture>
+</div>
 
-Nevertheless, maintainers often go to great lengths to ensure that their repositories meet the highest standards of excellence and security. And while enabling a checkbox does not _in itself_ establish that those standards have been followed over the lifetime of a project, they still represent a strong commitment on behalf of repository and organization administrators. So, since making such a commitment is something that a maintainer ought to feel proud of, PolicyChecks is simply a way to provide a public signal of that commitment - nothing more, and nothing less.
+On a badge request (cache miss), PolicyChecks authenticates as the GitHub App, finds the App installation for the repository, and queries a single REST endpoint with an installation token. If the App isn't installed, authorization is rejected, or GitHub rate-limits the request, the badge reports `unknown` without guessing. Every result, including `unknown`, is cached for about an hour.
 
-## Permissions
+Each badge maps one GitHub API field to one recognizable repository setting. We don't try to make sophisticated inferences, and we don't audit whether that setting has ever changed. The badge shows the status of a particular setting, as reported by GitHub at the time of evaluation. For example, there is a setting that allows maintainers to enforce that all repo workflows use full-length SHA-pinned actions. Only repository admins can see that checkbox. PolicyChecks turns it into a badge that anyone can see:
 
-The app requires repository `Administration: Read` permissions for each repository that hosts a badge. It supports personal or organization-owned repositories, public or private, as long as the GitHub App is installed on the repository. PolicyChecks does not call organization APIs or fetch repository file contents; the community health badge uses GitHub's community profile metric. If the GitHub API is inconclusive, PolicyChecks does not make any effort to infer whether the setting holds or not via some other indirect means - it simply reports the data as it is provided by the GitHub REST API. This is to emphasize that the primary intention of PolicyChecks is _not_ to make any substantive statement about a repository or its codebase, beyond the current status of its _settings_.
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/setting-vs-badge-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/setting-vs-badge-light.png">
+    <img alt="Left: the admin-only GitHub repository setting that requires Actions to be pinned to a full-length commit SHA. Right: the public PolicyChecks badge that mirrors it." src="docs/assets/setting-vs-badge-light.png" width="100%">
+</picture>
 
-## Documentation References
+Github's repository `/actions/permissions` endpoint reports whether that checkbox is checked or not. PolicyChecks queries that endpoint (which requires repository `Administration: Read` permissions), and renders a badge based on the response.
 
-| Reference | GitHub docs |
-| --- | --- |
-| `repository-doc` | [Get a repository](https://docs.github.com/en/rest/repos/repos#get-a-repository) |
-| `immutable-releases-doc` | [Check if immutable releases are enabled for a repository](https://docs.github.com/en/rest/repos/repos#check-if-immutable-releases-are-enabled-for-a-repository) |
-| `actions-permissions-doc` | [Get GitHub Actions permissions for a repository](https://docs.github.com/en/rest/actions/permissions#get-github-actions-permissions-for-a-repository) |
-| `branch-rules-doc` | [Get rules for a branch](https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch) |
+### Status semantics
+
+| Status     | Meaning                                      |
+| ---------- | -------------------------------------------- |
+| `enabled`  | The API clearly reported the setting as on.  |
+| `disabled` | The API clearly reported the setting as off. |
+| `unknown`  | Everything else.                             |
+
+`unknown` covers the App not being installed on the repository, authorization failures, rate limiting, failed requests, and any response that doesn't clearly answer the question. If the answer is ambiguous, the badge says so rather than guessing. Community health works the same way, except that the response is a percentage, instead of `enabled`/`disabled`.
+
+### Caching
+
+Results are cached in memory for up to about an hour, and responses go out with `Cache-Control: public, max-age=300, stale-while-revalidate=300`. It can take a little bit of time for a settings change to be picked up by the GitHub API, so treat badges as cached signals rather than real-time data.
+
+## API
+
+Every badge ID supports the same response shapes:
+
+```text
+GET /github/{owner}/{repo}/{badge-id}.svg            # SVG badge
+GET /github/{owner}/{repo}/{badge-id}.json           # Shields-compatible JSON, for custom badge tooling
+GET /github/{owner}/{repo}/{badge-id}/details.json   # The evaluation record behind the badge
+GET /github/{owner}/{repo}/info.json                 # All supported checks for one repository
+```
+
+A request for an unrecognized badge ID returns `404` with `{"error": "unsupported_badge"}`.
+
+`details.json` names the endpoint and fields behind the result, so anyone can check a badge against its source:
+
+```console
+$ curl https://policychecks.reponomics.org/github/reponomics/PolicyChecks/sha-pinning-required/details.json
+{
+  "badgeId": "sha-pinning-required",
+  "owner": "reponomics",
+  "repo": "PolicyChecks",
+  "repository": {
+    "owner": "reponomics",
+    "repo": "PolicyChecks",
+    "full_name": "reponomics/PolicyChecks"
+  },
+  "result": "enabled",
+  "source": {
+    "provider": "github",
+    "api": "REST",
+    "endpoint": "GET /repos/{owner}/{repo}/actions/permissions",
+    "fields": ["sha_pinning_required"]
+  },
+  "checked_at": "2026-08-27T17:45:18.237Z",
+  "details": {
+    "sha_pinning_required": true
+  }
+}
+```
+
+## Permissions and data access
+
+- PolicyChecks asks for repository `Administration: Read`, and no other permission.
+- It holds no write permission, so it can't modify anything in your repository.
+- It doesn't read repository source code.
+- It doesn't call organization APIs (but it can still report whether a policy is enforced by repo settings even if those settings are inherited from organization policies).
+- The service makes only `GET` requests to the GitHub API. [`test/github/api-usage-policy.test.ts`](test/github/api-usage-policy.test.ts) pins the list of endpoints that it queries and CI fails if a write verb, GraphQL query, pagination, search, or organization/user repository listing shows up in the source.
+- Only the fields listed under [Supported checks](#supported-checks) go into a result. Any additional data in the API response is ignored.
+- When a response is inconclusive, the badge says `unknown` instead of working the answer out some other way.
+
+See [PRIVACY.md](PRIVACY.md) for additional details about how the service handles data.
+
+## Scope
+
+PolicyChecks fills a modest gap in the OSS tooling ecosystem.
+
+While trusted services, such as [OSSF Scorecard](https://scorecard.dev/), provide reliable ways to "assess open source projects for security risks through a series of auomated checks", they do not provide single-endpoint badges that represent _specific_ best practices or administrative policies. Meanwhile, other invaluable services like [Shields.io](https://github.com/badges/shields) offer a wide range of badges that report on the health and security posture of a GitHub repository, but they are limited to providing GitHub data that is publicly accessible.
+
+PolicyChecks expands the scope of available badges that relay data provided by GitHub's API. By installing the PolicyChecks app, the badge service is able to access data that public endpoints do not expose.
 
 ## Limitations
 
-As described above, a repository setting is not the same thing as a security audit, or even a guarantee of compliance, historically speaking. Rather, settings enforce compliance with certain policies _so long as that setting is enabled_. This comes with a few caveats worth noting:
+A PolicyChecks badge tells you one simple thing: what the GitHub API reports about a specific repository setting at the time of evaluation.
 
-(i) Repository and organization administrators who are able to modify these settings may do so at any time without PolicyChecks "knowing" anything about it; we do not attempt to report on historical continuity, so a setting that prohibits force-pushing could simply be temporarily disabled whenever an admin wished to make a force-push to the main branch;
+It is not a security audit, not a historical compliance record, and not a codebase scanner. This has two important implications:
 
-(ii) Even without any such "trickery", ruleset-based settings allow for certain users or roles to be granted bypass permissions (these are known as bypass actors). PolicyChecks does not take bypass actors into account when deciding whether a setting is enabled or disabled; this is for two reasons: (a) confident statements about the presence or absence of bypass actors generally require more elevated permissions than `Administration: Read` (such as `Administration: Write`), and our current policy is to limit ourselves to this particular scope alone; (b) since we do not make any attempt to track the status of settings over time, those who have the required permissions may at any time temporarily add themselves as bypass actors - so, without historical continuity checks, or the ability to access organization audit logs, any attempt to make decisions on the basis of the presence of absence of bypass actors would be extremely misleading and fraught.
+(i) The presence of a setting that requires some condition to hold does not imply anything about whether that condition _actually holds_ - e.g., if a maintainer enables a ruleset that requires signed commits, that only applies to commits entering the codebase _going forward_.
 
-in that sense, unless PolicyChecks were granted very broad access to a repository or organization's entire administrative apparatus, such as the ability to monitor the audit log, any attempt to take designated bypass actors into account when reading the API response about a ruleset, would be extremely misleading and fraught.
+(ii) Inversely, a repository can fully satisfy a condition without that condition being set as an administrative requirement.
 
-(iii) We do not make any attempt to evaluate classic branch protection rules. Although this may unfortunately exclude coverage for a certain class of users, this is due to GitHub's recommendations to use rulesets, as opposed to classic branch protection rules, going forward.
+In addition, we do _not_ report anything about the presence or absence of _bypass actors_ (users or roles that are allowed to bypass branch rulesets). This is for two reasons: (i) we cannot conlusively establish the presence or absence of bypass actors solely on the basis of `Administration: Read` permissions, and we do not deem that this information would justify an expansion in requested permissions; (ii) making claims about bypass actors could imply unwarranted assurances about a repository's real practices. In reality, any administrator can temporarily disable a setting or ruleset, force some change into the codebase, and then reenable the setting. Without historical tracking, PolicyChecks cannot report on this sort of activity, which is qualitatively similar to the activity of a bypass actor.
+
+Rather than excluding branch ruleset conditions from the range of supported badges, we prefer to include them on the basis of the information that is available with `Administration: Read` permissions, and make it clear that the existence of bypass actors is not taken into account for ruleset-based badges. These limitations should be taken into account before making any claims on the basis of a PolicyChecks badge.
+
+In addition, we do not assert that all of the PolicyChecks badge settings are essential, or appropriate, for every OSS project.
 
 ## Contributing
 
-Reponomics gladly invites contributors to this project. Contributor setup and local development commands are documented in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Contributions are welcome: bug reports, fixes, documentation, and new badges. Please open an issue before starting on a feature so we can talk it through. Setup and local development commands are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+New badge proposals are the most useful contributions for enhancing functionality. There are two conditions:
+
+1. The check needs no permission beyond repository `Administration: Read`.
+2. The result can be deterministically established on the basis of a small number of queries (preferably one), with little or no inference.
+
+In addition, we prefer to avoid badges that are already provided natively by GitHub, or are covered by services like Shields.io (e.g. Dependabot, CodeQL, etc.).
+
+A setting that can't be read within these constraints isn't a good fit. That boundary is what keeps the App's permission footprint small.
+
+All contributors are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
 See [LICENSE](LICENSE)
 
-MIT @ 2026 Reponomics Contributors
+MIT (c) 2026 Reponomics

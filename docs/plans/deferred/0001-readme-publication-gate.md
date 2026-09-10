@@ -2,7 +2,9 @@
 
 ## Status
 
-Planned
+Not Planned
+
+Justification: Prematurely adds additional complexity to the product surface area in the absence of user demand. Plan is demoted but available if users express interest.
 
 ## Context
 
