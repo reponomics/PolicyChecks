@@ -4,10 +4,11 @@
     <img alt="PolicyChecks Banner" src="docs/assets/banner-light-1.png" width="100%">
 </picture>
 
-<br />
+<br>
+<br>
 
 <!-- prettier-ignore-start -->
-<div align="center"><a href="https://github.com/apps/policychecks"><img width="200" alt="Install the GitHub App" src="https://img.shields.io/badge/GitHub%20App-install-blue?logo=github"></a></div>
+<div align="center"><a href="https://github.com/apps/policychecks"><img width="150" alt="Install the GitHub App" src="https://img.shields.io/badge/GitHub%20App-install-blue?logo=github"></a></div>
 <br>
 <div align="center">
   <a href="https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/reponomics/PolicyChecks/badge"></a>
