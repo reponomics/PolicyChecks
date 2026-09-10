@@ -18,7 +18,7 @@ Although we do not claim that the PolicyChecks badges pertain to policies that e
 
 (a) Commits must be signed. If you submit a PR, make sure that you are signing your commits. For more information about commit signing, see the [GitHub documentation on the topic](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
 
-(b) Commits made through GitHub's web editor must be signed off. This repository has GitHub's "require contributors to sign off on web-based commits" setting enabled, which adds a `Signed-off-by` trailer to those commits. The sign-off certifies the [Developer Certificate of Origin](https://developercertificate.org/) (DCO 1.1): that you wrote the change, or otherwise have the right to submit it under this project's license. Sign-off is not currently enforced for commits pushed from the command line, but you are welcome to add it with `git commit -s`.
+(b) Commits made in GitHub's web editor must be signed off, which certifies the [Developer Certificate of Origin](https://developercertificate.org/). GitHub adds the `Signed-off-by` trailer for you; command-line commits are not checked.
 
 (c) All code changes to `main` must come from a Pull Request.
 
