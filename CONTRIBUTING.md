@@ -26,7 +26,7 @@ Although we do not claim that the PolicyChecks badges pertain to policies that e
 
 (e) Before submitting a PR, be sure to run `npm run check` and resolve any errors.
 
-(f) If you open a PR and notice that checks are failing, please review the failing checks and try to determine the root cause, and then resolve it whenever possible.
+(f) If you open a PR and notice that checks are failing, please review the failing checks and try to determine the root cause, and then resolve it whenever possible. (Note that if you are a first-time contributor, your PR may need an initial approval before the CI checks can run.)
 
 (g) We currently have a very strong level of test coverage; if your PR introduces new functionality, make sure that you include tests as appropriate, and you should compare coverage before and after your change.
 
