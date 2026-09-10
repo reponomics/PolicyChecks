@@ -18,15 +18,17 @@ Although we do not claim that the PolicyChecks badges pertain to policies that e
 
 (a) Commits must be signed. If you submit a PR, make sure that you are signing your commits. For more information about commit signing, see the [GitHub documentation on the topic](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
 
-(b) All code changes to `main` must come from a Pull Request.
+(b) Commits made in GitHub's web editor must be signed off, which certifies the [Developer Certificate of Origin](https://developercertificate.org/). GitHub adds the `Signed-off-by` trailer for you; command-line commits are not checked.
 
-(c) Pull Request titles must follow [conventional commit style](https://www.conventionalcommits.org/en/v1.0.0/#summary). This is enforced in CI. Additionally, the type of the conventional commit prefix determines the release protocol when that PR is merged (major, minor, patch, or no release). That being said, although we strongly encourage contributors to follow conventional commit practices, the release workflow (in our case, Release Please) is sensitive only to the PR title itself, and does not process the prefixes of any of the commits in the PR.
+(c) All code changes to `main` must come from a Pull Request.
 
-(d) Before submitting a PR, be sure to run `npm run check` and resolve any errors.
+(d) Pull Request titles must follow [conventional commit style](https://www.conventionalcommits.org/en/v1.0.0/#summary). This is enforced in CI. Additionally, the type of the conventional commit prefix determines the release protocol when that PR is merged (major, minor, patch, or no release). That being said, although we strongly encourage contributors to follow conventional commit practices, the release workflow (in our case, Release Please) is sensitive only to the PR title itself, and does not process the prefixes of any of the commits in the PR.
 
-(e) If you open a PR and notice that checks are failing, please review the failing checks and try to determine the root cause, and then resolve it whenever possible.
+(e) Before submitting a PR, be sure to run `npm run check` and resolve any errors.
 
-(f) We currently have a very strong level of test coverage; if your PR introduces new functionality, make sure that you include tests as appropriate, and you should compare coverage before and after your change.
+(f) If you open a PR and notice that checks are failing, please review the failing checks and try to determine the root cause, and then resolve it whenever possible. (Note that if you are a first-time contributor, your PR may need an initial approval before the CI checks can run.)
+
+(g) We currently have a very strong level of test coverage; if your PR introduces new functionality, make sure that you include tests as appropriate, and you should compare coverage before and after your change.
 
 ## Local Development
 
