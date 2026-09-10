@@ -105,15 +105,15 @@ flowchart LR
     E --> F
 ```
 
-Each badge maps one GitHub API field to one recognizable repository setting. We don't try to make sophisticated inferences, and we don't audit whether that setting has ever changed. The badge shows the status of a particular setting, as reported by GitHub at the time of evaluation. For example, there is a setting that allows maintainers to enforce that all repo workflows use full-length SHA-pinned actions. In the Settings UI, it looks like this:
+Each badge maps one GitHub API field to one recognizable repository setting. We don't try to make sophisticated inferences, and we don't audit whether that setting has ever changed. The badge shows the status of a particular setting, as reported by GitHub at the time of evaluation. For example, there is a setting that allows maintainers to enforce that all repo workflows use full-length SHA-pinned actions. Only repository admins can see that checkbox. PolicyChecks turns it into a badge that anyone can see:
 
 <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/full-sha-pinned-setting-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/full-sha-pinned-setting-light.png">
-    <img alt="The GitHub repository setting that requires Actions to be pinned to a full-length commit SHA" src="docs/assets/full-sha-pinned-setting-light.png" width="100%">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/setting-vs-badge-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/setting-vs-badge-light.png">
+    <img alt="Left: the admin-only GitHub repository setting that requires Actions to be pinned to a full-length commit SHA. Right: the public PolicyChecks badge that mirrors it." src="docs/assets/setting-vs-badge-light.png" width="100%">
 </picture>
 
-Github's repository `/actions/permissions` endpoint reports whether that checkbox is checked or not. PolicyChecks queries that endpoint (which requires repository `Administration: Read` permissions), and renders a badge based the response.
+Github's repository `/actions/permissions` endpoint reports whether that checkbox is checked or not. PolicyChecks queries that endpoint (which requires repository `Administration: Read` permissions), and renders a badge based on the response.
 
 ### Status semantics
 
