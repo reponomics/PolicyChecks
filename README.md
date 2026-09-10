@@ -7,14 +7,15 @@
 <br />
 
 <!-- prettier-ignore-start -->
-<div align="center"><a href="https://github.com/apps/policychecks"><img alt="Install the GitHub App" src="https://img.shields.io/badge/GitHub%20App-install-blue?logo=github"></a></div>
+<div align="center"><a href="https://github.com/apps/policychecks"><img width="200" alt="Install the GitHub App" src="https://img.shields.io/badge/GitHub%20App-install-blue?logo=github"></a></div>
+<br>
 <div align="center">
   <a href="https://scorecard.dev/viewer/?uri=github.com/reponomics/PolicyChecks"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/reponomics/PolicyChecks/badge"></a>
   <a href="https://www.bestpractices.dev/projects/14356"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/14356/badge"></a>
 </div>
 <!-- prettier-ignore-end -->
 
-<div align="center"><h2><strong>Badges for GitHub repository settings that other badge services can't see.</strong></h2></div>
+<div align="center"><h2>Badges for GitHub repository settings that other badge services can't see</h2></div>
 
 <!-- prettier-ignore-start -->
 <p align="center">
@@ -103,7 +104,7 @@ Rule-based checks are evaluated against the repository's default branch.
 </picture>
 </div>
 
-On a cache miss, PolicyChecks authenticates as the GitHub App, finds the App installation for the repository, and queries a single REST endpoint with an installation token. If the App isn't installed, authorization is rejected, or GitHub rate-limits the request, the badge reports `unknown` without guessing. Every result, including `unknown`, is cached for about an hour.
+On a badge request (cache miss), PolicyChecks authenticates as the GitHub App, finds the App installation for the repository, and queries a single REST endpoint with an installation token. If the App isn't installed, authorization is rejected, or GitHub rate-limits the request, the badge reports `unknown` without guessing. Every result, including `unknown`, is cached for about an hour.
 
 Each badge maps one GitHub API field to one recognizable repository setting. We don't try to make sophisticated inferences, and we don't audit whether that setting has ever changed. The badge shows the status of a particular setting, as reported by GitHub at the time of evaluation. For example, there is a setting that allows maintainers to enforce that all repo workflows use full-length SHA-pinned actions. Only repository admins can see that checkbox. PolicyChecks turns it into a badge that anyone can see:
 
@@ -209,12 +210,14 @@ In addition, we do not assert that all of the PolicyChecks badge settings are es
 
 Contributions are welcome: bug reports, fixes, documentation, and new badges. Please open an issue before starting on a feature so we can talk it through. Setup and local development commands are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-New badges are the most useful contribution. There are two conditions:
+New badge proposals are the most useful contributions for enhancing functionality. There are two conditions:
 
 1. The check needs no permission beyond repository `Administration: Read`.
-2. The result can be deterministically established on the basis of a small number of queries (preferably one), without non-trivial inference.
+2. The result can be deterministically established on the basis of a small number of queries (preferably one), with little or no inference.
 
-A setting that can't be read within those constraints isn't a good fit. That boundary is what keeps the App's permission footprint small.
+In addition, we prefer to avoid badges that are already provided natively by GitHub, or are covered by services like Shields.io (e.g. Dependabot, CodeQL, etc.).
+
+A setting that can't be read within these constraints isn't a good fit. That boundary is what keeps the App's permission footprint small.
 
 All contributors are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
