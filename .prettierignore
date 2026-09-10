@@ -4,6 +4,7 @@ coverage/
 .wrangler/
 .git/
 __INTERNAL__/
+.mypy_cache/
 *.log
 package-lock.json
 CHANGELOG.md
