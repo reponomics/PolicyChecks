@@ -1,11 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200" role="img" aria-labelledby="t d">
-<title id="t">PolicyChecks</title><desc id="d">PolicyChecks banner: enamel shield logo, the name PolicyChecks, a badge reading best practices enabled, and the tagline Not just by habit, enforced by settings.</desc>
-<defs><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient>
-<pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.2" fill="#b89a5a" opacity=".35"/></pattern>
-<filter id="paper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="5"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.08 0"/><feComposite in2="SourceGraphic" operator="in"/></filter></defs>
-<rect width="800" height="200" fill="#101418"/><rect width="800" height="200" fill="#fff" filter="url(#paper)"/>
-<defs><pattern id="ps" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0v8" stroke="#b89a5a" stroke-width="1" opacity=".18"/></pattern><linearGradient id="fadeL" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="fadeR" x1="1" x2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="mL"><rect width="200" height="200" fill="url(#fadeL)"/></mask><mask id="mR"><rect x="600" width="200" height="200" fill="url(#fadeR)"/></mask></defs><rect width="200" height="200" fill="url(#ps)" mask="url(#mL)"/><rect x="600" width="200" height="200" fill="url(#ps)" mask="url(#mR)"/>
-<g transform="translate(22 26) scale(0.29)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200" role="img" aria-labelledby="title desc">
+<title>PolicyChecks</title>
+<desc>PolicyChecks banner: enamel shield logo, the name PolicyChecks, a badge reading best practices enabled, and the tagline Not just by habit, enforced by settings.</desc>
+<defs><symbol id="mark" viewBox="0 0 512 512">
 <defs><filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.10 0" result="g"/><feComposite in="g" in2="SourceGraphic" operator="in"/></filter>
 <linearGradient id="bMetal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9ddb8"/><stop offset=".35" stop-color="#a98f55"/><stop offset=".6" stop-color="#d9c88f"/><stop offset="1" stop-color="#8a7140"/></linearGradient>
 <linearGradient id="bL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#47cf93"/><stop offset="1" stop-color="#1fae86"/></linearGradient>
@@ -24,33 +20,31 @@
   <path d="M256 56 L420 110 V246 C420 350 350 420 256 458 C162 420 92 350 92 246 V110 Z" filter="url(#grain)" fill="#000" opacity=".7"/>
   <path d="M92 110 L256 56 L420 110 V200 C330 240 180 240 92 200 Z" fill="url(#bGloss)" clip-path="url(#bClip)"/>
 </g>
-</g>
-<g transform="translate(630 26) scale(0.29)">
-<defs><filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.10 0" result="g"/><feComposite in="g" in2="SourceGraphic" operator="in"/></filter>
-<linearGradient id="bMetal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9ddb8"/><stop offset=".35" stop-color="#a98f55"/><stop offset=".6" stop-color="#d9c88f"/><stop offset="1" stop-color="#8a7140"/></linearGradient>
-<linearGradient id="bL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#47cf93"/><stop offset="1" stop-color="#1fae86"/></linearGradient>
-<linearGradient id="bR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a9a7a"/><stop offset="1" stop-color="#167a67"/></linearGradient>
-<linearGradient id="bGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
-<filter id="bShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0b2a22" flood-opacity=".35"/></filter>
-<clipPath id="bClip"><path d="M256 56 L420 110 V246 C420 350 350 420 256 458 C162 420 92 350 92 246 V110 Z"/></clipPath>
-</defs>
-<g filter="url(#bShadow)"><path d="M256 56 L420 110 V246 C420 350 350 420 256 458 C162 420 92 350 92 246 V110 Z" fill="url(#bMetal)" stroke="#6b572e" stroke-width="3"/></g>
-<g transform="translate(256 257) scale(.90) translate(-256 -257)">
-  <path d="M256 56 L92 110 V246 C92 350 162 420 256 458 Z" fill="url(#bL)"/><path d="M256 56 L420 110 V246 C420 350 350 420 256 458 Z" fill="url(#bR)"/>
-  <path d="M256 56 L420 110 V246 C420 350 350 420 256 458 C162 420 92 350 92 246 V110 Z" fill="none" stroke="#5e4b26" stroke-width="7" stroke-linejoin="round"/>
-  <path d="M256 56 V458" stroke="#5e4b26" stroke-width="6"/>
-  <path d="M184 256 L256 326 L362 200" fill="none" stroke="#5e4b26" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M184 256 L256 326 L362 200" fill="none" stroke="#f6f1e2" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M256 56 L420 110 V246 C420 350 350 420 256 458 C162 420 92 350 92 246 V110 Z" filter="url(#grain)" fill="#000" opacity=".7"/>
-  <path d="M92 110 L256 56 L420 110 V200 C330 240 180 240 92 200 Z" fill="url(#bGloss)" clip-path="url(#bClip)"/>
-</g>
-</g>
-<text x="400" y="78" text-anchor="middle" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="50" font-weight="800" letter-spacing="-1.5" fill="#f2f4f6">Policy<tspan fill="#3fc596">Checks</tspan></text>
-<g transform="translate(231.85 98)"><g transform="scale(1.9)"><defs><linearGradient id="sgreen" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="rgreen"><rect width="177" height="20" rx="3"/></clipPath></defs>
-<g clip-path="url(#rgreen)"><rect width="123" height="20" fill="#555"/><rect x="123" width="54" height="20" fill="#4c1"/><rect width="177" height="20" fill="url(#sgreen)"/></g>
-<g transform="translate(5 3) scale(0.02734375)"><path d="M256 56 L420 110 V246 C420 350 350 420 256 458 C162 420 92 350 92 246 V110 Z" fill="#4c1"/></g>
-<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
-<text x="70.0" y="15" textLength="96" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">BEST PRACTICES</text><text x="70.0" y="14" textLength="96" lengthAdjust="spacing">BEST PRACTICES</text>
-<text x="150.0" y="15" textLength="44" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">enabled</text><text x="150.0" y="14" textLength="44" lengthAdjust="spacing">enabled</text></g></g></g>
-<text x="400" y="168" text-anchor="middle" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="17" fill="#99a2ad">Not just by habit, <tspan fill="#3fc596" font-weight="600">enforced</tspan> by settings.</text>
+</symbol></defs>
+<filter id="paper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="5"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.08 0"/><feComposite in2="SourceGraphic" operator="in"/></filter><rect width="800" height="200" fill="#101418"/><rect width="800" height="200" fill="#ffffff" filter="url(#paper)"/>
+<pattern id="stripes" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0v8" stroke="#b89a5a" stroke-width="1" opacity=".18"/></pattern><linearGradient id="fade-l" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="fade-r" x1="1" x2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="mask-l"><rect width="200" height="200" fill="url(#fade-l)"/></mask><mask id="mask-r"><rect x="600" width="200" height="200" fill="url(#fade-r)"/></mask><rect width="200" height="200" fill="url(#stripes)" mask="url(#mask-l)"/><rect x="600" width="200" height="200" fill="url(#stripes)" mask="url(#mask-r)"/>
+<use href="#mark" x="22" y="26" width="148.48" height="148.48"/>
+<use href="#mark" x="629.52" y="26" width="148.48" height="148.48"/>
+<text x="400.0" y="78" text-anchor="middle" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="50" font-weight="800" letter-spacing="-1.66667" fill="#f2f4f6">Policy<tspan fill="#3fc596">Checks</tspan></text>
+<g transform="translate(231.85 98) scale(1.9)"><svg xmlns="http://www.w3.org/2000/svg" width="177" height="20" role="img" aria-label="BEST PRACTICES: enabled">
+  <title>BEST PRACTICES: enabled</title>
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r"><rect width="177" height="20" rx="3" fill="#fff"/></clipPath>
+  <g clip-path="url(#r)">
+    <rect width="123" height="20" fill="#555"/>
+    <rect x="123" width="54" height="20" fill="#4c1"/>
+    <rect width="177" height="20" fill="url(#s)"/>
+  </g>
+  <g transform="translate(5 3) scale(0.02734375)"><path d="M256 56 L420 110 V246 C420 350 350 420 256 458 C162 420 92 350 92 246 V110 Z" fill="#4c1"/></g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+    <text x="70" y="15" textLength="96" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">BEST PRACTICES</text>
+    <text x="70" y="14" textLength="96" lengthAdjust="spacing">BEST PRACTICES</text>
+    <text x="150" y="15" textLength="44" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">enabled</text>
+    <text x="150" y="14" textLength="44" lengthAdjust="spacing">enabled</text>
+  </g>
+</svg></g>
+<text x="400.0" y="168" text-anchor="middle" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="17" fill="#99a2ad">Not just by habit, <tspan fill="#3fc596" font-weight="600">enforced</tspan> by settings.</text>
 </svg>
