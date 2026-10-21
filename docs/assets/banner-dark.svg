@@ -51,6 +51,6 @@
 <g transform="translate(5 3) scale(0.02734375)"><path d="M256 56 L420 110 V246 C420 350 350 420 256 458 C162 420 92 350 92 246 V110 Z" fill="#4c1"/></g>
 <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
 <text x="70.0" y="15" textLength="96" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">BEST PRACTICES</text><text x="70.0" y="14" textLength="96" lengthAdjust="spacing">BEST PRACTICES</text>
-<text x="150.0" y="15" textLength="44" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">enabled</text><text x="150.0" y="14" textLength="44" lengthAdjust="spacing">enabled</text></g></g></g></g>
+<text x="150.0" y="15" textLength="44" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">enabled</text><text x="150.0" y="14" textLength="44" lengthAdjust="spacing">enabled</text></g></g></g>
 <text x="400" y="168" text-anchor="middle" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="17" fill="#99a2ad">Not just by habit, <tspan fill="#3fc596" font-weight="600">enforced</tspan> by settings.</text>
 </svg>
