@@ -103,6 +103,7 @@ from common import (  # noqa: E402  (import after sys.path tweak)
     ASSETS_DIR,
     THEMES,
     Theme,
+    badge_width,
     icon,
     pad_badge,
     render_badges,
@@ -155,7 +156,7 @@ TITLE_PX = 18            # card header: "Settings › Actions", "README.md"
 PILL_PX = 15             # "Admins only" / "Public"
 CONNECTOR_PX = 19        # "PolicyChecks" above the arrow
 CONNECTOR_SUB_PX = 17    # "mirrors it" below the arrow
-BADGE_SCALE = 1.8        # badge is 20 px tall natively; 1.8 -> 36 px, text ~20 px
+BADGE_SCALE = 1.6        # badge is 20 px tall natively; 1.6 -> 32 px, text ~18 px
 
 # =========================================================================== #
 # Layout (1x units)
@@ -308,7 +309,7 @@ def build(theme: Theme, badge_svg: str) -> str:
     )
 
     # -- right card: the badge ----------------------------------------------
-    badge_w = 132 * BADGE_SCALE  # the SHA-pinning "enabled" badge is 132x20 natively
+    badge_w = badge_width(badge_svg) * BADGE_SCALE  # measured: the badge gains width with its logo
     badge_h = 20 * BADGE_SCALE
     badge_x = right_x + (RIGHT_W - badge_w) / 2
     badge_y = body_cy - badge_h / 2
