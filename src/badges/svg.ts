@@ -1,5 +1,6 @@
 import type { BadgeDefinition, BadgeResult } from "./types.js";
 import { colorForResult, messageForResult } from "./shields-json.js";
+import { logoWidth, renderLogo } from "./logo.js";
 
 const colorHex = {
   brightgreen: "#4c1",
@@ -29,9 +30,11 @@ export function renderBadgeSvg(definition: BadgeDefinition, result: BadgeResult)
   const message = messageForResult(definition, result);
   const labelTextWidth = textWidth(label);
   const messageTextWidth = textWidth(message);
-  const labelWidth = segmentWidth(labelTextWidth);
+  // The label segment is widened by the logo; the text is centred in what is left.
+  const labelWidth = segmentWidth(labelTextWidth) + logoWidth;
   const messageWidth = segmentWidth(messageTextWidth);
   const width = labelWidth + messageWidth;
+  const labelX = (labelWidth + logoWidth) / 2;
   const messageX = labelWidth + messageWidth / 2;
   const color = svgColor(colorForResult(definition, result));
 
@@ -49,9 +52,10 @@ export function renderBadgeSvg(definition: BadgeDefinition, result: BadgeResult)
     <rect x="${labelWidth}" width="${messageWidth}" height="20" fill="${color}"/>
     <rect width="${width}" height="20" fill="url(#s)"/>
   </g>
+  ${renderLogo()}
   <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
-    <text x="${labelWidth / 2}" y="15" textLength="${labelTextWidth}" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">${escapeXml(label)}</text>
-    <text x="${labelWidth / 2}" y="14" textLength="${labelTextWidth}" lengthAdjust="spacing">${escapeXml(label)}</text>
+    <text x="${labelX}" y="15" textLength="${labelTextWidth}" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">${escapeXml(label)}</text>
+    <text x="${labelX}" y="14" textLength="${labelTextWidth}" lengthAdjust="spacing">${escapeXml(label)}</text>
     <text x="${messageX}" y="15" textLength="${messageTextWidth}" lengthAdjust="spacing" fill="#010101" fill-opacity=".3">${escapeXml(message)}</text>
     <text x="${messageX}" y="14" textLength="${messageTextWidth}" lengthAdjust="spacing">${escapeXml(message)}</text>
   </g>

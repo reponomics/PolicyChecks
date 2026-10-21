@@ -1,7 +1,7 @@
 <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark-1.png">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light-1.png">
-    <img alt="PolicyChecks Banner" src="docs/assets/banner-light-1.png" width="100%">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.png">
+    <img alt="PolicyChecks Banner" src="docs/assets/banner-light.png" width="100%">
 </picture>
 
 <br>

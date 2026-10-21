@@ -67,10 +67,19 @@ describe("badge renderers", () => {
     };
     const svg = renderBadgeSvg(definition, result("enabled"));
 
-    expect(svg).toContain('width="188" height="20"');
-    expect(svg).toContain('width="134" height="20" fill="#555"');
-    expect(svg).toContain('x="67" y="14" textLength="124" lengthAdjust="spacing"');
-    expect(svg).toContain('x="161" y="14" textLength="44" lengthAdjust="spacing"');
+    // Label segment: 124 px of text + 10 px padding + 17 px for the logo slot.
+    expect(svg).toContain('width="205" height="20"');
+    expect(svg).toContain('width="151" height="20" fill="#555"');
+    expect(svg).toContain('x="84" y="14" textLength="124" lengthAdjust="spacing"');
+    expect(svg).toContain('x="178" y="14" textLength="44" lengthAdjust="spacing"');
+  });
+
+  it("draws the shield logo in the label with a fixed fill for every result", () => {
+    for (const state of ["enabled", "disabled", "unknown"] as const) {
+      const svg = renderBadgeSvg(shaPinningRequiredBadge, result(state));
+      expect(svg).toContain('<g transform="translate(5 3) scale(0.02734375)"><path d="M256 56');
+      expect(svg).toContain('fill="#4c1"/></g>');
+    }
   });
 
   it("allocates more width to wider glyphs in equal-length labels", () => {
