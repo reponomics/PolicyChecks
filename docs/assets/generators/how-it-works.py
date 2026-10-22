@@ -81,7 +81,8 @@ TITLE_PX = 19        # card titles
 SUB_PX = 15          # card subtitles
 LABEL_PX = 18        # edge labels ("miss", "cache hit", ...)
 ICON_PX = 20         # card icons
-BADGE_SCALE = 1.22   # badges are 20 px tall natively
+BADGE_SCALE = 1.22   # badges are 20 px tall natively (upper bound; see fit below)
+BADGE_ROW_INSET = 16 # minimum space between the badge row and the card edges
 
 # =========================================================================== #
 # Layout (1x units)
@@ -149,8 +150,8 @@ def edge(points: list[tuple[float, float]], color: str, marker: str, dashed: boo
     )
 
 
-def chip(svg: str, x: float, cy: float) -> str:
-    return f'<g transform="translate({x},{cy - 10 * BADGE_SCALE}) scale({BADGE_SCALE})">{svg}</g>'
+def chip(svg: str, x: float, cy: float, scale: float = BADGE_SCALE) -> str:
+    return f'<g transform="translate({x},{cy - 10 * scale}) scale({scale})">{svg}</g>'
 
 
 def build(theme: Theme, badges: dict[BadgeState, str]) -> str:
@@ -173,8 +174,13 @@ def build(theme: Theme, badges: dict[BadgeState, str]) -> str:
 
     # Badge card: full width, the three real badges centred in a row.
     order: tuple[BadgeState, ...] = ("enabled", "disabled", "unknown")
-    widths = [badge_width(badges[k]) * BADGE_SCALE for k in order]
-    row_w = sum(widths) + CHIP_GAP * (len(order) - 1)
+    # Shrink the badges uniformly if the row would not fit inside the card;
+    # the badge width depends on the renderer (label text, logo slot), not on us.
+    native_w = sum(badge_width(badges[k]) for k in order)
+    gaps_w = CHIP_GAP * (len(order) - 1)
+    badge_scale = min(BADGE_SCALE, (W - 2 * BADGE_ROW_INSET - gaps_w) / native_w)
+    widths = [badge_width(badges[k]) * badge_scale for k in order]
+    row_w = sum(widths) + gaps_w
     xs: list[float] = []
     cursor = (W - row_w) / 2
     for w in widths:
@@ -187,7 +193,7 @@ def build(theme: Theme, badges: dict[BadgeState, str]) -> str:
         f'fill="{t["panel"]}" stroke="{t["border"]}"/>'
         + icon("shield-check", 18, Y_BADGE + 14, t["muted"], ICON_PX)
         + text(48, Y_BADGE + 29, "Badge", size=TITLE_PX, fill=t["fg"], weight="600")
-        + "".join(chip(badges[k], x, chips_cy) for k, x in zip(order, xs))
+        + "".join(chip(badges[k], x, chips_cy, badge_scale) for k, x in zip(order, xs))
     )
 
     card_right = CARD_X + CARD_W

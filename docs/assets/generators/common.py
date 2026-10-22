@@ -1,8 +1,8 @@
 """
 Shared helpers for the README graphic generators in this directory.
 
-Both `setting-vs-badge.py` and `how-it-works.py` import from here. Everything
-that is *not* specific to one image lives in this module:
+`setting-vs-badge.py`, `how-it-works.py` and `brand.py` import from here.
+Everything that is *not* specific to one image lives in this module:
 
   * repository paths
   * the GitHub-flavoured colour themes (light + dark)
@@ -22,6 +22,8 @@ Run the generators from the repository root, e.g.
 
     python3 docs/assets/generators/setting-vs-badge.py
     python3 docs/assets/generators/how-it-works.py
+    python3 docs/assets/generators/brand.py      # banners, social preview, logo PNGs
+                                                 # (renders with Playwright, see its docstring)
 """
 
 from __future__ import annotations
@@ -150,15 +152,19 @@ def text(
 BadgeState = Literal["enabled", "disabled", "unknown"]
 
 
-def render_badges() -> dict[BadgeState, str]:
+def render_badges(label: str | None = None) -> dict[BadgeState, str]:
     """
     Return the SHA-pinning badge SVG for each result state, rendered by the
     project's own `renderBadgeSvg` via `render-badges.ts`. Using the real
     renderer means the graphics stay faithful if the badge design changes;
-    just rerun the generator.
+    just rerun the generator. `label` swaps the badge label (brand.py uses
+    "BEST PRACTICES"); the geometry and colours are untouched.
     """
+    command = ["npx", "tsx", str(GENERATORS_DIR / "render-badges.ts")]
+    if label is not None:
+        command += ["--label", label]
     completed = subprocess.run(
-        ["npx", "tsx", str(GENERATORS_DIR / "render-badges.ts")],
+        command,
         cwd=REPO_ROOT,
         check=True,
         capture_output=True,
