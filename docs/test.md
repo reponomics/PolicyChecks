@@ -1,5 +1,27 @@
 # Tab emulation examples
 
+## Pattern D: one tab row, one content area (recommended)
+
+<details name="install-d" open>
+<summary>
+<details name="install-d">
+<summary><a href="#user-content-tab-d-npm">npm</a> · <a href="#user-content-tab-d-pip">pip</a></summary>
+<a id="tab-d-pip"></a>
+
+```sh
+pip install foo
+```
+
+</details>
+</summary>
+<a id="tab-d-npm"></a>
+
+```sh
+npm install foo
+```
+
+</details>
+
 ## Pattern A: tab row + exclusive panels
 
 **Install:** [npm](#user-content-tab-npm) · [pip](#user-content-tab-pip)
